@@ -66,6 +66,17 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   Consecuencia: algún texto con marca temporal ("en la primera jugada…")
   queda un pelín a destiempo. Si molesta en un partido concreto, se suaviza
   su intro. Es decisión del cliente hasta dónde retocar.
+- **La prosa de heridas y muertes del partido** (aturdido, KO, magullado,
+  apaleado, herida persistente, −1 permanente y las muertes con sabor —la
+  grada, el rival, el barro—) la escribió Claude imitando la voz del cliente,
+  con su OK. Vive en `HERIDA_PROSA`. Marcada para revisión con el resto.
+- **Cómo se miden las acciones del partido (recalibrado).** El modificador de
+  una jugada clave es tu VENTAJA sobre el estándar del reglamento
+  (característica − 3; velocidad ≈ −2), no la característica en bruto, y los
+  objetivos del pool se recentran a 6-8 (`objDe`). Así 2d6 manda, el objetivo
+  importa, y fallar es posible (sobre todo sin repeticiones), que es lo que
+  hace que las heridas pesen. La jugada decisiva escrita mantiene su escala
+  vieja por ahora (pendiente de alinear si molesta el contraste).
 - **Las jugadas clave tienen riesgo real.** Una opción arriesgada que falla
   pasa por el sistema de heridas del reglamento (armadura → heridas →
   apotecario → D16: aturdido / KO / magullado / apaleado / herida persistente

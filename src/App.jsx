@@ -2302,6 +2302,39 @@ const razaDefaultTipo = { humano: "liga", enano: "caja", orco: "bandada", elfo: 
 const tipoDe = (p, raza) => p.tipo || (p.torneo ? "final" : (razaDefaultTipo[raza] || "liga"));
 const MATCH_PLAYS = (tipo) => (MATCH_TIPOS[tipo] || MATCH_TIPOS.liga).plays;
 
+/* Prosa de las heridas del partido (sabor Blood Bowl: barro, grada, el rival).
+   PENDIENTE DE REVISIÓN: la escribió Claude imitando la voz del cliente. */
+const HERIDA_PROSA = {
+  aturdido: () => [
+    "Te tumban y te quedas mirando el cielo un momento. Te levantas escupiendo barro.",
+    "Un golpe que no viste venir: el suelo sube a buscarte. Te levantas dolorido, pero te levantas.",
+    "Acabas en el barro con una bota en la espalda. El árbitro mira a otro lado. Te levantas.",
+  ],
+  ko: () => [
+    "Te apagan de un golpe. Vuelves en ti en el banquillo, con alguien repitiendo tu nombre.",
+    "Lo último que oyes es a la grada rugir. Ves el resto del partido con una esponja fría en la nuca.",
+  ],
+  magullado: () => [
+    "Sales en camilla entre aplausos que no sabes si son por ti o por el que te tumbó. Magullado: nada que un barril no arregle.",
+    "Te sacan a rastras, doblado. Magullado, pero entero.",
+  ],
+  apaleado: (r) => [
+    `${r} te da donde duele y donde dolerá mañana. Te levantas roto por dentro: el próximo partido lo juegas a medias.`,
+    "Te levantas del barro con algo que no se ve y que no se va. Apaleado para el próximo.",
+  ],
+  persistente: () => [
+    "Algo cruje y no vuelve del todo a su sitio. Curará mal, y a partir de ahora cada golpe cuenta un poco más.",
+    "Te recomponen como pueden, pero hay huesos que aprenden a doler. Herida que se queda.",
+  ],
+  permanente: { MA: "La rodilla se queda en el barro. Ya no corres como corrías.", AV: "Algo se abre y no cierra. La armadura ya no te tapa igual.", AG: "La mano se te duerme y no despierta del todo. Ya no obedece como antes.", ST: "Te arrancan algo del hombro. Ya no empujas lo que empujabas." },
+  muerte: (r) => [
+    `${r} te levanta del suelo solo para tirarte de cabeza a la grada. Y la grada del Mundo Viejo no devuelve a nadie entero.`,
+    "Un placaje por la espalda, con todo el peso. Oyes el crujido antes que el dolor. Después ya no oyes nada.",
+    "Te pisan, y te pisan, y para cuando el árbitro se decide a pitar ya da lo mismo.",
+    `El grandullón de ${r} te ha buscado todo el partido. Al final te encuentra. No te levantas.`,
+  ],
+};
+
 const nuevoPj = (nombre, raza) => {
   const H = HISTORIAS[raza];
   const f = H.fichaInicial || H.base; // los que empiezan de crío arrancan con menos
@@ -2614,6 +2647,7 @@ export default function App() {
   // (que ya llevas apaleado, herida persistente o −1 permanente) y dice si mueres.
   const tirarHerida = (q, m) => {
     const has = (h) => q.hab.includes(h);
+    const rival = (m && m.rivalCorto) || "el rival";
     const chips = []; let texto = "", muerte = false;
     const arm = d6() + d6();
     const avEf = q.AV - (has("Furia") ? 1 : 0);
@@ -2622,15 +2656,15 @@ export default function App() {
       if (her === 8 && has("Cabeza dura")) her = 7;
       const apot = ORDEN[idx].cap >= 3 && m && !m.apotecarioUsado;
       if (her >= 8 && apot) { const her2 = d6() + d6() + (q.lesiones || 0), mejor = Math.min(her, her2); chips.push(`Apotecario: heridas ${her} → ${her2}${her2 > her ? " (se queda con la mejor: " + mejor + ")" : ""}`); her = mejor; if (m) m.apotecarioUsado = true; }
-      if (her <= 7) texto = " Te dejan aturdido en el barro; te levantas dolorido.";
-      else if (her <= 9) texto = " Te dejan KO. Ves el resto del partido desde el banquillo.";
+      if (her <= 7) texto = " " + pick1(HERIDA_PROSA.aturdido());
+      else if (her <= 9) texto = " " + pick1(HERIDA_PROSA.ko());
       else {
         const les = 1 + Math.floor(Math.random() * 16);
-        if (les <= 8) { chips.push("Lesión: magullado"); texto = " Sales en camilla. Magullado: nada que un barril no cure."; }
-        else if (les <= 10) { chips.push("Lesión: apaleado (próximo partido a medias)"); q.flags.apaleado = true; texto = " Apaleado. El próximo partido lo juegas a medias."; }
-        else if (les <= 12) { chips.push("Lesión grave: herida persistente"); q.flags.apaleado = true; q.lesiones = (q.lesiones || 0) + 1; texto = " Herida grave. Curará mal, y a partir de ahora cada golpe cuenta un poco más."; }
-        else if (les <= 14) { const d = d6(); const st = d <= 2 ? "MA" : d <= 4 ? "AV" : d === 5 ? "AG" : "ST"; q[st] = Math.max(1, q[st] - 1); chips.push(`Herida permanente: −1 ${st}`); texto = ` Herida permanente. ${st === "MA" ? "Ya no corres igual." : st === "AV" ? "La armadura ya no cierra." : st === "AG" ? "Las manos no obedecen del todo." : "Te falta algo en los brazos."}`; }
-        else { muerte = true; }
+        if (les <= 8) { chips.push("Lesión: magullado"); texto = " " + pick1(HERIDA_PROSA.magullado()); }
+        else if (les <= 10) { chips.push("Lesión: apaleado (próximo partido a medias)"); q.flags.apaleado = true; texto = " " + pick1(HERIDA_PROSA.apaleado(rival)); }
+        else if (les <= 12) { chips.push("Lesión grave: herida persistente"); q.flags.apaleado = true; q.lesiones = (q.lesiones || 0) + 1; texto = " " + pick1(HERIDA_PROSA.persistente()); }
+        else if (les <= 14) { const d = d6(); const st = d <= 2 ? "MA" : d <= 4 ? "AV" : d === 5 ? "AG" : "ST"; q[st] = Math.max(1, q[st] - 1); chips.push(`Herida permanente: −1 ${st}`); texto = ` Herida permanente. ${HERIDA_PROSA.permanente[st]}`; }
+        else { muerte = true; texto = " " + pick1(HERIDA_PROSA.muerte(rival)); }
       }
     }
     return { chips, texto, muerte };
@@ -2661,11 +2695,12 @@ export default function App() {
       // Mueres en el campo: se acaba el partido aquí y entra la muerte.
       m.fase = "clave"; setMt(m);
       const n = q.muertes + 1;
-      setCronica((c) => [...c, `Cayó en el campo contra ${escena.partido.rival}. ${m.marcador[0]}-${m.marcador[1]}.`]);
+      const comoCayo = extra.trim();
+      setCronica((c) => [...c, `Cayó en el campo contra ${escena.partido.rival} (${m.marcador[0]}-${m.marcador[1]}). ${comoCayo}`]);
       if (n > MAX_MUERTES) { setPj({ ...q, muertes: n }); setMt(null); setFase("muerteFinal"); guardarVida(`${pj.nombre} murió en el barro y nadie vino.`, true); return; }
       const md = MUERTES[n - 1];
       const { q: q2, chips } = aplicar({ ...q, muertes: n }, md.fx);
-      setPj(q2); setMt(null); setMuerteInfo({ ...md, chips }); setFase("muerte");
+      setPj(q2); setMt(null); setMuerteInfo({ ...md, texto: (comoCayo ? comoCayo + " " : "") + md.texto, chips }); setFase("muerte");
       return;
     }
     if (herido) setPj(q);
