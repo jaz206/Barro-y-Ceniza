@@ -175,7 +175,7 @@ const HUMANO = {
     ] },
   derbi: {
     titulo: "El derbi de los nabos",
-    partido: { rival: "Los Cuervos de Kleinfeld", fuerza: 1, nuevo: true },
+    partido: { rival: "Los Cuervos de Kleinfeld", fuerza: 1, tipo: "derbi" },
     texto: () => `El derbi contra Kleinfeld se juega en su campo, que es peor que el vuestro. Doscientas personas, la mitad borrachas, y un árbitro que es el herrero del pueblo. En la primera jugada su capitán, un tipo con un diente de oro, va directo a por Grimm.`,
     opciones: [
       { txt: "Cruzarte y chocar con el del diente de oro.", tirada: { stat: "ST", obj: 8, riesgo: true,
@@ -478,7 +478,7 @@ const ENANO = {
         { txt: "Decirle que le cubrirás aunque no quiera.", fx: { Honor: 1, rel: { grimnir: -2, dorin: 1 }, flag: "cubrirasAGrimnir" }, msg: "Grimnir se enfada como se enfada un matatrolls: en silencio. Mañana, cuando entre al minotauro, tú estarás detrás con Romper defensas. Sobrevivirá. No te lo perdonará." },
         { txt: "Preguntarle cuál fue la deshonra.", req: { Astucia: 3 }, forzable: true, fx: { Astucia: 1, rel: { grimnir: 2 }, flag: "deshonraGrimnir" }, msg: "'Corrí', dice. 'Con el balón. Hasta la línea. En una final. Y ganamos, y el clan me echó igual'. Te mira la barba a ti. No dice más." },
       ] },
-    descenso: { titulo: "El partido del descenso", partido: { rival: "Los Cascos Rotos de Karag", fuerza: 3 },
+    descenso: { titulo: "El partido del descenso", partido: { rival: "Los Cascos Rotos de Karag", fuerza: 3, tipo: "remontada" },
       texto: (pj) => `Último partido de la temporada. Si perdéis, los Cascos de Hierro bajan a Tercera, donde nunca han estado. Los Cascos Rotos son enanos del Caos: caja contra caja, pero la suya lleva cuernos y un minotauro. ${pj.flags.promesaGrimnir ? "Grimnir ha entrado al minotauro en el turno tres y no le has cubierto. Sigue en pie los dos. Es un milagro que dura." : pj.flags.cubrirasAGrimnir ? "Grimnir ha entrado al minotauro y tú detrás. El minotauro está en el suelo. Grimnir no te mira." : ""} ${pj.flags.apotecarioParaDorin ? "Dorin manda la caja cojeando." : pj.flags.apotecarioParaTi ? "Dorin no está. La caja la manda un liniero que no sabe mandar." : ""} Turno quince. {marcador}. El balón en tus manos, la caja deshecha y la línea a cinco casillas.`,
       opciones: [
         { txt: "Rehacer la caja alrededor de ti y avanzar. Que no dé tiempo.", tirada: { stat: "ST", obj: 9, riesgo: false,
@@ -1276,7 +1276,7 @@ const ELFO = {
         { txt: "Preguntar qué cuello.", req: { Astucia: 3 }, forzable: true, fx: { Astucia: 2, rel: { athanar: 1 }, flag: "preguntasteElCuello" }, msg: "'El que haga falta cuando haga falta', dice. 'Las Hojas van segundas. Hay un bailarín de Cythel que corre demasiado'. Te mira. Sabes de quién habla. Caelith." },
         { txt: "Coger la hoja y firmar. Volver.", req: { Ambición: 3 }, forzable: true, fx: { Ambición: 2, Honor: -3, oro: 100, rel: { athanar: 3, corte: 3, lirael: -3, club: -3 }, flag: "volvisteEnCythel" }, msg: "Firmas. Athanar sonríe con la boca cerrada. Vuelves a las Hojas al día siguiente, y en el primer partido te ponen delante de Caelith, y sabes para qué. Bailas trescientos años más en la corte. La Reina no vuelve a mirarte: ya te tiene. Lirael guarda la hoja vieja. No la nueva." },
       ] },
-    primeraDerrota: { titulo: "Lo que se aprende perdiendo", partido: { rival: "Los Yunques de Baraz Kadrin", fuerza: 3 },
+    primeraDerrota: { titulo: "Lo que se aprende perdiendo", partido: { rival: "Los Yunques de Baraz Kadrin", fuerza: 3, tipo: "remontada" },
       condicion: (pj) => !pj.flags.volvisteEnCythel,
       texto: (pj) => `Los Yunques de Baraz Kadrin son enanos. Juegan en caja, una casilla por turno, y no persiguen a nadie: esperan. En trescientos años nunca has perdido contra enanos. Hoy vas perdiendo uno a cero en el turno catorce, porque no hay nadie a quien bailarle. ${pj.flags.liraelTePinta ? "Lirael, en la banda, tiene la hoja preparada." : ""} Turno quince. La caja avanza. Tienes dos turnos y a nadie enfrente que quiera moverse.`,
       opciones: [
@@ -2115,8 +2115,82 @@ const PLAY_POOL = {
         ok: { txt: "Sabías dónde iba antes que él. Cortas el pase y sales con la bola.", posesion: "propia", pase: true },
         ko: { txt: "Te la juegan al hueco que dejaste. Touchdown suyo.", golRival: true } },
     ] }),
+  // Guerra en el centro: fuerza pura, sin balón. El que gana el choque manda el resto.
+  choque: (pj, m) => ({ etq: "Choque", h: "Guerra en el centro",
+    situ: `Antes de que la bola importe, las dos líneas se buscan. ${m.rivalCorto} pega primero. Aquí se decide quién manda el barro el resto del partido.`,
+    ops: [
+      { txt: "Ir a por el más grande de todos", det: "Si cae el grande, caen todos.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Lo levantas del suelo y lo devuelves a él. Su línea se abre y la vuestra pisa. La bola cae de vuestro lado.", posesion: "propia", baja: true },
+        ko: { txt: "Era más grande de lo que parecía. Rebotas y te pisan. Ellos mandan.", posesion: "rival" } },
+      { txt: "Abrir un pasillo para los tuyos", det: "No tumbar: apartar.", stat: "ST", obj: 8, hab: "Romper defensas",
+        ok: { txt: "Empujas dos casillas y los tuyos entran por el hueco. El campo es vuestro.", posesion: "propia" },
+        ko: { txt: "No se mueven. La línea se traga a los vuestros.", posesion: "rival" } },
+      { txt: "Plantarte y que se estrellen contra ti", det: "Aguantar, no avanzar.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Clavas los pies y su empuje se rompe contra ti. Nadie manda todavía, pero tampoco ceden.", posesion: "neutral" },
+        ko: { txt: "Te llevan por delante. Ganan metros.", posesion: "rival" } },
+    ] }),
+  // El baile: agilidad pura, pasar entre ellos sin chocar. Sabor élfico.
+  regate: (pj, m) => ({ etq: "Baile", h: "Pasar sin chocar",
+    situ: `No hay que placar a nadie: hay que pasar entre ellos. ${m.rivalCorto} espera el choque que no vas a darle. La bola pide piernas y muñeca, no hombro.`,
+    ops: [
+      { txt: "Esquivar entre dos y salir por el hueco", det: "Donde ellos no están.", stat: "AG", obj: 8, riesgo: false, hab: "Esquivar",
+        ok: { txt: "Pasas entre los dos como si no estuvieran y sales con la bola cosida al pie. Vuestra.", posesion: "propia" },
+        ko: { txt: "Uno estira la mano donde no debía y te la quita. Para ellos.", posesion: "rival" } },
+      { txt: "Recogerla en carrera sin frenar", det: "La cabeza va antes que las piernas.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "La levantas del barro sin bajar el ritmo. Sigues, y la bola contigo.", posesion: "propia" },
+        ko: { txt: "Se te va del pie en el bote malo. La cazan ellos.", posesion: "rival" } },
+      { txt: "Pase largo por encima de la caja", det: "La bola vuela donde tú no llegas.", stat: "AG", obj: 9, hab: "Pasar",
+        ok: { txt: "La cuelgas por encima de todos y cae en botas amigas al otro lado. Vuestra, y avanzada.", posesion: "propia", pase: true },
+        ko: { txt: "El pase se queda corto y lo bajan ellos. Para ellos.", posesion: "rival" } },
+    ] }),
+  // A las puertas: la jugada de gol. Éxito = touchdown; fallo = se lo llevan.
+  remate: (pj, m) => ({ etq: "Remate", h: "A las puertas",
+    situ: `La línea de ${m.rivalCorto} está a un paso. Un movimiento más y cruzáis; si fallas, os quedáis con las manos vacías y ellos con la bola.`,
+    ops: [
+      { txt: "Pase a la esquina, donde no llega nadie", det: "La jugada de cabeza.", stat: "AG", obj: 9, hab: "Pasar",
+        ok: { txt: "La dejas muerta en la esquina y un tuyo la cruza sin que nadie le toque. ¡Touchdown!", gol: true, pase: true },
+        ko: { txt: "La lees mal y la esquina estaba cubierta. La cortan y salen jugando.", posesion: "rival" } },
+      { txt: "Arrancar de frente y cruzar tú", det: "Con dos colgados si hace falta.", stat: "ST", obj: 10, riesgo: true, hab: "Placar",
+        ok: { txt: "Bajas el hombro y cruzas la línea con medio equipo encima. ¡Touchdown tuyo!", gol: true },
+        ko: { txt: "Te frenan a un paso y te tiran al barro. La bola se queda de su lado.", posesion: "rival" } },
+      { txt: "Esprintar por fuera antes de que cierren", det: "La banda, otra vez la banda.", stat: "MA", obj: 9, hab: "Esprintar",
+        ok: { txt: "Tiras de piernas por fuera y cruzas antes de que la banda se cierre. ¡Touchdown!", gol: true },
+        ko: { txt: "Te cierran contra la cal en el último paso. Saque para ellos.", posesion: "rival" } },
+    ] }),
+  // Muralla: ellos tienen la bola y suben a por el gol. Fallar es encajar.
+  defensa: (pj, m) => ({ etq: "Muralla", h: `${m.rivalCorto} va a por el gol`,
+    situ: `${m.rivalCorto} sube con la bola y la línea a la vista. Si no los paras aquí, cruzan. No hay más red detrás de ti.`,
+    ops: [
+      { txt: "Entrar en seco al que la lleva", det: "Tumbarlo y que la suelte.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Le entras de frente, suelta la bola y se queda en el barro. La recuperáis vosotros.", posesion: "propia", baja: true },
+        ko: { txt: "Te esquiva con el hombro y cruza la línea. Touchdown suyo.", golRival: true } },
+      { txt: "Cerrar el hueco y esperar el error", det: "No entrar: tapar.", stat: "AG", obj: 8, hab: "Placaje defensivo",
+        ok: { txt: "Le tapas el camino hasta que se le acaban las ideas y la bola muere. No cruzan.", posesion: "rival" },
+        ko: { txt: "Encuentra el hueco que dejaste y se cuela. Touchdown suyo.", golRival: true } },
+      { txt: "Anticipar el pase y cortarlo", det: "Adivinar dónde va la bola.", stat: "AG", obj: 10, hab: "Manos seguras",
+        ok: { txt: "Sabías dónde iba antes que él. La cortas en el aire y sales corriendo con ella. Vuestra.", posesion: "propia", pase: true },
+        ko: { txt: "Te la juegan al hueco que dejaste al saltar. Touchdown suyo.", golRival: true } },
+    ] }),
 };
-const MATCH_PLAYS = (tipo) => (({ normal: ["saque", "ataque"] })[tipo] || ["saque", "ataque"]);
+/* ===== TIPOS DE PARTIDO (Fase 2) =====
+   Cada partido elige un tipo; el tipo decide el arco (cuántas jugadas clave,
+   de qué clase) y cómo empiezas (marcador, quién saca). La jugada decisiva
+   siempre es la que el partido tiene escrita (sus opciones). Así, con ~9
+   plantillas, los ~38 partidos se sienten distintos sin reescribirlos. */
+const MATCH_TIPOS = {
+  liga:       { plays: ["saque", "ataque"] },
+  derbi:      { plays: ["saque", "ataque"] },
+  caja:       { plays: ["choque", "ataque"] },
+  bandada:    { plays: ["saque", "choque", "ataque"] },
+  exhibicion: { plays: ["regate", "ataque"] },
+  final:      { plays: ["saque", "ataque", "remate"] },
+  remontada:  { plays: ["ataque", "remate"], marcInicial: [0, 1], bola: "rival" },
+  muro:       { plays: ["defensa", "defensa"], marcInicial: [1, 0], bola: "rival" },
+  ultima:     { plays: [] },
+};
+const razaDefaultTipo = { humano: "liga", enano: "caja", orco: "bandada", elfo: "exhibicion" };
+const tipoDe = (p, raza) => p.tipo || (p.torneo ? "final" : (razaDefaultTipo[raza] || "liga"));
+const MATCH_PLAYS = (tipo) => (MATCH_TIPOS[tipo] || MATCH_TIPOS.liga).plays;
 
 const nuevoPj = (nombre, raza) => {
   const H = HISTORIAS[raza];
@@ -2210,6 +2284,7 @@ export default function App() {
   const ORDEN = ordenDe(H);
   const ESCENAS = H.escenas, CAPITULOS = H.capitulos, MUERTES = H.muertes, RELACIONES = H.rel;
   const escena = idx < ORDEN.length ? ESCENAS[ORDEN[idx].id] : null;
+  const partidoJugadas = !!(pj && escena && escena.partido && !escena.partido.clasico && MATCH_PLAYS(tipoDe(escena.partido, pj.raza)).length > 0);
   const cap = idx < ORDEN.length ? CAPITULOS.find((c) => c.id === ORDEN[idx].cap) : null;
   const esPrimeraDeCap = cap && cap.escenas[0] === ORDEN[idx].id;
 
@@ -2279,11 +2354,15 @@ export default function App() {
     if (ev === 11 && m.aliados.filter((a) => !a.herido).length) { const v = pick1(m.aliados.filter((a) => !a.herido)); v.herido = true; intro.push(`${v.nombre} sale corriendo hacia la letrina.`); }
     if (ev === 12) m.ko = true;
     if (pj.flags.apaleado) intro.push("Juegas apaleado: −1 a todo.");
-    if (p.nuevo) {
-      m.modo = "jugadas"; m.plays = MATCH_PLAYS(p.tipo); m.jIdx = 0; m.ko = false;
+    if (!p.clasico) {
+      const tp = tipoDe(p, pj.raza), cfg = MATCH_TIPOS[tp] || MATCH_TIPOS.liga;
+      m.modo = "jugadas"; m.tipo = tp; m.plays = [...cfg.plays]; m.jIdx = 0; m.ko = false;
       m.rivalCorto = p.rival.replace(/^Los |^Las /, "");
-      if (p.marcInicial) m.marcador = [...p.marcInicial];
-      if (p.bola) m.posesion = p.bola;
+      const marc = p.marcInicial || cfg.marcInicial;
+      if (marc) m.marcador = [...marc];
+      const bola = p.bola || cfg.bola;
+      if (bola) m.posesion = bola;
+      if (m.plays.length === 0) m.fase = "clave";
     }
     setMt(m);
   };
@@ -2877,7 +2956,9 @@ export default function App() {
     <div className="pag">
       {escena.partido && <p className="etq">Partido · {pj.equipo} contra {escena.partido.rival}{escena.partido.torneo ? ` · ${escena.partido.torneo}` : ""}{mt ? ` · vais ${mt.marcador[0]}-${mt.marcador[1]}` : ""}</p>}
       <h2 className="h2">{escena.titulo}</h2>
-      <p className="texto">{conMarcador(escena.texto(pj))}</p>
+      {escena.partido && !mt && !panel && partidoJugadas
+        ? <p className="texto">Suena el silbato. Enfrente, {escena.partido.rival.replace(/^Los |^Las /, "")}. Lo que pase ahora lo decides tú, jugada a jugada, con la ficha que te has ganado. La jugada que lo decida todo llega al final.</p>
+        : <p className="texto">{conMarcador(escena.texto(pj))}</p>}
       {escena.partido && !mt && !panel ? (
         <button className="btn" onClick={iniciarPartido}>Saltar al campo</button>
       ) : !panel ? (

@@ -40,6 +40,33 @@ copia de los arreglos, así que dejó de ser frágil.
 > el troll no hay nada…") la redactó Claude en el build v8, no es voz del
 > cliente. Conviene que la repase.
 
+> Nota de revisión pendiente (partido jugada a jugada, Fase 2): TODA la prosa de
+> las jugadas clave (el pool: saque, ataque, choque, baile, remate, muralla) y
+> la frase de entrada al partido ("Suena el silbato…") la escribió Claude,
+> imitando la voz del cliente. No es voz del cliente. Está pensada para
+> revisarla y reescribirla. Vive en `PLAY_POOL` dentro de `src/App.jsx`.
+
+## Partido "jugada a jugada" (motor nuevo, Fases 1-2)
+
+El minijuego de partido ya no avanza turno a turno: cada partido son 2-3
+**jugadas clave** en las que decides con tu **ficha real** (características +
+habilidades a la vista, y cada opción dice qué característica la resuelve).
+Tras las jugadas clave se juega la **jugada decisiva** que cada partido ya
+tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
+
+- **Catálogo de tipos** (`MATCH_TIPOS`): liga, derbi, caja (enano), bandada
+  (orco), exhibición (elfa), final (torneos), remontada (empiezas 0-1), muro
+  (defiendes ventaja) y última (solo la jugada final). Cada partido elige tipo
+  con `partido.tipo`; si no, coge el de su raza. Un partido puede volver al
+  motor viejo con `partido.clasico: true`.
+- **La prosa de entrada del partido se muestra en la jugada decisiva, no
+  antes.** Antes de saltar al campo sale una frase neutra ("Suena el
+  silbato…") para no chocar con textos escritos como "turno dieciséis, el
+  balón en tus manos". Ese texto original aparece justo en la decisión final.
+  Consecuencia: algún texto con marca temporal ("en la primera jugada…")
+  queda un pelín a destiempo. Si molesta en un partido concreto, se suaviza
+  su intro. Es decisión del cliente hasta dónde retocar.
+
 ## Qué es el juego, por dentro
 
 Cuatro ramas completas y distintas, no una historia con la piel cambiada:
