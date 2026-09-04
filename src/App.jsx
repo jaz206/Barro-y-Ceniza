@@ -175,7 +175,7 @@ const HUMANO = {
     ] },
   derbi: {
     titulo: "El derbi de los nabos",
-    partido: { rival: "Los Cuervos de Kleinfeld", fuerza: 1 },
+    partido: { rival: "Los Cuervos de Kleinfeld", fuerza: 1, nuevo: true },
     texto: () => `El derbi contra Kleinfeld se juega en su campo, que es peor que el vuestro. Doscientas personas, la mitad borrachas, y un árbitro que es el herrero del pueblo. En la primera jugada su capitán, un tipo con un diente de oro, va directo a por Grimm.`,
     opciones: [
       { txt: "Cruzarte y chocar con el del diente de oro.", tirada: { stat: "ST", obj: 8, riesgo: true,
@@ -2061,6 +2061,63 @@ const puestoEmergente = (pj) => {
   return conDesc(mejor);
 };
 
+/* ===== PARTIDO "JUGADA A JUGADA" (Fase 1: pilotado en partidos con partido.nuevo) =====
+   Sustituye los 5 turnos genéricos por 2-3 jugadas clave (pool compartido) que
+   usan la FICHA REAL del pj (características + habilidades). La jugada decisiva
+   sigue siendo la que cada partido ya tiene escrita (sus opciones). */
+const ATRIB_PARTIDO = { ST: "Fuerza", AG: "Agilidad", MA: "Velocidad" };
+const modDe = (pj, stat) => (stat === "MA" ? Math.floor(pj.MA / 3) : pj[stat]);
+const rollKey = (pj, m, o) => {
+  const has = (h) => pj.hab.includes(h);
+  const clima = (m.clima === "Lluvioso" && o.stat === "AG") ? -1 : (m.clima === "Muy soleado" && o.stat === "AG") ? -1 : (m.clima === "Ventisca" && o.stat === "MA") ? -1 : 0;
+  const mod = modDe(pj, o.stat) + clima + (pj.formaPend || 0) + (m.fatiga >= 3 ? -1 : 0) + (pj.flags.apaleado ? -1 : 0);
+  let d = [d6(), d6()], tot = d[0] + d[1] + mod, rep = null;
+  if (tot < o.obj && o.hab && has(o.hab)) { d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = o.hab; }
+  else if (tot < o.obj && m.rerolls > 0) { m.rerolls--; d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = "2ª oportunidad"; }
+  return { ok: tot >= o.obj, d, tecnico: `${ATRIB_PARTIDO[o.stat]} ${d[0]}+${d[1]}${mod >= 0 ? "+" : ""}${mod} = ${tot} vs ${o.obj}${rep ? " · repetida (" + rep + ")" : ""}` };
+};
+const PLAY_POOL = {
+  saque: (pj, m) => ({ etq: "Saque", h: "La bola en tierra de nadie",
+    situ: `El saque cae corto y la vejiga bota en el barro, en el centro, de nadie. Hay que ir a por ella antes que ${m.rivalCorto}.`,
+    ops: [
+      { txt: "Ir al choque y arrancársela a quien llegue", det: "El hombro por delante.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+        ok: { txt: "Llegas primero y con todo. Uno de ellos rueda; la bola es vuestra.", posesion: "propia" },
+        ko: { txt: "Chocas y rebotas: son más grandes de lo que parecían. Para ellos.", posesion: "rival" } },
+      { txt: "Colarte y recogerla en carrera", det: "Apareces donde no te esperan.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Te cuelas, la recoges sin frenar y sales jugando. Vuestra.", posesion: "propia" },
+        ko: { txt: "Llegas medio paso tarde. La asientan con la bota.", posesion: "rival" } },
+      { txt: "Leer el bote y ponerte donde va a caer", det: "La cabeza antes que las piernas.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "Apareces solo en el hueco que habías visto. Es vuestra.", posesion: "propia" },
+        ko: { txt: "Nadie estaba donde tú creías. Para ellos.", posesion: "rival" } },
+    ] }),
+  ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: "Tienes la bola",
+    situ: `Avanzáis. La caja de ${m.rivalCorto} se cierra a cuatro pasos de su línea; el hueco se abre y se cierra.`,
+    ops: [
+      { txt: "Pase raso a un compañero que está solo", det: "Ver el hueco antes de que exista.", stat: "AG", obj: 9, hab: "Pasar",
+        ok: { txt: "Sueltas un pase raso que cruza el barro y cae en botas amigas. ¡Cruza! Touchdown.", gol: true, pase: true },
+        ko: { txt: "El pase se va largo y lo cortan. Contraataque.", posesion: "rival" } },
+      { txt: "Arrancar de frente y reventar la caja", det: "Bajar el hombro y no parar.", stat: "ST", obj: 10, riesgo: true, hab: "Placar",
+        ok: { txt: "La caja cruje y cruzas con dos colgados de la camiseta. ¡Touchdown!", gol: true },
+        ko: { txt: "La caja aguanta. Te tiran al barro y salen jugando ellos.", posesion: "rival" } },
+      { txt: "Esprintar por fuera de la caja", det: "La banda es tuya.", stat: "MA", obj: 9, hab: "Esprintar",
+        ok: { txt: "Tiras de velocidad por la banda, dejas a la caja mirando, y cruzas. ¡Touchdown!", gol: true },
+        ko: { txt: "Te cierran la banda contra la cal. Saque para ellos.", posesion: "rival" } },
+    ] }) : ({ etq: "Defensa", h: `${m.rivalCorto} sube`,
+    situ: `${m.rivalCorto} sube con la bola, en bloque, buscando su línea. Hay que pararlos antes de que crucen.`,
+    ops: [
+      { txt: "Entrarle de frente al que lleva la bola", det: "Con todo. A ver quién cae.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Le entras en seco. Suelta la bola y se queda en el barro. Vuestra.", posesion: "propia", baja: true },
+        ko: { txt: "Sigue de pie y avanzan.", posesion: "rival" } },
+      { txt: "Perseguir y cerrarle la banda", det: "A base de piernas.", stat: "MA", obj: 9, hab: "Esprintar",
+        ok: { txt: "Le corres al lado hasta que se le acaba el campo. No cruza.", posesion: "rival" },
+        ko: { txt: "No llegas. Cruza vuestra línea. Touchdown suyo.", golRival: true } },
+      { txt: "Anticipar el pase y salir a cortarlo", det: "Adivinar dónde va la bola.", stat: "AG", obj: 10, hab: "Manos seguras",
+        ok: { txt: "Sabías dónde iba antes que él. Cortas el pase y sales con la bola.", posesion: "propia", pase: true },
+        ko: { txt: "Te la juegan al hueco que dejaste. Touchdown suyo.", golRival: true } },
+    ] }),
+};
+const MATCH_PLAYS = (tipo) => (({ normal: ["saque", "ataque"] })[tipo] || ["saque", "ataque"]);
+
 const nuevoPj = (nombre, raza) => {
   const H = HISTORIAS[raza];
   return { nombre, raza, atr: { Voluntad: 1, Astucia: 1, Ferocidad: 1, Honor: 1, Ambición: 1 },
@@ -2222,6 +2279,12 @@ export default function App() {
     if (ev === 11 && m.aliados.filter((a) => !a.herido).length) { const v = pick1(m.aliados.filter((a) => !a.herido)); v.herido = true; intro.push(`${v.nombre} sale corriendo hacia la letrina.`); }
     if (ev === 12) m.ko = true;
     if (pj.flags.apaleado) intro.push("Juegas apaleado: −1 a todo.");
+    if (p.nuevo) {
+      m.modo = "jugadas"; m.plays = MATCH_PLAYS(p.tipo); m.jIdx = 0; m.ko = false;
+      m.rivalCorto = p.rival.replace(/^Los |^Las /, "");
+      if (p.marcInicial) m.marcador = [...p.marcInicial];
+      if (p.bola) m.posesion = p.bola;
+    }
     setMt(m);
   };
 
@@ -2336,6 +2399,25 @@ export default function App() {
     m.log.push({ turno: m.turno, texto: linea.join(" "), tecnico });
     m.turno++;
     if (m.turno > m.max) { m.fase = "clave"; }
+    setMt(m);
+  };
+
+  // Partido "jugada a jugada": cada jugada clave usa la ficha real del pj.
+  const jugarJugada = (o) => {
+    const m = { ...mt, aliados: mt.aliados.map((a) => ({ ...a })), log: [...mt.log], marcador: [...mt.marcador] };
+    const tabla = PE(pj.raza);
+    const r = rollKey(pj, m, o);
+    const res = r.ok ? o.ok : o.ko;
+    if (res.posesion) m.posesion = res.posesion;
+    if (res.gol) { m.marcador[0]++; m.tds++; m.pe += tabla.td; }
+    if (res.baja) { m.bajas++; m.pe += tabla.baja; }
+    if (res.pase) { m.pases++; m.pe += tabla.pase; }
+    if (res.golRival) m.marcador[1]++;
+    let extra = "";
+    if (o.riesgo && !r.ok) { const arm = d6() + d6(); if (arm >= pj.AV) { m.fatiga = (m.fatiga || 0) + 1; extra = " Sales tocado del golpe."; } }
+    m.log.push({ turno: m.jIdx + 1, texto: res.txt + extra, tecnico: r.tecnico });
+    m.jIdx++;
+    if (m.jIdx >= m.plays.length) m.fase = "clave";
     setMt(m);
   };
 
@@ -2679,8 +2761,10 @@ export default function App() {
 
   const PartidoVista = () => {
     const rival = escena.partido.rival;
-    const ops = opcionesTurno(mt);
-    const miPuesto = H.emergente ? puestoEmergente(pj) : null;
+    const enJugadas = mt.modo === "jugadas";
+    const ops = enJugadas ? {} : opcionesTurno(mt);
+    const jplay = enJugadas && mt.fase === "turnos" ? PLAY_POOL[mt.plays[mt.jIdx]](pj, mt) : null;
+    const miPuesto = !enJugadas && H.emergente ? puestoEmergente(pj) : null;
     const miAccionVista = miPuesto ? { Blitzer: "presionar", Receptor: "correr", Lanzador: "bola", Liniero: "aguantar" }[miPuesto.clave] : null;
     const arranque = mt.log.length === 0;
     const pos = mt.posesion;
@@ -2692,6 +2776,13 @@ export default function App() {
         <b>{o.nombre}{id === miAccionVista ? " · lo tuyo" : ""}</b><span className="mini">{o.det}</span>
       </button></div>
     );
+    // Opción de jugada clave: muestra qué característica tuya decide y tu valor.
+    const KJ = ({ o }) => (
+      <div className="opcion"><button onClick={() => jugarJugada(o)}>
+        <b>{o.txt}</b><span className="mini">{o.det}</span>
+        <span className="mini kj-attr">{ATRIB_PARTIDO[o.stat]} · tú {modDe(pj, o.stat) >= 0 ? "+" : ""}{modDe(pj, o.stat)}{o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}</span>
+      </button></div>
+    );
     // barra de dominio: -1 (rival) .. +1 (nosotros)
     const dom = Math.max(-10, Math.min(10, mt.avance - mt.avanceRival));
     const domPct = 50 + dom * 5;
@@ -2700,14 +2791,14 @@ export default function App() {
         {/* MARCADOR */}
         <div className="pm-marcador">
           <div className="pm-eq"><span className="pm-nom">{propio}</span><span className="pm-gol">{mt.marcador[0]}</span></div>
-          <div className="pm-mid">{mt.fase === "turnos" ? `turno ${Math.min(mt.turno, mt.max)}/${mt.max}` : "final"}{miPuesto ? ` · ${miPuesto.nombre}` : ""}</div>
+          <div className="pm-mid">{mt.fase === "turnos" ? (enJugadas ? `jugada ${mt.jIdx + 1}/${mt.plays.length}` : `turno ${Math.min(mt.turno, mt.max)}/${mt.max}`) : "final"}{miPuesto ? ` · ${miPuesto.nombre}` : ""}</div>
           <div className="pm-eq"><span className="pm-gol">{mt.marcador[1]}</span><span className="pm-nom">{rivalCorto}</span></div>
         </div>
 
         {/* BARRA DE DOMINIO + POSESIÓN */}
-        <div className="pm-dominio" title="Quién domina el campo">
+        {!enJugadas && <div className="pm-dominio" title="Quién domina el campo">
           <div className="pm-domfill" style={{ width: `${domPct}%` }} />
-        </div>
+        </div>}
         <div className="pm-estado">
           <span className={`pm-pos pm-pos-${pos}`}>● balón: {posLabel}</span>
           <span>{mt.clima}</span>
@@ -2715,6 +2806,18 @@ export default function App() {
           {mt.fatiga >= 3 && <span className="pm-alerta">agotado</span>}
           {mt.ko && <span className="pm-alerta">KO</span>}
         </div>
+
+        {/* TU FICHA (partido jugada a jugada) */}
+        {enJugadas && (
+          <div className="pm-ficha">
+            <span className="pm-tit">Tu ficha</span>
+            <span className="pm-stat">MA {pj.MA}</span>
+            <span className="pm-stat">ST {pj.ST}</span>
+            <span className="pm-stat">AG {pj.AG}</span>
+            <span className="pm-stat">AV {pj.AV}</span>
+            {pj.hab.length > 0 && <span className="pm-habs">{pj.hab.join(" · ")}</span>}
+          </div>
+        )}
 
         {/* ALINEACIÓN */}
         {mt.aliados.length > 0 && (
@@ -2733,11 +2836,16 @@ export default function App() {
                 <p className="pm-acc-prev">{mt.log[mt.log.length - 1]?.texto}</p>
                 {mt.log[mt.log.length - 1]?.tecnico && <p className="mini tec">{mt.log[mt.log.length - 1].tecnico}</p>}
               </>}
-          {mt.fase === "turnos" && <p className="pm-acc-main">{introTurno(mt)}</p>}
+          {mt.fase === "turnos" && (enJugadas
+            ? <><p className="pm-acc-key">{jplay.h}</p><p className="pm-acc-main">{jplay.situ}</p></>
+            : <p className="pm-acc-main">{introTurno(mt)}</p>)}
         </div>
 
         {/* BOTONES */}
         {mt.fase === "turnos" ? (
+          enJugadas ? (
+            <div className="lista">{jplay.ops.map((o, i) => <KJ key={i} o={o} />)}</div>
+          ) : (
           <div className="lista">
             {mt.ko && <div className="opcion"><button onClick={() => jugarTurno("ko")}><b>Estás en el suelo</b><span className="mini">Esperas al siguiente minuto tirado en el barro.</span></button></div>}
             {!mt.ko && <>
@@ -2748,6 +2856,7 @@ export default function App() {
               {ops.cubrir && <T id="cubrir" o={ops.cubrir} />}
             </>}
           </div>
+          )
         ) : (
           <button className="btn" onClick={() => setMt({ ...mt, fase: "clave2" })}>Jugar la última jugada</button>
         )}
@@ -2757,7 +2866,7 @@ export default function App() {
           <details className="pm-bitacora">
             <summary>Bitácora del partido</summary>
             {mt.intro && mt.intro.map((l, i) => <p key={"i" + i} className="mini">{l}</p>)}
-            {mt.log.map((l, i) => <p key={i} className="pm-bit-linea"><b>turno {l.turno}.</b> {l.texto}{l.tecnico ? <span className="tec"> · {l.tecnico}</span> : ""}</p>)}
+            {mt.log.map((l, i) => <p key={i} className="pm-bit-linea"><b>{enJugadas ? "jugada" : "turno"} {l.turno}.</b> {l.texto}{l.tecnico ? <span className="tec"> · {l.tecnico}</span> : ""}</p>)}
           </details>
         )}
       </div>
@@ -3004,6 +3113,11 @@ const CSS = `
 .pm-accion{background:#fff8ea;border:1px solid rgba(35,26,18,.2);border-left:4px solid var(--oro);border-radius:2px;padding:.7rem .85rem;margin-bottom:.8rem}
 .pm-acc-prev{margin:0 0 .4rem;padding-bottom:.4rem;border-bottom:1px dashed rgba(35,26,18,.2);line-height:1.55}
 .pm-acc-main{margin:.2rem 0 0;font-weight:600;line-height:1.55}
+.pm-acc-key{margin:0 0 .35rem;font-family:'Alfa Slab One',Georgia,serif;text-transform:uppercase;letter-spacing:.03em;font-size:1.02rem;color:var(--sangre);line-height:1.1}
+.pm-ficha{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-bottom:.6rem}
+.pm-stat{font-family:Oswald,sans-serif;font-size:.76rem;font-weight:600;padding:.1rem .45rem;border:1px solid rgba(35,26,18,.3);border-radius:3px;background:rgba(35,26,18,.05);font-variant-numeric:tabular-nums}
+.pm-habs{font-size:.74rem;font-style:italic;color:var(--tinta);opacity:.85}
+.kj-attr{display:block;margin-top:.25rem;font-family:Oswald,sans-serif;font-size:.72rem;letter-spacing:.02em;color:var(--oro);opacity:.95}
 .pm-bitacora{margin-top:1rem;font-size:.85rem}
 .pm-bitacora summary{cursor:pointer;color:var(--oro);font-style:italic}
 .pm-bit-linea{margin:.3rem 0;line-height:1.5;opacity:.9}
