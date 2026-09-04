@@ -2809,31 +2809,31 @@ export default function App() {
   const Chips = ({ items }) => items.length > 0 && <div className="chips">{items.map((c, i) => <span key={i} className={`chip ${c.startsWith("−") || c.includes(" -") ? "neg" : c.startsWith("+") || c.includes(" +") ? "pos" : ""}`}>{c}</span>)}</div>;
 
   const Cabecera = () => pj && (
-    <div className="cab">
+    <header className="cab" role="banner">
       <div>
         <div className="cab-nombre">{pj.nombre}</div>
         <div className="cab-sub">{cap ? `${cap.titulo} · ${pj.equipo}` : "Epílogo"}</div>
       </div>
-      <div className="cab-der">
+      <nav className="cab-der" aria-label="Tu jugador y los paneles">
         <span>{NIVELES[Math.min(pj.nivel - 1, NIVELES.length - 1)]}</span>
         <span title="Puntos de voluntad para forzar decisiones">Voluntad {pj.pv}</span>
         <span>Fama {pj.fama}</span>
-        <span>{pj.oro} co</span>
-        {laLiga && <button className="lnk" onClick={() => { setLiga(!liga); setLibro(false); setPrensa(false); }}>{liga ? "Cerrar tabla" : "La tabla"}</button>}
-        <button className="lnk" onClick={() => { setLibro(!libro); setPrensa(false); setLiga(false); }}>{libro ? "Cerrar libro" : "Libro del destino"}</button>
-        <button className="lnk" onClick={() => { setPrensa(!prensa); setLibro(false); setLiga(false); }}>{prensa ? "Cerrar" : "Cristalvisión"}</button>
-      </div>
-    </div>
+        <span aria-label={`${pj.oro} coronas`}>{pj.oro} co</span>
+        {laLiga && <button className="lnk" aria-expanded={liga} onClick={() => { setLiga(!liga); setLibro(false); setPrensa(false); }}>{liga ? "Cerrar tabla" : "La tabla"}</button>}
+        <button className="lnk" aria-expanded={libro} onClick={() => { setLibro(!libro); setPrensa(false); setLiga(false); }}>{libro ? "Cerrar libro" : "Libro del destino"}</button>
+        <button className="lnk" aria-expanded={prensa} onClick={() => { setPrensa(!prensa); setLibro(false); setLiga(false); }}>{prensa ? "Cerrar" : "Cristalvisión"}</button>
+      </nav>
+    </header>
   );
 
   const Libro = () => (
-    <div className="libro">
+    <div className="libro" role="region" aria-label="Libro del destino">
       <h3>Libro del destino</h3>
       <LineaDeVida />
       <div className="col2">
         <div>
           <p className="etq">Carácter</p>
-          {ATRIBUTOS.map((k) => <div key={k} className="fila"><span>{k}</span><i style={{ width: `${pj.atr[k] * 10}%` }} /><b>{pj.atr[k]}</b></div>)}
+          {ATRIBUTOS.map((k) => <div key={k} className="fila"><span>{k}</span><i aria-hidden="true" style={{ width: `${pj.atr[k] * 10}%` }} /><b>{pj.atr[k]}</b></div>)}
           <p className="etq">Jugador</p>
           <div className="statrow">{[["MA", pj.MA], ["ST", pj.ST], ["AG", `${7 - pj.AG}+`], ["AV", `${pj.AV}+`]].map(([s, v]) => <span key={s}><b>{v}</b>{s}</span>)}</div>
           {(pj.trofeos || []).length > 0 && <p className="texto">Vitrina: {pj.trofeos.join(", ")}.</p>}
@@ -2862,7 +2862,7 @@ export default function App() {
   );
 
   const Liga = () => laLiga && (
-    <div className="libro liga">
+    <div className="libro liga" role="region" aria-label="La tabla de la liga">
       <h3>La tabla</h3>
       <p className="mini liga-cab">{laLiga.divNombre} · jornada {laLiga.jornada} de {laLiga.total}</p>
       <table className="liga-tabla">
@@ -2882,8 +2882,8 @@ export default function App() {
         </tbody>
       </table>
       <div className="liga-zonas">
-        {laLiga.nAsc > 0 && <span><i className="z a" />Suben los {laLiga.nAsc} primeros</span>}
-        {laLiga.nDesc > 0 && <span><i className="z d" />Bajan los {laLiga.nDesc} últimos</span>}
+        {laLiga.nAsc > 0 && <span><i className="z a" aria-hidden="true" />Suben los {laLiga.nAsc} primeros</span>}
+        {laLiga.nDesc > 0 && <span><i className="z d" aria-hidden="true" />Bajan los {laLiga.nDesc} últimos</span>}
       </div>
       <p className="liga-estado">{laLiga.estado}</p>
       <p className="mini">Vas {laLiga.rank}º. Tu puesto sale de tus resultados de verdad ({laLiga.real.g}G {laLiga.real.e}E {laLiga.real.p}P en esta división); los rivales están simulados alrededor.</p>
@@ -2891,7 +2891,7 @@ export default function App() {
   );
 
   const Prensa = () => (
-    <div className="libro prensa">
+    <div className="libro prensa" role="region" aria-label="Cristalvisión: lo que se dice de ti">
       <h3>Cristalvisión</h3>
       <p className="mini">Lo que se dice de ti en las tabernas del Mundo Viejo.</p>
       {(pj.noticias || []).length === 0 && <p className="mini">Nadie habla de ti todavía.</p>}
@@ -2905,9 +2905,9 @@ export default function App() {
       <p className="etq">Una vida en el barro</p>
       <h1 className="titulo">Barro y Ceniza</h1>
       <p className="lead">La vida y el sufrimiento de un jugador del Barro.</p>
-      <div className="razas">
+      <div className="razas" role="group" aria-label="Elige tu raza">
         {Object.entries(HISTORIAS).map(([id, h]) => (
-          <button key={id} className={`raza ${raza === id ? "activa" : ""}`} onClick={() => setRaza(id)}>
+          <button key={id} className={`raza ${raza === id ? "activa" : ""}`} aria-pressed={raza === id} onClick={() => setRaza(id)}>
             <b>{h.nombre}</b><small>{h.lema}</small>
             <span className="mini">{h.emergente ? "Posición: la forjas con tus decisiones" : h.puesto} · MA {h.base.MA} ST {h.base.ST} AG {7 - h.base.AG}+ AV {h.base.AV}+</span>
           </button>
@@ -3003,14 +3003,14 @@ export default function App() {
     return (
       <div className="pag partido">
         {/* MARCADOR */}
-        <div className="pm-marcador">
-          <div className="pm-eq"><span className="pm-nom">{propio}</span><span className="pm-gol">{mt.marcador[0]}</span></div>
-          <div className="pm-mid">{mt.fase === "turnos" ? (enJugadas ? `jugada ${mt.jIdx + 1}/${mt.plays.length}` : `turno ${Math.min(mt.turno, mt.max)}/${mt.max}`) : "final"}{miPuesto ? ` · ${miPuesto.nombre}` : ""}</div>
-          <div className="pm-eq"><span className="pm-gol">{mt.marcador[1]}</span><span className="pm-nom">{rivalCorto}</span></div>
+        <div className="pm-marcador" role="status" aria-live="polite" aria-label={`Marcador: ${propio} ${mt.marcador[0]}, ${rivalCorto} ${mt.marcador[1]}. ${mt.fase === "turnos" ? (enJugadas ? `Jugada ${mt.jIdx + 1} de ${mt.plays.length}` : `Turno ${Math.min(mt.turno, mt.max)} de ${mt.max}`) : "Jugada final"}.`}>
+          <div className="pm-eq" aria-hidden="true"><span className="pm-nom">{propio}</span><span className="pm-gol">{mt.marcador[0]}</span></div>
+          <div className="pm-mid" aria-hidden="true">{mt.fase === "turnos" ? (enJugadas ? `jugada ${mt.jIdx + 1}/${mt.plays.length}` : `turno ${Math.min(mt.turno, mt.max)}/${mt.max}`) : "final"}{miPuesto ? ` · ${miPuesto.nombre}` : ""}</div>
+          <div className="pm-eq" aria-hidden="true"><span className="pm-gol">{mt.marcador[1]}</span><span className="pm-nom">{rivalCorto}</span></div>
         </div>
 
         {/* BARRA DE DOMINIO + POSESIÓN */}
-        {!enJugadas && <div className="pm-dominio" title="Quién domina el campo">
+        {!enJugadas && <div className="pm-dominio" title="Quién domina el campo" aria-hidden="true">
           <div className="pm-domfill" style={{ width: `${domPct}%` }} />
         </div>}
         <div className="pm-estado">
@@ -3115,8 +3115,8 @@ export default function App() {
           })}
         </div>
       ) : (
-        <div className={`panel ${panel.tirada ? (panel.tirada.exito ? "ok" : "ko") : ""}`}>
-          {panel.tirada && <div className="dados"><span className="dado">{panel.tirada.dados[0]}</span><span className="dado">{panel.tirada.dados[1]}</span><span className="suma">+{panel.tirada.mod} = <b>{panel.tirada.total}</b> <em>/ {panel.tirada.obj}</em></span>{panel.tirada.repetida && <em className="mini">repetida con {panel.tirada.repetida}</em>}{panel.tirada.habsUsadas?.length > 0 && <em className="mini">· {panel.tirada.habsUsadas.join(", ")}</em>}</div>}
+        <div className={`panel ${panel.tirada ? (panel.tirada.exito ? "ok" : "ko") : ""}`} role="status" aria-live="polite">
+          {panel.tirada && <div className="dados" role="img" aria-label={`Tirada: ${panel.tirada.dados[0]} y ${panel.tirada.dados[1]}, ${panel.tirada.mod >= 0 ? "más" : "menos"} ${Math.abs(panel.tirada.mod)}, total ${panel.tirada.total} contra ${panel.tirada.obj}. ${panel.tirada.exito ? "Éxito" : "Fallo"}.`}><span className="dado" aria-hidden="true">{panel.tirada.dados[0]}</span><span className="dado" aria-hidden="true">{panel.tirada.dados[1]}</span><span className="suma" aria-hidden="true">+{panel.tirada.mod} = <b>{panel.tirada.total}</b> <em>/ {panel.tirada.obj}</em></span>{panel.tirada.repetida && <em className="mini" aria-hidden="true">repetida con {panel.tirada.repetida}</em>}{panel.tirada.habsUsadas?.length > 0 && <em className="mini" aria-hidden="true">· {panel.tirada.habsUsadas.join(", ")}</em>}</div>}
           <p className="texto">{panel.texto}</p>
           {panel.muerte && <p className="texto muerte">No te levantas.</p>}
           <Chips items={panel.chips} />
@@ -3130,7 +3130,7 @@ export default function App() {
     <div className="pag">
       <p className="etq">{NIVELES[Math.min(pj.nivel - 1, NIVELES.length - 1)]} · {pj.spp} PE</p>
       <h2 className="h2">Subes de nivel</h2>
-      <div className="dados"><span className="dado">{mejora.dados[0]}</span><span className="dado">{mejora.dados[1]}</span>
+      <div className="dados" role="img" aria-label={`Tirada de subida de nivel: ${mejora.dados[0]} y ${mejora.dados[1]}.`}><span className="dado" aria-hidden="true">{mejora.dados[0]}</span><span className="dado" aria-hidden="true">{mejora.dados[1]}</span>
         <span className="suma">{mejora.doble ? "Dobles: puedes elegir de tus categorías secundarias." : mejora.suma >= 10 ? "Tirada alta: puedes mejorar una característica." : "Elige una habilidad de tus categorías principales."}</span></div>
       <div className="lista">
         {mejora.stats.map((st) => <div key={st} className="opcion"><button onClick={() => elegirMejora("stat", st)}><b>+1 {st}</b><span className="mini">Mejora permanente de característica.</span></button></div>)}
@@ -3165,12 +3165,12 @@ export default function App() {
     const lineas = cronicaPartido(pj, H2, pp.partido, pp.res, pp.marc, pp.mvp, pp.bajas, pp.heridosTuyos, pp.partido.torneo);
     const color = pp.res === "Victoria" ? "ok" : pp.res === "Derrota" ? "ko" : "";
     return (
-      <div className="pag">
+      <div className="pag" role="status" aria-live="polite">
         <p className="etq">Final del partido</p>
-        <div className={`pp-marcador ${color}`}>
-          <span>{pj.equipo.replace(/^Los |^Las /, "")}</span>
-          <b>{pp.marc[0]} — {pp.marc[1]}</b>
-          <span>{pp.partido.rival.replace(/^Los |^Las /, "")}</span>
+        <div className={`pp-marcador ${color}`} aria-label={`${pp.res}: ${pj.equipo.replace(/^Los |^Las /, "")} ${pp.marc[0]}, ${pp.partido.rival.replace(/^Los |^Las /, "")} ${pp.marc[1]}`}>
+          <span aria-hidden="true">{pj.equipo.replace(/^Los |^Las /, "")}</span>
+          <b aria-hidden="true">{pp.marc[0]} — {pp.marc[1]}</b>
+          <span aria-hidden="true">{pp.partido.rival.replace(/^Los |^Las /, "")}</span>
         </div>
         <div className="pp-cronica">
           {lineas.map((l, i) => <p key={i} className={`pp-linea pp-${l.k}`}>{l.t}</p>)}
@@ -3238,19 +3238,22 @@ export default function App() {
   return (
     <div className="app">
       <style>{CSS}</style>
+      <a className="saltar" href="#contenido">Saltar al contenido</a>
       <Cabecera />
       {libro && pj && <Libro />}
       {prensa && pj && <Prensa />}
       {liga && pj && <Liga />}
-      {fase === "portada" && Portada()}
-      {fase === "entreacto" && entre && Entreacto()}
-      {fase === "capitulo" && Capitulo()}
-      {fase === "escena" && escena && Escena()}
-      {fase === "postpartido" && pj && pj._postpartido && Postpartido()}
-      {fase === "mejora" && mejora && Mejora()}
-      {fase === "muerte" && Muerte()}
-      {fase === "muerteFinal" && MuerteFinal()}
-      {fase === "epilogo" && Epilogo()}
+      <main id="contenido">
+        {fase === "portada" && Portada()}
+        {fase === "entreacto" && entre && Entreacto()}
+        {fase === "capitulo" && Capitulo()}
+        {fase === "escena" && escena && Escena()}
+        {fase === "postpartido" && pj && pj._postpartido && Postpartido()}
+        {fase === "mejora" && mejora && Mejora()}
+        {fase === "muerte" && Muerte()}
+        {fase === "muerteFinal" && MuerteFinal()}
+        {fase === "epilogo" && Epilogo()}
+      </main>
     </div>
   );
 }
@@ -3261,6 +3264,8 @@ const CSS = `
   height:100vh;height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--cuero);color:var(--tinta);font-family:Lora,Georgia,serif;
   background-image:radial-gradient(120% 80% at 50% -10%,rgba(90,55,25,.28),transparent 55%),radial-gradient(120% 100% at 50% 120%,rgba(0,0,0,.55),transparent 60%),radial-gradient(ellipse at top,rgba(255,255,255,.04),transparent 60%)}
 .app *{box-sizing:border-box}
+.saltar{position:absolute;left:-9999px;top:0;z-index:100;background:var(--sangre);color:var(--parch);padding:.6rem 1rem;border-radius:0 0 4px 0;text-decoration:none;font-family:Lora,Georgia,serif}
+.saltar:focus{left:0}
 .pag{max-width:36rem;margin:1rem auto;color:var(--tinta);padding:1.7rem 1.5rem 2.2rem;border-radius:3px;border:7px solid #2b2420;
   background:radial-gradient(70% 45% at 18% 10%,rgba(120,30,20,.09),transparent 55%),radial-gradient(65% 45% at 88% 92%,rgba(40,25,10,.22),transparent 60%),radial-gradient(40% 30% at 60% 55%,rgba(70,45,20,.10),transparent 70%),linear-gradient(180deg,#e7d9b6,var(--parch) 45%,#c9b98f);
   box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 0 0 2px rgba(184,146,46,.5),inset 0 0 70px rgba(70,45,20,.26)}
