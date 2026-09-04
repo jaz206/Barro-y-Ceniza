@@ -2028,6 +2028,43 @@ const cronicaPartido = (pj, H, partido, res, marc, mvp, bajas, heridosTuyos, tor
   if (rc[rival]) lineas.push({ k: "rival", t: rc[rival] });
   return lineas;
 };
+
+/* ===== POSOS DEL RESULTADO (Fase 4) =====
+   El resultado deja huella sin escribir dos versiones de cada partido: mueve
+   racha, récords, y un poco de fama y afición (modesto, escalado por división),
+   y suelta titulares de racha. Muta q; devuelve {chips, noticias}. */
+const pososPartido = (q, res, marc, div, torneo) => {
+  const chips = [], noticias = [];
+  const margen = Math.abs(marc[0] - marc[1]);
+  q.records = { ...(q.records || {}) };
+  const raAntes = q.racha || 0;
+  // racha
+  if (res === "Victoria") q.racha = raAntes > 0 ? raAntes + 1 : 1;
+  else if (res === "Derrota") q.racha = raAntes < 0 ? raAntes - 1 : -1;
+  else q.racha = 0;
+  // ripples de fama/afición (pequeños; los ascensos de fama gordos siguen
+  // viniendo de las opciones escritas y de los trofeos)
+  const subeAficion = (n) => { q.rel = { ...q.rel, aficion: Math.max(-5, Math.min(5, (q.rel.aficion || 0) + n)) }; };
+  if (res === "Victoria") {
+    const famaGana = (div && div <= 2 ? 2 : 1) + (margen >= 2 ? 1 : 0);
+    q.fama += famaGana; subeAficion(1);
+    chips.push(`+${famaGana} fama (victoria)`);
+  } else if (res === "Derrota" && margen >= 2) {
+    subeAficion(-1);
+    chips.push(`Afición −1 (derrota clara)`);
+  }
+  // récord: mayor victoria
+  if (res === "Victoria" && margen >= 2 && margen > (q.records.mejorMargen || 0)) {
+    q.records.mejorMargen = margen; q.records.mejorVictoria = `${marc[0]}-${marc[1]}`;
+    chips.push(`Récord: mayor victoria (${marc[0]}-${marc[1]})`);
+  }
+  // hitos de racha
+  if (q.racha > (q.records.rachaMax || 0)) q.records.rachaMax = q.racha;
+  if (q.racha === 3) { noticias.push(`Tres victorias seguidas de ${q.equipo}. Las tabernas empiezan a decir el nombre de ${q.nombre} sin equivocarse.`); q.fama += 1; }
+  else if (q.racha === 5) { noticias.push(`Quinta victoria seguida. La afición corea el nombre de ${q.nombre} antes del saque.`); q.fama += 2; subeAficion(1); chips.push("Racha de cinco: la afición te canta"); }
+  else if (q.racha === -3) { noticias.push(`Tercera derrota seguida de ${q.equipo}. La grada empieza a silbar, y no al rival.`); subeAficion(-1); }
+  return { chips, noticias };
+};
 const PE = (raza) => ({ td: brutos(raza) ? 2 : 3, baja: brutos(raza) ? 3 : 2, pase: 1, mvp: 4 });
 const ordenDe = (H) => H.capitulos.flatMap((c) => c.escenas.map((e) => ({ cap: c.id, id: e })));
 
@@ -2101,9 +2138,11 @@ const tablaLiga = (pj, cap) => {
   const misPts = Math.max(0, Math.min(jornada * 3, Math.round(ppg * jornada)));
   const seed = raza.length * 97 + div * 131 + cap.id * 17 + 3;
   const pool = barajaDet(RIVALES_DIV[div].filter((n) => n !== pj.equipo), seed).slice(0, 7);
-  const offs = [10, 6, 3, 0, -3, -6, -10];
+  // Rivales con un reparto FIJO de puntos-por-partido (independiente de ti), para
+  // que tus resultados te suban o te bajen de verdad en la tabla.
+  const rivalPPG = [1.95, 1.65, 1.45, 1.25, 1.05, 0.85, 0.55];
   const filaDe = (nombre, pts, you) => { const gg = Math.min(jornada, Math.floor(pts / 3)); const ee = Math.min(jornada - gg, pts - gg * 3); return { nombre, pts, g: gg, e: ee, p: jornada - gg - ee, pj: jornada, you: !!you }; };
-  const rivales = pool.map((nombre, i) => filaDe(nombre, Math.max(0, Math.min(jornada * 3, misPts + offs[i]))));
+  const rivales = pool.map((nombre, i) => filaDe(nombre, Math.max(0, Math.min(jornada * 3, Math.round(rivalPPG[i] * jornada)))));
   const yo = filaDe(pj.equipo, misPts, true);
   const tabla = [...rivales, yo].sort((a, b) => b.pts - a.pts || (b.g - a.g));
   const rank = tabla.findIndex((t) => t.you) + 1;
@@ -2253,7 +2292,7 @@ const nuevoPj = (nombre, raza) => {
   return { nombre, raza, atr: { Voluntad: 1, Astucia: 1, Ferocidad: 1, Honor: 1, Ambición: 1 },
     MA: H.base.MA, ST: H.base.ST, AG: H.base.AG, AV: H.base.AV, hab: [...H.base.hab],
     rel: { ...H.relInicial }, oro: 0, fama: 0, pv: 2, muertes: 0, flags: {}, palmares: [], spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], lesiones: 0, formaPend: 0,
-    division: 6, equipo: H.equipoInicial };
+    racha: 0, records: {}, division: 6, equipo: H.equipoInicial };
 };
 
 const cumple = (pj, req) => {
@@ -2329,7 +2368,7 @@ export default function App() {
 
   const continuarGuardada = () => {
     const s = guardada; if (!s) return;
-    setRaza(s.raza); setPj({ spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], ...s.pj }); setIdx(s.idx); setCronica(s.cronica || []); setMuerteInfo(s.muerteInfo || null); setPanel(s.panel || null); setMejora(s.mejora || null); setMt(s.mt || null); setEntre(s.entre || null); setFase(s.fase);
+    setRaza(s.raza); setPj({ spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], racha: 0, records: {}, ...s.pj }); setIdx(s.idx); setCronica(s.cronica || []); setMuerteInfo(s.muerteInfo || null); setPanel(s.panel || null); setMejora(s.mejora || null); setMt(s.mt || null); setEntre(s.entre || null); setFase(s.fase);
   };
   const guardarVida = (texto, muerto) => {
     const v = [{ nombre: pj.nombre, raza: HISTORIAS[pj.raza].nombre, texto, muerto, fecha: new Date().toLocaleDateString() }, ...vidas].slice(0, 20);
@@ -2664,6 +2703,13 @@ export default function App() {
       const res = marc[0] > marc[1] ? "Victoria" : marc[0] < marc[1] ? "Derrota" : "Empate";
       q.palmares = [...q.palmares, { rival: escena.partido.rival, res, marcador: `${marc[0]}-${marc[1]}`, cap: ORDEN[idx].cap }];
       chips.push(`${res} ${marc[0]}-${marc[1]} contra ${escena.partido.rival}`);
+      // Fase 4: posos del resultado (racha, récords, fama/afición) y movimiento en la tabla.
+      const divCap = divisionDe(q.raza, ORDEN[idx].cap);
+      const rankAntes = cap ? (tablaLiga(pj, cap) || {}).rank : null;
+      const posos = pososPartido(q, res, marc, divCap, escena.partido.torneo);
+      posos.chips.forEach((c) => chips.push(c));
+      const rankDespues = cap ? (tablaLiga(q, cap) || {}).rank : null;
+      const movTabla = rankAntes && rankDespues ? { antes: rankAntes, despues: rankDespues } : null;
       const bajasTot = m.bajas + (exito && t.stat === "ST" && t.riesgo ? 1 : 0);
       if (bajasTot) chips.push(`${bajasTot} ${bajasTot === 1 ? "baja causada" : "bajas causadas"}`);
       // Jugador del partido: en S3 se sortea entre los nominados (1d6). Eres
@@ -2677,7 +2723,7 @@ export default function App() {
       if (q.flags.apaleado) { const f = { ...q.flags }; delete f.apaleado; q.flags = f; }
       if (m.cubiertos.length) { q.rel = { ...q.rel, club: Math.min(5, q.rel.club + 1) }; chips.push(`${RELACIONES.club} +1 (cubriste a ${m.cubiertos.join(", ")})`); }
       if (escena.partido.torneo && res === "Victoria") { q.trofeos = [...(q.trofeos || []), escena.partido.torneo]; chips.push(`Trofeo: ${escena.partido.torneo}`); q.fama += 10; }
-      q.noticias = [...noticiasPartido(q, H, escena.partido, res, marc, mvp, bajasTot, escena.partido.torneo), ...(q.noticias || [])].slice(0, 40);
+      q.noticias = [...posos.noticias, ...noticiasPartido(q, H, escena.partido, res, marc, mvp, bajasTot, escena.partido.torneo), ...(q.noticias || [])].slice(0, 40);
       if (rama.fx.expulsion) {
         const sobornos = (HISTORIAS[q.raza].reglas || []).includes("Sobornos y Corrupción");
         if (has("Furtivo") && d6() >= 4) chips.push("Furtivo: el árbitro no lo ve. Sigues en el campo.");
@@ -2688,7 +2734,7 @@ export default function App() {
       // Datos para la ficha de después del partido
       const heridosTuyos = (m.aliados || []).filter((a) => a.herido).map((a) => a.nombre);
       const frase = fraseLibro(q, escena, res, marc, opTxt);
-      q._postpartido = { partido: escena.partido, res, marc, mvp, bajas: bajasTot, heridosTuyos, frase };
+      q._postpartido = { partido: escena.partido, res, marc, mvp, bajas: bajasTot, heridosTuyos, frase, racha: q.racha, records: q.records, movTabla, divNombre: divCap ? DIV_NOMBRE[divCap] : null };
       setCronica((c) => [...c, frase]);
     }
     setPj(q);
@@ -2796,6 +2842,7 @@ export default function App() {
           {pj.hab.length ? pj.hab.map((h) => <p key={h} className="mini"><b>{h}</b>{HABILIDADES[h] ? ` — ${HABILIDADES[h].desc}` : ""}</p>) : <p className="mini">Sin habilidades aún</p>}
           <p className="mini">Muertes: {pj.muertes} de {MAX_MUERTES}</p>
           <p className="mini">Carrera: {(pj.palmares || []).length} partidos · {(pj.car || {}).td || 0} touchdowns · {(pj.car || {}).baja || 0} bajas · {(pj.car || {}).pase || 0} pases · {(pj.car || {}).mvp || 0} veces jugador del partido</p>
+          {(pj.racha || (pj.records && (pj.records.mejorVictoria || pj.records.rachaMax))) ? <p className="mini">{pj.racha >= 2 ? `En racha: ${pj.racha} victorias seguidas. ` : pj.racha <= -2 ? `Mala racha: ${-pj.racha} derrotas seguidas. ` : ""}{pj.records?.mejorVictoria ? `Mayor victoria: ${pj.records.mejorVictoria}. ` : ""}{pj.records?.rachaMax >= 2 ? `Mejor racha: ${pj.records.rachaMax} seguidas.` : ""}</p> : null}
         </div>
         <div>
           <p className="etq">Relaciones</p>
@@ -3128,6 +3175,17 @@ export default function App() {
         <div className="pp-cronica">
           {lineas.map((l, i) => <p key={i} className={`pp-linea pp-${l.k}`}>{l.t}</p>)}
         </div>
+        {(() => {
+          const huella = [];
+          const r = pp.racha || 0;
+          if (r >= 2) huella.push(`Racha: ${r} victorias seguidas.`);
+          else if (r <= -2) huella.push(`Racha: ${-r} derrotas seguidas.`);
+          if (pp.res === "Victoria" && pp.records && pp.records.mejorVictoria === `${pp.marc[0]}-${pp.marc[1]}` && Math.abs(pp.marc[0] - pp.marc[1]) >= 2) huella.push(`Récord de carrera: tu mayor victoria (${pp.records.mejorVictoria}).`);
+          if (pp.movTabla && pp.movTabla.despues < pp.movTabla.antes) huella.push(`En la tabla${pp.divNombre ? ` de ${pp.divNombre}` : ""}: subes del ${pp.movTabla.antes}º al ${pp.movTabla.despues}º.`);
+          else if (pp.movTabla && pp.movTabla.despues > pp.movTabla.antes) huella.push(`En la tabla${pp.divNombre ? ` de ${pp.divNombre}` : ""}: caes del ${pp.movTabla.antes}º al ${pp.movTabla.despues}º.`);
+          else if (pp.movTabla) huella.push(`En la tabla${pp.divNombre ? ` de ${pp.divNombre}` : ""}: sigues ${pp.movTabla.despues}º.`);
+          return huella.length > 0 && <div className="pp-huella"><p className="etq">La huella</p>{huella.map((h, i) => <p key={i} className="pp-huella-linea">{h}</p>)}</div>;
+        })()}
         <div className="pp-frase">"{pp.frase}"<span className="mini"> — queda escrito en tu Libro del destino</span></div>
         <button className="btn" onClick={cerrarPostpartido}>Al vestuario</button>
       </div>
@@ -3318,6 +3376,9 @@ const CSS = `
 .pp-linea.pp-fama{border-left-color:var(--verde)}
 .pp-linea.pp-rumor{font-style:italic;opacity:.85}
 .pp-linea.pp-rival{border-left-color:var(--sangre);font-weight:600}
+.pp-huella{margin-bottom:1rem;padding:.7rem .9rem;background:rgba(184,146,46,.10);border-left:4px solid var(--oro);border-radius:2px}
+.pp-huella .etq{margin:0 0 .3rem}
+.pp-huella-linea{font-size:.92rem;line-height:1.5;margin:.15rem 0}
 .pp-frase{background:#fff8ea;border:1px solid var(--oro);border-radius:2px;padding:.9rem 1rem;font-style:italic;font-size:1.05rem;line-height:1.5}
 .puerta{color:var(--sangre);font-style:italic}
 .imagen-cap{font-style:italic;color:var(--oro);font-size:1.05rem;line-height:1.5;margin:.4rem auto 1rem;max-width:26rem}

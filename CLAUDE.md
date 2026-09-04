@@ -154,6 +154,25 @@ los capítulos con división (no en la infancia ni el ocaso). Es **híbrida**:
 Si algún día se afina: los nombres de rivales por división viven en
 `RIVALES_DIV`, y el arco de divisiones por rama en `DIV_POR_CAP`.
 
+## El resultado deja huella (Fase 4)
+
+Ganar o perder ya mueve cosas, sin escribir dos versiones de cada partido
+(los "posos", en `pososPartido`):
+
+- **Racha** (`pj.racha`) y **récords** (`pj.records`: mayor victoria, mejor
+  racha), que salen en el "Al vestuario" y en el Libro del destino.
+- **Fama y afición** con toques modestos y escalados por división (los saltos
+  gordos de fama siguen viniendo de las opciones escritas y los trofeos, para
+  no descuadrar las puertas que piden fama).
+- **Titulares de racha** en la Cristalvisión (tres/cinco seguidas, tres
+  derrotas seguidas).
+- **Movimiento en la tabla**: tras el partido, el "Al vestuario" dice si subes
+  o bajas de puesto. Los rivales de la liga tienen un reparto de puntos FIJO
+  (no anclado a los tuyos), así que ganar te sube de verdad y perder te baja.
+
+Toda la prosa de los posos (titulares de racha, "La huella") la escribió
+Claude; marcada para revisión con el resto.
+
 ## Decisiones pendientes — NO avanzar sin el OK del cliente
 
 Ninguna de estas es un bug: son decisiones de producto. Están analizadas con
