@@ -2601,7 +2601,8 @@ export default function App() {
   const Portada = () => (
     <div className="pag centro">
       <p className="etq">Una vida en el barro</p>
-      <h1 className="titulo">La vida y el sufrimiento<br />de un jugador del Barro</h1>
+      <h1 className="titulo">Barro y Ceniza</h1>
+      <p className="lead">La vida y el sufrimiento de un jugador del Barro.</p>
       <div className="razas">
         {Object.entries(HISTORIAS).map(([id, h]) => (
           <button key={id} className={`raza ${raza === id ? "activa" : ""}`} onClick={() => setRaza(id)}>
