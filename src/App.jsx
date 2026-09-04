@@ -9,7 +9,11 @@ const MAX_MUERTES = 3;
 const HUMANO = {
   nombre: "Humano", lema: "Sin nada especial, y por eso peligroso.",
   puesto: "Blitzer Humano", reglas: ["Capitán del Equipo"],
-  base: { MA: 7, ST: 3, AG: 3, AV: 9, hab: ["Placar", "Placaje defensivo"] },
+  // PILOTO POSICIÓN EMERGENTE: el humano arranca sin definir (sin habilidades) y
+  // se forma con las decisiones; la posición se revela al final. Ver
+  // docs/posicion-emergente-piloto-humano.md.
+  emergente: true,
+  base: { MA: 7, ST: 3, AG: 3, AV: 9, hab: [] },
   equipoInicial: "Los Charcos de Grünburg",
   rel: { familia: "Familia", ernst: "Ernst el Halcón", kurt: "Kurt Vogel", grimm: "Capitán Grimm", aficion: "Afición", club: "El club" },
   relInicial: { familia: 2, ernst: 0, kurt: 0, grimm: 0, aficion: 0, club: 0 },
@@ -2022,6 +2026,30 @@ const cronicaPartido = (pj, H, partido, res, marc, mvp, bajas, heridosTuyos, tor
 const PE = (raza) => ({ td: brutos(raza) ? 2 : 3, baja: brutos(raza) ? 3 : 2, pase: 1, mvp: 4 });
 const ordenDe = (H) => H.capitulos.flatMap((c) => c.escenas.map((e) => ({ cap: c.id, id: e })));
 
+/* ============ POSICIÓN EMERGENTE (piloto del humano) ============
+   Deduce en qué jugador te has convertido a partir de lo que has construido
+   (habilidades y características). No decide nada de la partida: solo etiqueta.
+   Ver docs/posicion-emergente-piloto-humano.md. */
+const PERFIL_POS = {
+  Blitzer:  { skills: ["Placar", "Placaje defensivo", "Golpe mortífero", "Furia", "Agallas", "Defensa", "Romper defensas"], desc: "Un ariete. Placas, presionas y dejas gente en el barro." },
+  Receptor: { skills: ["Esquivar", "Atrapar", "Saltar", "Esprintar", "Pies firmes", "Abrirse paso"], desc: "Velocidad y manos. Corres la banda y recibes lo imposible." },
+  Lanzador: { skills: ["Pasar", "Manos seguras", "Precisión", "Nervios de acero"], desc: "La cabeza del equipo. Mueves la bola con el brazo." },
+};
+const LINIERO = { clave: "Liniero", nombre: "Liniero", desc: "Un currante de línea. No brillas en nada concreto, y por eso estás en todo." };
+// Devuelve { clave, nombre, desc } con la posición a la que más te pareces.
+const puestoEmergente = (pj) => {
+  const s = { Blitzer: 0, Receptor: 0, Lanzador: 0 };
+  for (const [pos, def] of Object.entries(PERFIL_POS)) for (const h of pj.hab) if (def.skills.includes(h)) s[pos] += 1;
+  if (pj.ST > 3) s.Blitzer += pj.ST - 3;
+  if (pj.MA > 7) s.Receptor += pj.MA - 7;
+  if (pj.AG > 3) { s.Receptor += (pj.AG - 3) * 0.5; s.Lanzador += (pj.AG - 3) * 0.5; }
+  if (pj.AV < 9) s.Receptor += 0.5;
+  let mejor = null, max = 0;
+  for (const [pos, v] of Object.entries(s)) if (v > max) { max = v; mejor = pos; }
+  if (!mejor || max < 1) return LINIERO;
+  return { clave: mejor, nombre: mejor, desc: PERFIL_POS[mejor].desc };
+};
+
 const nuevoPj = (nombre, raza) => {
   const H = HISTORIAS[raza];
   return { nombre, raza, atr: { Voluntad: 1, Astucia: 1, Ferocidad: 1, Honor: 1, Ambición: 1 },
@@ -2515,7 +2543,7 @@ export default function App() {
           <p className="etq">Jugador</p>
           <div className="statrow">{[["MA", pj.MA], ["ST", pj.ST], ["AG", `${7 - pj.AG}+`], ["AV", `${pj.AV}+`]].map(([s, v]) => <span key={s}><b>{v}</b>{s}</span>)}</div>
           {(pj.trofeos || []).length > 0 && <p className="texto">Vitrina: {pj.trofeos.join(", ")}.</p>}
-          <p className="mini">{H.puesto}{(H.reglas || []).length ? ` · ${H.reglas.join(", ")}` : ""}</p>
+          <p className="mini">{H.emergente ? `En formación · apuntas a ${puestoEmergente(pj).nombre}` : H.puesto}{(H.reglas || []).length ? ` · ${H.reglas.join(", ")}` : ""}</p>
           <p className="mini">{NIVELES[Math.min(pj.nivel - 1, NIVELES.length - 1)]} · {pj.spp} PE · siguiente a {UMBRALES.find((u) => u > pj.spp) || "—"} PE{pj.lesiones ? ` · ${pj.lesiones} herida${pj.lesiones > 1 ? "s" : ""} persistente${pj.lesiones > 1 ? "s" : ""}` : ""}</p>
           {pj.hab.length ? pj.hab.map((h) => <p key={h} className="mini"><b>{h}</b>{HABILIDADES[h] ? ` — ${HABILIDADES[h].desc}` : ""}</p>) : <p className="mini">Sin habilidades aún</p>}
           <p className="mini">Muertes: {pj.muertes} de {MAX_MUERTES}</p>
@@ -2556,7 +2584,7 @@ export default function App() {
         {Object.entries(HISTORIAS).map(([id, h]) => (
           <button key={id} className={`raza ${raza === id ? "activa" : ""}`} onClick={() => setRaza(id)}>
             <b>{h.nombre}</b><small>{h.lema}</small>
-            <span className="mini">{h.puesto} · MA {h.base.MA} ST {h.base.ST} AG {7 - h.base.AG}+ AV {h.base.AV}+</span>
+            <span className="mini">{h.emergente ? "Posición: la forjas con tus decisiones" : h.puesto} · MA {h.base.MA} ST {h.base.ST} AG {7 - h.base.AG}+ AV {h.base.AV}+</span>
           </button>
         ))}
       </div>
@@ -2825,6 +2853,9 @@ export default function App() {
       <h1 className="titulo">Lo que queda</h1>
       <LineaDeVida />
       <p className="lead">{epilogo()}</p>
+      {H.emergente && (() => { const p = puestoEmergente(pj); return (
+        <p className="lead"><b>Empezaste sin nombre y sin puesto, un crío del Matadero. Resultaste ser {p.clave === "Liniero" ? "un Liniero" : `un ${p.nombre}`}.</b> {p.desc}</p>
+      ); })()}
       <p className="mini">Nivel {pj.nivel} · {pj.spp} PE · {pj.hab.length ? pj.hab.join(", ") : "sin habilidades"} · MA {pj.MA} ST {pj.ST} AG {pj.AG} AV {pj.AV}</p>
       <p className="mini">{(pj.palmares || []).length} partidos · {(pj.car || {}).td || 0} touchdowns · {(pj.car || {}).baja || 0} bajas causadas · {(pj.car || {}).pase || 0} pases completados · {(pj.car || {}).mvp || 0} veces jugador del partido · {pj.muertes} muertes</p>
       {Object.keys(pj.flags).some((f) => (H.recuerdos || {})[f]) && <>
