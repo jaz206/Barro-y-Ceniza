@@ -182,10 +182,16 @@ números en los informes enlazados abajo.
    armaduras están en formato 2020 y la agilidad y el sistema de subir de nivel
    son de la clásica. Es la decisión que más cosas destraba: arregla de golpe la
    agilidad, el PA que falta, las habilidades de inicio y el tope de subidas.
-2. **La curva de fichas.** Hoy empiezas con la ficha profesional completa a los
-   seis años. La ficha del reglamento debería ser la **meta** (el día que firmas),
-   no la salida — y cada rama entra en la carrera en un punto distinto: el enano
-   ya es profesional en el capítulo 1, y la elfa empieza *por encima* y baja.
+2. ~~**La curva de fichas.**~~ **HECHO (2026-09-04).** El humano y el orco ya
+   empiezan con una **ficha de crío** (`H.fichaInicial`, más floja y sin el
+   rasgo de equipo), que sube a la del reglamento (`H.base`) el día que firman
+   como profesionales (`H.firmaCap`: humano cap 3, orco cap 2), vía el efecto
+   `fichaPro` en `aplicar`, enganchado en `TIEMPO`. El enano ya era profesional
+   desde el capítulo 1 y la elfa es campeona desde el principio: esos dos se
+   quedan con la ficha completa, que es lo correcto. El Libro y la portada
+   distinguen "aún sin fichar" de profesional. *Nota:* la subida sube (nunca
+   baja), así que lo que crezcas de crío se conserva al firmar. Sigue pendiente
+   el punto 3 (las tardes libres pueden inflar antes de firmar).
 3. **Las tardes libres.** Suben características y se pueden repetir cada
    capítulo: hasta **+12** en una partida. El tope de BB2020 son **2 subidas en
    toda la vida del jugador**. Propuesta: que suban características solo antes de

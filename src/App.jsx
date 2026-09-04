@@ -14,6 +14,10 @@ const HUMANO = {
   // docs/posicion-emergente-piloto-humano.md.
   emergente: true,
   base: { MA: 7, ST: 3, AG: 3, AV: 9, hab: [] },
+  // Ficha de crío: con la que empiezas de niño. Sube a la ficha del reglamento
+  // (base) el día que firmas como profesional (capítulo 3, Sexta). Ver "firmaCap".
+  fichaInicial: { MA: 5, ST: 2, AG: 3, AV: 7, hab: [] },
+  firmaCap: 3,
   equipoInicial: "Los Charcos de Grünburg",
   rel: { familia: "Familia", ernst: "Ernst el Halcón", kurt: "Kurt Vogel", grimm: "Capitán Grimm", aficion: "Afición", club: "El club" },
   relInicial: { familia: 2, ernst: 0, kurt: 0, grimm: 0, aficion: 0, club: 0 },
@@ -778,6 +782,10 @@ const ORCO = {
   nombre: "Orco", lema: "El más pequeño de la camada. Por ahora.",
   puesto: "Blitzer Orco", reglas: ["Brutos Brutales", "Capitán del Equipo"],
   base: { MA: 6, ST: 3, AG: 3, AV: 10, hab: ["Abrirse paso", "Placar"] },
+  // Ficha de cría: la del cesto en el río. Sube a la del reglamento (base) cuando
+  // Da Banda tiene campo y juega en Sexta (capítulo 2).
+  fichaInicial: { MA: 5, ST: 2, AG: 2, AV: 9, hab: [] },
+  firmaCap: 2,
   equipoInicial: "Da Banda",
   rel: { snotlig: "Snotlig, jefe goblin", gorka: "Ma Gorka, la ogra", grimgutz: "Grimgutz, el troll", wazzok: "Wazzok, el chamán", skabnik: "Skabnik, el fanático", banda: "Da Banda", aficion: "Los que apuestan", club: "El campo" },
   relInicial: { snotlig: 1, gorka: 0, grimgutz: 0, wazzok: 0, skabnik: 0, banda: 1, aficion: 0, club: 0 },
@@ -1918,11 +1926,12 @@ const ENTREACTOS = {
 /* Lo que el tiempo hace solo: muertes y consecuencias entre capítulos */
 const TIEMPO = {
   humano: {
+    3: (pj) => !pj.pro ? { fichaPro: true } : null, // firmas con los Charcos: ficha de profesional
     6: (pj) => (!pj.flags.apotecarioMadre && !pj.flags.madreMuerta) ? { flags: ["madreMuerta"] } : null,
     7: (pj) => !pj.flags.madreMuerta ? { flags: ["madreMuerta"] } : null,
   },
   enano: ENANO_TIEMPO,
-  orco: ORCO_TIEMPO,
+  orco: { ...ORCO_TIEMPO, 2: (pj) => !pj.pro ? { fichaPro: true } : null }, // Da Banda tiene campo: ficha de profesional
   elfo: ELFO_TIEMPO,
 };
 
@@ -2289,8 +2298,9 @@ const MATCH_PLAYS = (tipo) => (MATCH_TIPOS[tipo] || MATCH_TIPOS.liga).plays;
 
 const nuevoPj = (nombre, raza) => {
   const H = HISTORIAS[raza];
+  const f = H.fichaInicial || H.base; // los que empiezan de crío arrancan con menos
   return { nombre, raza, atr: { Voluntad: 1, Astucia: 1, Ferocidad: 1, Honor: 1, Ambición: 1 },
-    MA: H.base.MA, ST: H.base.ST, AG: H.base.AG, AV: H.base.AV, hab: [...H.base.hab],
+    MA: f.MA, ST: f.ST, AG: f.AG, AV: f.AV, hab: [...f.hab], pro: !H.fichaInicial,
     rel: { ...H.relInicial }, oro: 0, fama: 0, pv: 2, muertes: 0, flags: {}, palmares: [], spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], lesiones: 0, formaPend: 0,
     racha: 0, records: {}, division: 6, equipo: H.equipoInicial };
 };
@@ -2338,6 +2348,12 @@ const aplicar = (pj, fx) => {
     else if (k === "equipo") { q.equipo = v; chips.push(`Fichas por ${v}`); }
     else if (k === "ventaja") { q.flags.ventaja = true; chips.push("El árbitro está comprado"); }
     else if (k === "forma") { q.formaPend = (q.formaPend || 0) + v; chips.push(`Forma: +${v} a tus tiradas del próximo partido`); }
+    else if (k === "fichaPro") { // firmas: tu ficha sube (nunca baja) a la del reglamento
+      const base = HISTORIAS[q.raza].base;
+      ["MA", "ST", "AG", "AV"].forEach((s) => { if (base[s] > q[s]) { chips.push(`+${base[s] - q[s]} ${s} (profesional)`); q[s] = base[s]; } });
+      for (const h of base.hab) if (!q.hab.includes(h)) { q.hab.push(h); chips.push(`Habilidad: ${h}`); }
+      q.pro = true;
+    }
   }
   return { q, chips };
 };
@@ -2368,7 +2384,7 @@ export default function App() {
 
   const continuarGuardada = () => {
     const s = guardada; if (!s) return;
-    setRaza(s.raza); setPj({ spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], racha: 0, records: {}, ...s.pj }); setIdx(s.idx); setCronica(s.cronica || []); setMuerteInfo(s.muerteInfo || null); setPanel(s.panel || null); setMejora(s.mejora || null); setMt(s.mt || null); setEntre(s.entre || null); setFase(s.fase);
+    setRaza(s.raza); setPj({ spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], racha: 0, records: {}, pro: true, ...s.pj }); setIdx(s.idx); setCronica(s.cronica || []); setMuerteInfo(s.muerteInfo || null); setPanel(s.panel || null); setMejora(s.mejora || null); setMt(s.mt || null); setEntre(s.entre || null); setFase(s.fase);
   };
   const guardarVida = (texto, muerto) => {
     const v = [{ nombre: pj.nombre, raza: HISTORIAS[pj.raza].nombre, texto, muerto, fecha: new Date().toLocaleDateString() }, ...vidas].slice(0, 20);
@@ -2837,7 +2853,7 @@ export default function App() {
           <p className="etq">Jugador</p>
           <div className="statrow">{[["MA", pj.MA], ["ST", pj.ST], ["AG", `${7 - pj.AG}+`], ["AV", `${pj.AV}+`]].map(([s, v]) => <span key={s}><b>{v}</b>{s}</span>)}</div>
           {(pj.trofeos || []).length > 0 && <p className="texto">Vitrina: {pj.trofeos.join(", ")}.</p>}
-          <p className="mini">{H.emergente ? `En formación · apuntas a ${puestoEmergente(pj).nombre}` : H.puesto}{(H.reglas || []).length ? ` · ${H.reglas.join(", ")}` : ""}</p>
+          <p className="mini">{pj.pro ? (H.emergente ? `En formación · apuntas a ${puestoEmergente(pj).nombre}` : H.puesto) : "En formación · aún sin fichar"}{pj.pro && (H.reglas || []).length ? ` · ${H.reglas.join(", ")}` : ""}</p>
           <p className="mini">{NIVELES[Math.min(pj.nivel - 1, NIVELES.length - 1)]} · {pj.spp} PE · siguiente a {UMBRALES.find((u) => u > pj.spp) || "—"} PE{pj.lesiones ? ` · ${pj.lesiones} herida${pj.lesiones > 1 ? "s" : ""} persistente${pj.lesiones > 1 ? "s" : ""}` : ""}</p>
           {pj.hab.length ? pj.hab.map((h) => <p key={h} className="mini"><b>{h}</b>{HABILIDADES[h] ? ` — ${HABILIDADES[h].desc}` : ""}</p>) : <p className="mini">Sin habilidades aún</p>}
           <p className="mini">Muertes: {pj.muertes} de {MAX_MUERTES}</p>
@@ -2909,7 +2925,7 @@ export default function App() {
         {Object.entries(HISTORIAS).map(([id, h]) => (
           <button key={id} className={`raza ${raza === id ? "activa" : ""}`} aria-pressed={raza === id} onClick={() => setRaza(id)}>
             <b>{h.nombre}</b><small>{h.lema}</small>
-            <span className="mini">{h.emergente ? "Posición: la forjas con tus decisiones" : h.puesto} · MA {h.base.MA} ST {h.base.ST} AG {7 - h.base.AG}+ AV {h.base.AV}+</span>
+            {(() => { const f = h.fichaInicial || h.base; return <span className="mini">{h.emergente ? "Posición: la forjas con tus decisiones" : h.puesto} · empiezas MA {f.MA} ST {f.ST} AG {7 - f.AG}+ AV {f.AV}+{h.fichaInicial ? " (de crío)" : ""}</span>; })()}
           </button>
         ))}
       </div>
