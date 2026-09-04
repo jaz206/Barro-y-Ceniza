@@ -14,6 +14,25 @@ Sexta).
 Siete capítulos por rama, 141 escenas, unas 680 opciones y ~40.000 palabras.
 React + Vite, una sola página, sin backend.
 
+## Descripción para itch.io
+
+> Texto de la ficha del juego en itch. Voz del cliente; mantener el disfraz (no
+> nombrar el deporte real).
+
+Naces en un barrio de mataderos, en un clan de la montaña, en una charca de
+orcos o bajo un roble milenario. Cada decisión queda escrita en tu Libro del
+destino: abre unas puertas, cierra otras, y te acerca o te aleja de la gente que
+te importa.
+
+Cuatro razas, cuatro vidas completas de unas 35 escenas cada una. Atributos de
+carácter que desbloquean opciones, puntos de Voluntad para forzar las que no te
+corresponden, relaciones con personajes que vuelven cuando menos lo esperas, y
+partidos resueltos con dados donde puedes perder algo más que el balón. Puedes
+morir tres veces. La cuarta no cuenta.
+
+Se guarda automáticamente en el navegador. Duración: 30–45 minutos por vida. En
+español.
+
 ## Estado
 
 ✅ **El código fuente ya está en el repo** (`src/`, `index.html`,
