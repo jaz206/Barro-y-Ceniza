@@ -2170,15 +2170,21 @@ const tablaLiga = (pj, cap) => {
    usan la FICHA REAL del pj (características + habilidades). La jugada decisiva
    sigue siendo la que cada partido ya tiene escrita (sus opciones). */
 const ATRIB_PARTIDO = { ST: "Fuerza", AG: "Agilidad", MA: "Velocidad" };
-const modDe = (pj, stat) => (stat === "MA" ? Math.floor(pj.MA / 3) : pj[stat]);
+// El modificador es tu VENTAJA sobre el estándar del reglamento (característica
+// 3, velocidad ~6), no la característica en bruto. Así 2d6 manda, el objetivo
+// importa y ser fuerte/rápido es un empujón, no un aprobado seguro.
+const modDe = (pj, stat) => (stat === "MA" ? Math.floor(pj.MA / 3) - 2 : pj[stat] - 3);
+// Los objetivos del pool están en la escala vieja (7-10); se recentran a 6-8.
+const objDe = (o) => Math.max(6, o.obj - 2);
 const rollKey = (pj, m, o) => {
   const has = (h) => pj.hab.includes(h);
+  const obj = objDe(o);
   const clima = (m.clima === "Lluvioso" && o.stat === "AG") ? -1 : (m.clima === "Muy soleado" && o.stat === "AG") ? -1 : (m.clima === "Ventisca" && o.stat === "MA") ? -1 : 0;
   const mod = modDe(pj, o.stat) + clima + (pj.formaPend || 0) + (m.fatiga >= 3 ? -1 : 0) + (pj.flags.apaleado ? -1 : 0);
   let d = [d6(), d6()], tot = d[0] + d[1] + mod, rep = null;
-  if (tot < o.obj && o.hab && has(o.hab)) { d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = o.hab; }
-  else if (tot < o.obj && m.rerolls > 0) { m.rerolls--; d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = "2ª oportunidad"; }
-  return { ok: tot >= o.obj, d, tecnico: `${ATRIB_PARTIDO[o.stat]} ${d[0]}+${d[1]}${mod >= 0 ? "+" : ""}${mod} = ${tot} vs ${o.obj}${rep ? " · repetida (" + rep + ")" : ""}` };
+  if (tot < obj && o.hab && has(o.hab)) { d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = o.hab; }
+  else if (tot < obj && m.rerolls > 0) { m.rerolls--; d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = "2ª oportunidad"; }
+  return { ok: tot >= obj, d, tecnico: `${ATRIB_PARTIDO[o.stat]} ${d[0]}+${d[1]}${mod >= 0 ? "+" : ""}${mod} = ${tot} vs ${obj}${rep ? " · repetida (" + rep + ")" : ""}` };
 };
 const PLAY_POOL = {
   saque: (pj, m) => ({ etq: "Saque", h: "La bola en tierra de nadie",
