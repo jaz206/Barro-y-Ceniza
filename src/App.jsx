@@ -4,7 +4,7 @@ const leer = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSO
 /* ====================== DATOS DE LA HISTORIA (HUMANO) ====================== */
 
 const ATRIBUTOS = ["Voluntad", "Astucia", "Ferocidad", "Honor", "Ambición"];
-const MAX_MUERTES = 3;
+const MAX_MUERTES = 2;
 
 const HUMANO = {
   nombre: "Humano", lema: "Sin nada especial, y por eso peligroso.",
@@ -1863,7 +1863,7 @@ const escenaLeyenda = () => ({
   texto: (pj) => {
     const L = (pj.legado || [])[0];
     if (!L) return "";
-    if (L.muerto) return `En la taberna del club hay un cromo viejo clavado en la pared, sin nombre. Preguntas. "${L.nombre}", dice el tabernero. "${L.raza}. Murió cuatro veces. La cuarta, nadie fue a por él". Alguien deja una jarra debajo cada semana.`;
+    if (L.muerto) return `En la taberna del club hay un cromo viejo clavado en la pared, sin nombre. Preguntas. "${L.nombre}", dice el tabernero. "${L.raza}. Murió tres veces. La tercera, nadie fue a por él". Alguien deja una jarra debajo cada semana.`;
     if (/cabina/.test(L.texto)) return `El reportero de la Cristalvisión no viene solo: en la cabina, junto a Graznido, está ${L.nombre}, ${L.raza.toLowerCase()}, retirado hace años. Habla de ti sin haberte visto jugar. "Me recuerda a alguien", dice al cristal, y no dice a quién.`;
     return `En la grada hay un viejo ${L.raza.toLowerCase()} al que la gente saluda sin acercarse. ${L.nombre}. ${L.texto.split(". ")[0]}. Te está mirando a ti, y no como se mira a un jugador: como se mira un cromo propio.`;
   },
@@ -1965,7 +1965,7 @@ const noticiasCapitulo = (pj, H, cap) => {
   if (pj.muertes > 0) n.push(`La Cristalvisión confirma que ${pj.nombre} ha muerto ${pj.muertes} ${pj.muertes === 1 ? "vez" : "veces"} en el campo. Su club: "Está perfectamente".`);
   if (pj.trofeos?.length) n.push(`${pj.nombre} acumula ${pj.trofeos.length} ${pj.trofeos.length === 1 ? "título" : "títulos"}: ${pj.trofeos.join(", ")}.`);
   if (cap.id === 6) n.push(`${pj.equipo} llega a la final del Cáliz de Barro. Las apuestas de la Cristalvisión pagan ${pj.fama >= 50 ? "poco" : "mucho"} por ${pj.nombre}.`);
-  if (cap.id === 1 && pj.legado && pj.legado.length) { const L = pj.legado[0]; n.push(L.muerto ? `Efemérides: hace años murió por cuarta vez ${L.nombre}, ${L.raza.toLowerCase()}. Nadie fue a por él. Un niño de la grada de los pobres aún pregunta quién era.` : `Efemérides: ${L.nombre}, ${L.raza.toLowerCase()}. ${L.texto.split(". ").slice(0, 2).join(". ")}.`); }
+  if (cap.id === 1 && pj.legado && pj.legado.length) { const L = pj.legado[0]; n.push(L.muerto ? `Efemérides: hace años murió por tercera vez ${L.nombre}, ${L.raza.toLowerCase()}. Nadie fue a por él. Un niño de la grada de los pobres aún pregunta quién era.` : `Efemérides: ${L.nombre}, ${L.raza.toLowerCase()}. ${L.texto.split(". ").slice(0, 2).join(". ")}.`); }
   n.push(NOTICIAS_MUNDO[(cap.id * 3 + (pj.nombre.length || 0)) % NOTICIAS_MUNDO.length]);
   if ((cap.id + (pj.nombre.length || 0)) % 2 === 0) n.push(NOTICIAS_ABSURDAS[(cap.id * 2 + (pj.nombre.length || 0)) % NOTICIAS_ABSURDAS.length]);
   return n;
@@ -2335,6 +2335,49 @@ const HERIDA_PROSA = {
   ],
 };
 
+/* Relato de la muerte según la etapa: no es lo mismo morir de crío que en el
+   ocaso. Se intercala entre cómo caíste y cómo vuelves (el apotecario, Ludo…).
+   PENDIENTE DE REVISIÓN: lo escribió Claude imitando la voz del cliente. */
+const MUERTE_ETAPA = {
+  humano: {
+    1: "Catorce años y ya en la camilla. En el Matadero dirán que el barrio se come a los suyos antes de que aprendan a andar.",
+    2: "Aún no habías firmado con nadie. Morir sin nombre, en un campo de nabos, es la muerte más barata que hay.",
+    3: "Un charquero muerto en Sexta. Ni la Cristalvisión se entera; los Charcos te velan con la cerveza que sobró del domingo.",
+    4: "Empezabas a sonar, y el barro te calla. Puerto Maren huele a sal y a lo que ya no vas a ser.",
+    5: "Justo cuando subías. Las ciudades que ibas a conocer se quedan sin ti, y tu nombre a medio pronunciar.",
+    6: "En la cima, con el Estadio Imperial mirando. Una muerte de las que repiten en el cristal tres veces.",
+    7: "Un veterano que no se levanta. La grada aplaude de pie, que es como se despide a los que ya lo habían dado todo.",
+  },
+  enano: {
+    1: "Un enano joven en Segunda. Baraz-Ankor no llora: graba la fecha en la piedra de la puerta y sigue.",
+    2: "En plena caída, con los Cascos bajando. Morir descendiendo es lo único peor que descender.",
+    3: "En Tercera, contra campos con vacas. Un final sin honor para un enano, y los viejos lo saben.",
+    4: "Lejos de la montaña, entre humanos que corren. Morir fuera de la caja es morir dos veces para un enano.",
+    5: "Volviendo a casa, con la bolsa a medio deshacer. Baraz-Ankor te esperaba, y te espera igual, pero bajo la piedra.",
+    6: "En Primera, trescientos años después. Si hay una muerte que un enano firma, es esta.",
+    7: "Viejo, con la barba entera. Los enanos no lloran a los que mueren a tiempo: brindan.",
+  },
+  orco: {
+    1: "Una cría del río, muerta antes de tener nombre. En la charca eso pasa cada día y a nadie le importa.",
+    2: "Recién teníais campo, y ya un muerto. Da Banda cava un hoyo y sigue: hay partido el domingo.",
+    3: "Con el troll a dos pasos y sin poder hacer nada. Morir así, en Sexta, es de risa hasta para un orco.",
+    4: "Justo cuando la banda empezaba a tener nombre. Se lo quedan los goblins, que para eso están.",
+    5: "Debiendo oro al doscientos por ciento. Tu cadáver también debe: alguien vendrá a cobrárselo.",
+    6: "En la trampa del Rey, como estaba escrito. Gorgomor sonríe: un orco menos que le discuta la charca.",
+    7: "Viejo, para lo que dura un orco. Da Banda ruge tu nombre una noche y a la mañana ya son otros.",
+  },
+  elfo: {
+    1: "En Primera, en lo más alto, con trescientos años a la espalda. Una elfa no debería caer tan pronto; tú caes al principio.",
+    2: "Ya en descenso, en Segunda. La corte de Ellorien aparta la mirada: los elfos no ven caer a uno de los suyos.",
+    3: "Entre humanos, en Cuarta, aprendiendo a placar. Morir mientras te ensuciabas las manos por primera vez tiene su ironía.",
+    4: "En Sexta, en el barro de Grünburg, más abajo de lo que ninguna hoja llegó. Nadie de la corte vendrá a buscarte.",
+    5: "En el borde, con la revancha a un paso. Trescientos años para morir justo antes de saber si valió la pena.",
+    6: "En la final de Sexta, jugando por una copa de nabos. La Reina no lo verá; tú tampoco.",
+    7: "Al fin vieja, para lo que dura un humano. Tú, que ibas a durar siglos, mueres a su ritmo, y quizá por eso sonríes.",
+  },
+};
+const etapaMuerte = (raza, cap) => (MUERTE_ETAPA[raza] && MUERTE_ETAPA[raza][cap]) || "";
+
 const nuevoPj = (nombre, raza) => {
   const H = HISTORIAS[raza];
   const f = H.fichaInicial || H.base; // los que empiezan de crío arrancan con menos
@@ -2699,8 +2742,9 @@ export default function App() {
       setCronica((c) => [...c, `Cayó en el campo contra ${escena.partido.rival} (${m.marcador[0]}-${m.marcador[1]}). ${comoCayo}`]);
       if (n > MAX_MUERTES) { setPj({ ...q, muertes: n }); setMt(null); setFase("muerteFinal"); guardarVida(`${pj.nombre} murió en el barro y nadie vino.`, true); return; }
       const md = MUERTES[n - 1];
+      const etapa = etapaMuerte(q.raza, ORDEN[idx].cap);
       const { q: q2, chips } = aplicar({ ...q, muertes: n }, md.fx);
-      setPj(q2); setMt(null); setMuerteInfo({ ...md, texto: (comoCayo ? comoCayo + " " : "") + md.texto, chips }); setFase("muerte");
+      setPj(q2); setMt(null); setMuerteInfo({ ...md, texto: [comoCayo, etapa, md.texto].filter(Boolean).join(" "), chips }); setFase("muerte");
       return;
     }
     if (herido) setPj(q);
@@ -2844,10 +2888,11 @@ export default function App() {
   const continuar = () => {
     if (panel?.muerte) {
       const n = pj.muertes + 1;
-      if (n > MAX_MUERTES) { setPj((p) => ({ ...p, muertes: n })); setPanel(null); setFase("muerteFinal"); guardarVida(`${pj.nombre} murió por cuarta vez y nadie vino.`, true); return; }
+      if (n > MAX_MUERTES) { setPj((p) => ({ ...p, muertes: n })); setPanel(null); setFase("muerteFinal"); guardarVida(`${pj.nombre} murió por tercera vez y nadie vino.`, true); return; }
       const m = MUERTES[n - 1];
+      const etapa = etapaMuerte(pj.raza, ORDEN[idx].cap);
       const { q, chips } = aplicar({ ...pj, muertes: n }, m.fx);
-      setPj(q); setMuerteInfo({ ...m, chips }); setPanel(null); setFase("muerte");
+      setPj(q); setMuerteInfo({ ...m, texto: [etapa, m.texto].filter(Boolean).join(" "), chips }); setPanel(null); setFase("muerte");
       setCronica((c) => [...c, `Murió en el campo. ${m.titulo} lo devolvió.`]);
       return;
     }
@@ -3010,7 +3055,7 @@ export default function App() {
           </button>
         ))}
       </div>
-      <p className="lead">{H.portada} Puedes morir tres veces. La cuarta no cuenta.</p>
+      <p className="lead">{H.portada} Puedes morir dos veces. La tercera no cuenta.</p>
       {vidas.length > 0 && <p className="mini">Es el mismo mundo: {vidas[0].nombre} sigue ahí, en una grada, en una cabina o en una tumba, y esta vida se cruzará con la suya.</p>}
       <label className="campo"><span>Tu nombre</span><input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder={{ humano: "Josef hijo, Anselm, Ludo...", enano: "Balin, Thora, Brokk el joven...", orco: "El Pequeño, Zugrat, Morfang...", elfo: "Aelindra, Ithildae, Nimue..." }[raza]} /></label>
       <button className="btn" onClick={empezar}>Abrir el libro</button>
@@ -3302,7 +3347,7 @@ export default function App() {
 
   const MuerteFinal = () => (
     <div className="pag centro">
-      <h1 className="titulo">La cuarta no cuenta</h1>
+      <h1 className="titulo">La tercera no cuenta</h1>
       <p className="lead">Nadie viene. Ni el apotecario, ni Ludo, ni el hombre de negro. El público aplaude un rato y luego mira el marcador. En la grada de los pobres, un niño pregunta quién eras.</p>
       <p className="etq">Crónica</p>
       <ol className="cronica">{cronica.map((c, i) => <li key={i}>{c}</li>)}</ol>
