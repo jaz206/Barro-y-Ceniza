@@ -96,15 +96,17 @@ const HUMANO = {
 
   /* ---------------- CAPÍTULO 2 ---------------- */
   puerto: {
-    titulo: "Los tres caminos",
-    texto: (pj) => `Dieciséis años. Ya eres más alto que tu padre. La ciudad te ofrece lo de siempre: la guardia de la ciudad busca reclutas que sepan tragarse órdenes; en el puerto se pelea por dinero en un almacén sin ventanas${pj.flags.bizco ? ", y el Bizco, que sigue vivo, te ha guardado sitio" : ""}; y Ernst, cada vez más encorvado, sigue enseñándote a caer junto al muro sin cobrarte nada.`,
+    titulo: "Los cuatro caminos",
+    texto: (pj) => `Dieciséis años. Ya eres más alto que tu padre. La ciudad te ofrece lo de siempre: la guardia de la ciudad busca reclutas que sepan tragarse órdenes; en el puerto se pelea por dinero en un almacén sin ventanas${pj.flags.bizco ? ", y el Bizco, que sigue vivo, te ha guardado sitio" : ""}; y Ernst, cada vez más encorvado, sigue enseñándote sin cobrarte nada: a caer junto al muro, y a leer el campo desde la grada antes de que la jugada pase.`,
     opciones: [
       { txt: "El almacén del puerto. Pelear por dinero.", fx: { Ferocidad: 2, oro: 30, stat: { AV: 1 }, flag: "peleas" },
         msg: "Un invierno de peleas. Te rompen la nariz dos veces y aprendes a que no importe. Tu armadura ya no es de cuero: es de costumbre." },
-      { txt: "La guardia de la ciudad.", fx: { Voluntad: 2, Honor: 1, oro: 15, hab: "Placar" },
+      { txt: "La guardia de la ciudad.", fx: { Voluntad: 2, Honor: 1, oro: 15 },
         msg: "Un año de guardias, de escudo y de formación. Aprendes a plantarte y a que no te muevan. Y a odiar las órdenes." },
       { txt: "Todos los días con Ernst en el muro.", req: { rel: ["ernst", 2] }, forzable: true, fx: { Astucia: 1, stat: { AG: 1 }, hab: "Esquivar", rel: { ernst: 2 } },
         msg: "Ernst te enseña a caer, a levantarte y a no estar donde te esperan. 'La velocidad es saber antes', dice. Un día ya no viene." },
+      { txt: "Con Ernst en la grada, leyendo el campo. Ver el hueco antes de que exista.", req: { rel: ["ernst", 1] }, forzable: true, fx: { Astucia: 2, hab: "Pasar", rel: { ernst: 1 } },
+        msg: "No corres ni peleas: miras. Ernst te hace contar jugadas en voz alta hasta que las adivinas. 'La mayoría mira el balón', dice. 'Tú mira el hueco. El balón acaba yendo ahí'." },
     ] },
   padre: {
     titulo: "Lo que pesa más que tú",
@@ -138,10 +140,10 @@ const HUMANO = {
       { txt: "Tumbar a Grimm en la primera jugada.", req: { Ferocidad: 3 }, forzable: true, tirada: { stat: "ST", obj: 9, riesgo: true,
         ok: { txt: "Grimm cae. Se levanta despacio, se quita el barro y te da la mano. 'Firmado'. Los otros veintinueve se van a casa.", fx: { fama: 5, Ferocidad: 1, rel: { grimm: 2 }, hab: "Placar", flag: "fichado", flags: ["perfilBlitzer"] } },
         ko: { txt: "Grimm no cae. Tú sí, y mal. Hobart te ficha de todas formas: 'Necesito a alguien que sepa levantarse'.", fx: { Voluntad: 1, rel: { grimm: 1 }, flag: "fichado", flags: ["perfilBlitzer"] } } } },
-      { txt: "Marcar sin que nadie te toque.", req: { Astucia: 3 }, forzable: true, tirada: { stat: "AG", obj: 9, riesgo: false,
+      { txt: "Marcar sin que nadie te toque.", req: { hab: "Esquivar" }, forzable: true, tirada: { stat: "AG", obj: 9, riesgo: false,
         ok: { txt: "Bailas entre los tres que te salen al paso y cruzas la línea rozando a la vaca. Grimm silba. 'Ernst te ha enseñado bien'.", fx: { fama: 5, Astucia: 1, rel: { grimm: 1 }, hab: "Esquivar", flag: "fichado", flags: ["perfilReceptor"] } },
         ko: { txt: "Te cortan el paso y acabas en el charco, que en Grünburg es la mitad del campo. Hobart te ficha porque el otro aspirante se ha ido con la vaca.", fx: { rel: { grimm: 0 }, flag: "fichado", flags: ["perfilReceptor"] } } } },
-      { txt: "No tocar a nadie. Ver el hueco antes de que se abra y poner el balón ahí.", req: { Astucia: 3 }, forzable: true, tirada: { stat: "AG", obj: 9, riesgo: false,
+      { txt: "No tocar a nadie. Ver el hueco antes de que se abra y poner el balón ahí.", req: { hab: "Pasar" }, forzable: true, tirada: { stat: "AG", obj: 9, riesgo: false,
         ok: { txt: "No corres: esperas. Cuando los treinta miran la vaca, sueltas un pase raso que cruza el campo de nabos y cae en las manos del único que se había movido. Grimm no silba. Se te queda mirando. 'Firmado. Y no por pegar'.", fx: { fama: 5, Astucia: 1, rel: { grimm: 1 }, hab: "Pasar", flag: "fichado", flags: ["perfilLanzador"] } },
         ko: { txt: "El pase se va largo y le da a la vaca, que ni levanta la cabeza. Se ríen. Hobart te ficha igual: 'Al menos miras antes de soltarla. Aquí no lo hace nadie'.", fx: { Voluntad: 1, rel: { grimm: 1 }, flag: "fichado", flags: ["perfilLanzador"] } } } },
       { txt: "Hacer lo que Grimm diga, jugada por jugada.", fx: { Honor: 1, Voluntad: 1, rel: { grimm: 2 }, flag: "fichado", flags: ["perfilLiniero"] },
