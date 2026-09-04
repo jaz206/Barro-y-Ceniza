@@ -136,12 +136,15 @@ const HUMANO = {
     texto: (pj) => `Los Charcos de Grünburg, de Sexta División, hacen pruebas en un campo de nabos a dos días de Valdoria. El entrenador es también el granjero, se llama Hobart, y hay una vaca en la zona de anotación. Treinta aspirantes. Dos plazas. ${pj.flags.recomendacionKurt ? "Hobart tiene una carta de Kurt en el bolsillo y no parece impresionado." : "Nadie sabe quién eres."} Su capitán, un veterano con placa en la cabeza llamado Grimm, va a probarte él mismo.`,
     opciones: [
       { txt: "Tumbar a Grimm en la primera jugada.", req: { Ferocidad: 3 }, forzable: true, tirada: { stat: "ST", obj: 9, riesgo: true,
-        ok: { txt: "Grimm cae. Se levanta despacio, se quita el barro y te da la mano. 'Firmado'. Los otros veintinueve se van a casa.", fx: { fama: 5, Ferocidad: 1, rel: { grimm: 2 }, hab: "Placar", flag: "fichado" } },
-        ko: { txt: "Grimm no cae. Tú sí, y mal. Hobart te ficha de todas formas: 'Necesito a alguien que sepa levantarse'.", fx: { Voluntad: 1, rel: { grimm: 1 }, flag: "fichado" } } } },
+        ok: { txt: "Grimm cae. Se levanta despacio, se quita el barro y te da la mano. 'Firmado'. Los otros veintinueve se van a casa.", fx: { fama: 5, Ferocidad: 1, rel: { grimm: 2 }, hab: "Placar", flag: "fichado", flags: ["perfilBlitzer"] } },
+        ko: { txt: "Grimm no cae. Tú sí, y mal. Hobart te ficha de todas formas: 'Necesito a alguien que sepa levantarse'.", fx: { Voluntad: 1, rel: { grimm: 1 }, flag: "fichado", flags: ["perfilBlitzer"] } } } },
       { txt: "Marcar sin que nadie te toque.", req: { Astucia: 3 }, forzable: true, tirada: { stat: "AG", obj: 9, riesgo: false,
-        ok: { txt: "Bailas entre los tres que te salen al paso y cruzas la línea rozando a la vaca. Grimm silba. 'Ernst te ha enseñado bien'.", fx: { fama: 5, Astucia: 1, rel: { grimm: 1 }, hab: "Esquivar", flag: "fichado" } },
-        ko: { txt: "Te cortan el paso y acabas en el charco, que en Grünburg es la mitad del campo. Hobart te ficha porque el otro aspirante se ha ido con la vaca.", fx: { rel: { grimm: 0 }, flag: "fichado" } } } },
-      { txt: "Hacer lo que Grimm diga, jugada por jugada.", fx: { Honor: 1, Voluntad: 1, rel: { grimm: 2 }, flag: "fichado" },
+        ok: { txt: "Bailas entre los tres que te salen al paso y cruzas la línea rozando a la vaca. Grimm silba. 'Ernst te ha enseñado bien'.", fx: { fama: 5, Astucia: 1, rel: { grimm: 1 }, hab: "Esquivar", flag: "fichado", flags: ["perfilReceptor"] } },
+        ko: { txt: "Te cortan el paso y acabas en el charco, que en Grünburg es la mitad del campo. Hobart te ficha porque el otro aspirante se ha ido con la vaca.", fx: { rel: { grimm: 0 }, flag: "fichado", flags: ["perfilReceptor"] } } } },
+      { txt: "No tocar a nadie. Ver el hueco antes de que se abra y poner el balón ahí.", req: { Astucia: 3 }, forzable: true, tirada: { stat: "AG", obj: 9, riesgo: false,
+        ok: { txt: "No corres: esperas. Cuando los treinta miran la vaca, sueltas un pase raso que cruza el campo de nabos y cae en las manos del único que se había movido. Grimm no silba. Se te queda mirando. 'Firmado. Y no por pegar'.", fx: { fama: 5, Astucia: 1, rel: { grimm: 1 }, hab: "Pasar", flag: "fichado", flags: ["perfilLanzador"] } },
+        ko: { txt: "El pase se va largo y le da a la vaca, que ni levanta la cabeza. Se ríen. Hobart te ficha igual: 'Al menos miras antes de soltarla. Aquí no lo hace nadie'.", fx: { Voluntad: 1, rel: { grimm: 1 }, flag: "fichado", flags: ["perfilLanzador"] } } } },
+      { txt: "Hacer lo que Grimm diga, jugada por jugada.", fx: { Honor: 1, Voluntad: 1, rel: { grimm: 2 }, flag: "fichado", flags: ["perfilLiniero"] },
         msg: "Obedeces cada indicación. No brillas. Grimm te elige: 'Los que brillan se van. Los que escuchan se quedan'." },
     ] },
 
@@ -2027,27 +2030,33 @@ const PE = (raza) => ({ td: brutos(raza) ? 2 : 3, baja: brutos(raza) ? 3 : 2, pa
 const ordenDe = (H) => H.capitulos.flatMap((c) => c.escenas.map((e) => ({ cap: c.id, id: e })));
 
 /* ============ POSICIÓN EMERGENTE (piloto del humano) ============
-   Deduce en qué jugador te has convertido a partir de lo que has construido
-   (habilidades y características). No decide nada de la partida: solo etiqueta.
+   La posición se ANCLA el día que firmas: la prueba de Grünburg deja una marca
+   perfilX según cómo te presentaste (a base de pegar, correr, pasar o escuchar).
+   Antes de firmar se estima la tendencia por atributos y habilidades, solo para
+   el "en formación". No decide nada de la partida: solo etiqueta.
    Ver docs/posicion-emergente-piloto-humano.md. */
 const PERFIL_POS = {
-  Blitzer:  { skills: ["Placar", "Placaje defensivo", "Golpe mortífero", "Furia", "Agallas", "Defensa", "Romper defensas"], desc: "Un ariete. Placas, presionas y dejas gente en el barro." },
-  Receptor: { skills: ["Esquivar", "Atrapar", "Saltar", "Esprintar", "Pies firmes", "Abrirse paso"], desc: "Velocidad y manos. Corres la banda y recibes lo imposible." },
-  Lanzador: { skills: ["Pasar", "Manos seguras", "Precisión", "Nervios de acero"], desc: "La cabeza del equipo. Mueves la bola con el brazo." },
+  Blitzer:  { desc: "Un ariete. Placas, presionas y dejas gente en el barro.", skills: ["Placar", "Placaje defensivo", "Golpe mortífero", "Furia", "Agallas", "Defensa", "Romper defensas"] },
+  Receptor: { desc: "Velocidad y manos. Corres la banda y recibes lo imposible.", skills: ["Esquivar", "Atrapar", "Saltar", "Esprintar", "Pies firmes", "Abrirse paso"] },
+  Lanzador: { desc: "La cabeza del equipo. Mueves la bola con el brazo.", skills: ["Pasar", "Manos seguras", "Precisión", "Nervios de acero"] },
 };
 const LINIERO = { clave: "Liniero", nombre: "Liniero", desc: "Un currante de línea. No brillas en nada concreto, y por eso estás en todo." };
-// Devuelve { clave, nombre, desc } con la posición a la que más te pareces.
+const conDesc = (clave) => clave === "Liniero" ? LINIERO : { clave, nombre: clave, desc: PERFIL_POS[clave].desc };
+// Devuelve { clave, nombre, desc }: la posición anclada al firmar, o la tendencia.
 const puestoEmergente = (pj) => {
-  const s = { Blitzer: 0, Receptor: 0, Lanzador: 0 };
-  for (const [pos, def] of Object.entries(PERFIL_POS)) for (const h of pj.hab) if (def.skills.includes(h)) s[pos] += 1;
-  if (pj.ST > 3) s.Blitzer += pj.ST - 3;
-  if (pj.MA > 7) s.Receptor += pj.MA - 7;
-  if (pj.AG > 3) { s.Receptor += (pj.AG - 3) * 0.5; s.Lanzador += (pj.AG - 3) * 0.5; }
-  if (pj.AV < 9) s.Receptor += 0.5;
+  const f = pj.flags || {};
+  if (f.perfilBlitzer) return conDesc("Blitzer");
+  if (f.perfilReceptor) return conDesc("Receptor");
+  if (f.perfilLanzador) return conDesc("Lanzador");
+  if (f.perfilLiniero) return LINIERO;
+  // Aún sin firmar: tendencia por atributos narrativos + habilidades sueltas.
+  const a = pj.atr || {};
+  const s = { Blitzer: (a.Ferocidad || 0), Receptor: (a.Ambición || 0) * 0.6 + (a.Astucia || 0) * 0.3, Lanzador: (a.Astucia || 0) * 0.6 };
+  for (const [pos, def] of Object.entries(PERFIL_POS)) for (const h of pj.hab) if (def.skills.includes(h)) s[pos] += 2;
   let mejor = null, max = 0;
   for (const [pos, v] of Object.entries(s)) if (v > max) { max = v; mejor = pos; }
-  if (!mejor || max < 1) return LINIERO;
-  return { clave: mejor, nombre: mejor, desc: PERFIL_POS[mejor].desc };
+  if (!mejor || max < 2) return LINIERO;
+  return conDesc(mejor);
 };
 
 const nuevoPj = (nombre, raza) => {
