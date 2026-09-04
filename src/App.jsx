@@ -2065,7 +2065,7 @@ const nuevoPj = (nombre, raza) => {
   const H = HISTORIAS[raza];
   return { nombre, raza, atr: { Voluntad: 1, Astucia: 1, Ferocidad: 1, Honor: 1, Ambición: 1 },
     MA: H.base.MA, ST: H.base.ST, AG: H.base.AG, AV: H.base.AV, hab: [...H.base.hab],
-    rel: { ...H.relInicial }, oro: 0, fama: 0, pv: 2, muertes: 0, flags: {}, palmares: [], spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], lesiones: 0,
+    rel: { ...H.relInicial }, oro: 0, fama: 0, pv: 2, muertes: 0, flags: {}, palmares: [], spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], lesiones: 0, formaPend: 0,
     division: 6, equipo: H.equipoInicial };
 };
 
@@ -2111,6 +2111,7 @@ const aplicar = (pj, fx) => {
     else if (k === "division") { q.division = v; chips.push(`División ${v}`); }
     else if (k === "equipo") { q.equipo = v; chips.push(`Fichas por ${v}`); }
     else if (k === "ventaja") { q.flags.ventaja = true; chips.push("El árbitro está comprado"); }
+    else if (k === "forma") { q.formaPend = (q.formaPend || 0) + v; chips.push(`Forma: +${v} a tus tiradas del próximo partido`); }
   }
   return { q, chips };
 };
@@ -2181,7 +2182,16 @@ export default function App() {
 
   /* ---------- entreacto ---------- */
   const elegirEntreacto = (act) => {
-    const { q, chips } = aplicar(pj, act.fx);
+    // Ya profesional (fichado): las tardes dejan de subir características y dan
+    // "forma" (empujón temporal para el próximo partido). Antes de firmar suben
+    // características como siempre. Ver decisión de producto de las tardes libres.
+    let fx = act.fx;
+    if (pj.flags.fichado && fx.stat) {
+      const n = Object.values(fx.stat).reduce((a, b) => a + b, 0);
+      const { stat, ...resto } = fx;
+      fx = { ...resto, forma: n };
+    }
+    const { q, chips } = aplicar(pj, fx);
     setPj(q);
     setCronica((c) => [...c, `Entre capítulos: ${act.txt}`]);
     setEntre({ ...entre, hechas: [...entre.hechas, act.id], panel: { texto: act.msg, chips } });
@@ -2270,7 +2280,7 @@ export default function App() {
     const linea = [];
     let tecnico = "";
     const tirar = (stat, obj, bonus, riesgo, habRel) => {
-      const mod = (stat === "MA" ? Math.floor(pj.MA / 3) : pj[stat]) + bonus + fat + climaMod(stat, riesgo);
+      const mod = (stat === "MA" ? Math.floor(pj.MA / 3) : pj[stat]) + bonus + fat + climaMod(stat, riesgo) + (pj.formaPend || 0);
       let d = [d6(), d6()], tot = d[0] + d[1] + mod, rep = null;
       if (tot < obj && habRel && has(habRel)) { d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = habRel; }
       else if (tot < obj && m.rerolls > 0) { m.rerolls--; d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = "2ª oportunidad"; }
@@ -2374,7 +2384,7 @@ export default function App() {
     const statMod = t.stat === "MA" ? Math.floor(base.MA / 3) : base[t.stat];
     const atrKey = t.stat === "ST" ? "Ferocidad" : t.stat === "AG" ? "Astucia" : "Voluntad";
     const atrMod = Math.floor(base.atr[atrKey] / 3);
-    let mod = statMod + atrMod + ((base.flags.ventaja || (mt && mt.faltaGratis)) && t.falta ? 2 : 0);
+    let mod = statMod + atrMod + ((base.flags.ventaja || (mt && mt.faltaGratis)) && t.falta ? 2 : 0) + (base.formaPend || 0);
     const llevas = ["cantoRoto", "placaEntregada", "cancionPuerta", "promesaBruk", "chicoDesague", "crioPuerta", "ojoEntregado", "jarraEntregada", "bendicionLeyenda", "cromoLeyenda", "grimnirTuvoSuTroll", "dorinSeFueAndando", "dorinAnoto", "contasteConSnotlig", "huecoEnGorgomor", "amanecerConBerthold", "bailasteDeNoche", "recetaParaTodos"].filter((f) => base.flags[f]);
     if (escena.partido && llevas.length) mod += 1;
     const ulrich = escena.partido && ORDEN[idx].cap === 6 && (base.flags.enemigoUlrich || base.flags.rencorUlrich);
@@ -2438,6 +2448,7 @@ export default function App() {
       if (mvp) { q.spp += tabla.mvp; chips.push(`Jugador del partido (+${tabla.mvp} PE)`); }
       const cr = q.car || {};
       q.car = { pj: (cr.pj || 0) + 1, td: (cr.td || 0) + m.tds + (rama.fx.gol ? 1 : 0), baja: (cr.baja || 0) + bajasTot, pase: (cr.pase || 0) + (m.pases || 0), mvp: (cr.mvp || 0) + (mvp ? 1 : 0) };
+      if (q.formaPend) { chips.push(`Forma gastada (+${q.formaPend} este partido)`); q.formaPend = 0; }
       if (q.flags.apaleado) { const f = { ...q.flags }; delete f.apaleado; q.flags = f; }
       if (m.cubiertos.length) { q.rel = { ...q.rel, club: Math.min(5, q.rel.club + 1) }; chips.push(`${RELACIONES.club} +1 (cubriste a ${m.cubiertos.join(", ")})`); }
       if (escena.partido.torneo && res === "Victoria") { q.trofeos = [...(q.trofeos || []), escena.partido.torneo]; chips.push(`Trofeo: ${escena.partido.torneo}`); q.fama += 10; }
