@@ -2341,7 +2341,14 @@ const aplicar = (pj, fx) => {
     else if (k === "rel") for (const [r, n] of Object.entries(v)) { if (n) { q.rel[r] = Math.max(-5, Math.min(5, q.rel[r] + n)); chips.push(`${RELACIONES[r]} ${n > 0 ? "+" : ""}${n}`); } }
     else if (k === "flag") { q.flags[v] = true; chips.push(`Recuerdo: ${v}`); }
     else if (k === "flags") { for (const f of v) q.flags[f] = true; }
-    else if (k === "stat") for (const [s, n] of Object.entries(v)) { q[s] = Math.max(1, q[s] + n); chips.push(`${n > 0 ? "+" : ""}${n} ${s}`); }
+    else if (k === "stat") for (const [s, n] of Object.entries(v)) {
+      // De crío las subidas no pasan de la ficha del reglamento (base): así, al
+      // firmar, tu ficha es exactamente la estándar, ni por encima.
+      const tope = q.pro ? Infinity : (HISTORIAS[q.raza].base[s] ?? Infinity);
+      const nuevo = Math.max(1, Math.min(tope, q[s] + n));
+      if (nuevo !== q[s]) { chips.push(`${nuevo - q[s] > 0 ? "+" : ""}${nuevo - q[s]} ${s}`); q[s] = nuevo; }
+      else if (n > 0) chips.push(`${s} ya al máximo antes de firmar`);
+    }
     else if (k === "hab") { if (!q.hab.includes(v)) { q.hab.push(v); chips.push(`Habilidad: ${v}`); } }
     else if (k === "mut") { if (Math.random() < 0.5) { q.ST += 1; chips.push("Mutación: +1 ST"); } else { q.AG -= 1; chips.push("Mutación: −1 AG"); } }
     else if (k === "division") { q.division = v; chips.push(`División ${v}`); }
@@ -2427,11 +2434,12 @@ export default function App() {
 
   /* ---------- entreacto ---------- */
   const elegirEntreacto = (act) => {
-    // Ya profesional (fichado): las tardes dejan de subir características y dan
-    // "forma" (empujón temporal para el próximo partido). Antes de firmar suben
-    // características como siempre. Ver decisión de producto de las tardes libres.
+    // Ya profesional (pj.pro): las tardes dejan de subir características y dan
+    // "forma" (empujón temporal para el próximo partido), como el reglamento
+    // (las características ya solo suben al subir de nivel). De crío suben
+    // características, pero sin pasar de la ficha estándar (tope en aplicar).
     let fx = act.fx;
-    if (pj.flags.fichado && fx.stat) {
+    if (pj.pro && fx.stat) {
       const n = Object.values(fx.stat).reduce((a, b) => a + b, 0);
       const { stat, ...resto } = fx;
       fx = { ...resto, forma: n };
@@ -2963,7 +2971,7 @@ export default function App() {
                   <div key={a.id} className={`opcion ${!ok ? "bloq" : ""}`}>
                     <button disabled={!ok} onClick={() => elegirEntreacto(a)}>
                       <b>{a.txt}</b>
-                      <span className="mini">{Object.entries(a.fx).map(([k, v]) => k === "stat" ? Object.entries(v).map(([st, n]) => `+${n} ${st}`).join(", ") : k === "rel" ? Object.entries(v).map(([r, n]) => `${RELACIONES[r]} ${n > 0 ? "+" : ""}${n}`).join(", ") : k === "fama" ? `+${v} fama` : `${v > 0 ? "+" : ""}${v} ${k}`).join(" · ")}</span>
+                      <span className="mini">{Object.entries(a.fx).map(([k, v]) => k === "stat" ? (pj.pro ? `+${Object.values(v).reduce((x, y) => x + y, 0)} forma (próximo partido)` : Object.entries(v).map(([st, n]) => `+${n} ${st}`).join(", ")) : k === "rel" ? Object.entries(v).map(([r, n]) => `${RELACIONES[r]} ${n > 0 ? "+" : ""}${n}`).join(", ") : k === "fama" ? `+${v} fama` : `${v > 0 ? "+" : ""}${v} ${k}`).join(" · ")}</span>
                       {a.req && !ok && <span className="req">Requiere: {textoReq(a.req, RELACIONES)}</span>}
                     </button>
                   </div>

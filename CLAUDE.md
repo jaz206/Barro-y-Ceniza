@@ -192,10 +192,16 @@ números en los informes enlazados abajo.
    distinguen "aún sin fichar" de profesional. *Nota:* la subida sube (nunca
    baja), así que lo que crezcas de crío se conserva al firmar. Sigue pendiente
    el punto 3 (las tardes libres pueden inflar antes de firmar).
-3. **Las tardes libres.** Suben características y se pueden repetir cada
-   capítulo: hasta **+12** en una partida. El tope de BB2020 son **2 subidas en
-   toda la vida del jugador**. Propuesta: que suban características solo antes de
-   firmar, y después den habilidades y "forma".
+3. ~~**Las tardes libres.**~~ **HECHO (2026-09-04).** Ya no inflan la ficha:
+   **antes de firmar** (de crío) suben características, pero **con tope en la
+   ficha del reglamento** (no puedes pasarte); **después de firmar** (`pj.pro`)
+   dan **"forma"** (empujón temporal para el próximo partido) en vez de
+   características, como el reglamento (las características ya solo suben al
+   subir de nivel). Así, al llegar a profesional, tu ficha es **exactamente la
+   estándar**. El cambio vive en `elegirEntreacto` (stat→forma si `pro`) y en
+   el tope de `aplicar` (las subidas de crío no pasan de `base`). Verificado:
+   el enano (profesional desde el principio) recibe "forma"; el humano de crío
+   recibe "+1 ST/AG" capado.
 4. **Las tres muertes.** Solo ocurren en el **0,6 %** de las partidas (medido
    simulando la propia fórmula del juego 200.000 veces). O se fuerzan, o se
    quitan de la portada.
