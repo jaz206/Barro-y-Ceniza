@@ -2061,6 +2061,62 @@ const puestoEmergente = (pj) => {
   return conDesc(mejor);
 };
 
+/* ===== LIGUILLA (Fase 3: contexto de campeonato, híbrida) =====
+   Tu fila sale de tus resultados de verdad (palmarés en la división actual);
+   los rivales están simulados alrededor, de forma estable. No es un simulador
+   de temporada: es el contexto de "qué campeonato juegas y cómo vas". */
+const DIV_NOMBRE = { 1: "Primera División", 2: "Segunda División", 3: "Tercera División", 4: "Cuarta División", 5: "Quinta División", 6: "Sexta División" };
+// División que juega cada rama en cada capítulo (null = sin liga: infancia/ocaso).
+const DIV_POR_CAP = {
+  humano: { 3: 6, 4: 5, 5: 2, 6: 1 },
+  enano: { 1: 2, 2: 2, 3: 3, 4: 3, 5: 2, 6: 1 },
+  orco: { 2: 6, 3: 6, 4: 5, 5: 4, 6: 3 },
+  elfo: { 1: 1, 2: 2, 3: 4, 4: 6, 5: 6, 6: 6 },
+};
+const divisionDe = (raza, cap) => (DIV_POR_CAP[raza] || {})[cap] || null;
+const RIVALES_DIV = {
+  1: ["Las Hojas de Ellorien", "Los Halcones de Valdoria", "Los Rompecráneos de Gorgomor", "Los Cuervos de Mortaigne", "Los Lobos de Kärngard", "Los Titanes de Ostwall", "Las Lanzas de Silbereck", "Los Reyes de Drakenhof"],
+  2: ["Los Cascos de Hierro de Baraz-Ankor", "Las Espinas de Cythel", "Los Yunques de Baraz Kadrin", "Los Osos de Tannheim", "Los Mazos de Grauberg", "Los Grifos de Adlerstein", "Los Cuervos de Rabenfeld", "Los Bisontes de Wisent"],
+  3: ["Los Yunques de Baraz Kadrin", "Los Segadores de Kleinfeld", "Los Toros Rojos de Norburgo", "Los Jabalíes de Ebersweil", "Los Martillos de Steinbach", "Los Zorros de Fuchsbau", "Los Tejones de Dachsloch", "Los Cuervos de Krähenberg"],
+  4: ["Los Comebichos de la Charca Vieja", "Los Cuatro Dedos", "Los Diente-rotos", "Los Toros Rojos de Norburgo", "Los Sapos de Sumpfheim", "Los Buitres de Geierfels", "Las Sanguijuelas de Blutbach", "Los Perros de Hundsdorf"],
+  5: ["Los Estibadores de Puerto Maren", "Los Arponeros de Puerto Maren", "Los Toros Rojos de Norburgo", "Las Botas de Altwasser", "Los Herreros de Eisenhutt", "Los Cerdos de Marktdorf", "Las Ratas de Sumpfloch", "Los Molineros de Mühlbach"],
+  6: ["Los Cuervos de Kleinfeld", "Los Segadores de Kleinfeld", "Los Charcos de Grünburg", "Los Pisapiedras de la Charca Negra", "Los Panzudos de Molino Viejo", "Las Botas de Altwasser", "Los Cerdos de Marktdorf", "Las Ratas de Sumpfloch"],
+};
+// Barajado determinista (mismo orden en cada render de la misma partida).
+const barajaDet = (arr, seed) => {
+  const a = [...arr]; let s = seed;
+  for (let i = a.length - 1; i > 0; i--) { s = (s * 1103515245 + 12345) & 0x7fffffff; const j = s % (i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+};
+const tablaLiga = (pj, cap) => {
+  const raza = pj.raza, div = divisionDe(raza, cap.id);
+  if (!div) return null;
+  const mios = (pj.palmares || []).filter((p) => divisionDe(raza, p.cap) === div);
+  const g = mios.filter((p) => p.res === "Victoria").length, e = mios.filter((p) => p.res === "Empate").length, per = mios.filter((p) => p.res === "Derrota").length;
+  const jugados = g + e + per, total = 18;
+  const jornada = Math.min(total - 1, Math.max(4, 5 + jugados * 4));
+  // Proyección con "prior" de media de liga (≈1.4 pts/partido sobre 6 partidos),
+  // para que una sola victoria no te ponga invicto toda la temporada.
+  const ppg = (g * 3 + e + 8.4) / (jugados + 6);
+  const misPts = Math.max(0, Math.min(jornada * 3, Math.round(ppg * jornada)));
+  const seed = raza.length * 97 + div * 131 + cap.id * 17 + 3;
+  const pool = barajaDet(RIVALES_DIV[div].filter((n) => n !== pj.equipo), seed).slice(0, 7);
+  const offs = [10, 6, 3, 0, -3, -6, -10];
+  const filaDe = (nombre, pts, you) => { const gg = Math.min(jornada, Math.floor(pts / 3)); const ee = Math.min(jornada - gg, pts - gg * 3); return { nombre, pts, g: gg, e: ee, p: jornada - gg - ee, pj: jornada, you: !!you }; };
+  const rivales = pool.map((nombre, i) => filaDe(nombre, Math.max(0, Math.min(jornada * 3, misPts + offs[i]))));
+  const yo = filaDe(pj.equipo, misPts, true);
+  const tabla = [...rivales, yo].sort((a, b) => b.pts - a.pts || (b.g - a.g));
+  const rank = tabla.findIndex((t) => t.you) + 1;
+  const nAsc = div > 1 ? 2 : 0, nDesc = div < 6 ? 2 : 0;
+  let estado;
+  if (nAsc && rank <= nAsc) estado = "Estáis en puestos de ascenso. Aguantar aquí es subir.";
+  else if (nDesc && rank > tabla.length - nDesc) estado = "Estáis en descenso. Cada partido es la permanencia.";
+  else if (nAsc && rank <= nAsc + 1) estado = "El ascenso está a un partido. Hay que apretar.";
+  else if (nDesc && rank > tabla.length - nDesc - 1) estado = "El descenso respira en la nuca. No se puede fallar.";
+  else estado = "A mitad de tabla, ni arriba ni abajo. Toca escalar.";
+  return { div, divNombre: DIV_NOMBRE[div], jornada, total, tabla, rank, nAsc, nDesc, estado, real: { g, e, p: per, jugados } };
+};
+
 /* ===== PARTIDO "JUGADA A JUGADA" (Fase 1: pilotado en partidos con partido.nuevo) =====
    Sustituye los 5 turnos genéricos por 2-3 jugadas clave (pool compartido) que
    usan la FICHA REAL del pj (características + habilidades). La jugada decisiva
@@ -2260,6 +2316,7 @@ export default function App() {
   const [mejora, setMejora] = useState(null);
   const [mt, setMt] = useState(null);
   const [prensa, setPrensa] = useState(false);
+  const [liga, setLiga] = useState(false);
   const [entre, setEntre] = useState(null);
   const [guardada, setGuardada] = useState(() => leer(SAVE, null));
   const [vidas, setVidas] = useState(() => leer(VIDAS, []));
@@ -2286,6 +2343,7 @@ export default function App() {
   const escena = idx < ORDEN.length ? ESCENAS[ORDEN[idx].id] : null;
   const partidoJugadas = !!(pj && escena && escena.partido && !escena.partido.clasico && MATCH_PLAYS(tipoDe(escena.partido, pj.raza)).length > 0);
   const cap = idx < ORDEN.length ? CAPITULOS.find((c) => c.id === ORDEN[idx].cap) : null;
+  const laLiga = pj && cap ? tablaLiga(pj, cap) : null;
   const esPrimeraDeCap = cap && cap.escenas[0] === ORDEN[idx].id;
 
   const empezar = () => {
@@ -2681,7 +2739,7 @@ export default function App() {
     if (q.mejorasPend > 0) abrirMejora(q); else irA(idx + 1, q);
   };
 
-  const reiniciar = () => { setFase("portada"); setPj(null); setIdx(0); setPanel(null); setLibro(false); setCronica([]); setNombre(""); };
+  const reiniciar = () => { setFase("portada"); setPj(null); setIdx(0); setPanel(null); setLibro(false); setLiga(false); setPrensa(false); setCronica([]); setNombre(""); };
 
   /* ---------- epílogo ---------- */
   const epilogo = () => {
@@ -2715,8 +2773,9 @@ export default function App() {
         <span title="Puntos de voluntad para forzar decisiones">Voluntad {pj.pv}</span>
         <span>Fama {pj.fama}</span>
         <span>{pj.oro} co</span>
-        <button className="lnk" onClick={() => { setLibro(!libro); setPrensa(false); }}>{libro ? "Cerrar libro" : "Libro del destino"}</button>
-        <button className="lnk" onClick={() => { setPrensa(!prensa); setLibro(false); }}>{prensa ? "Cerrar" : "Cristalvisión"}</button>
+        {laLiga && <button className="lnk" onClick={() => { setLiga(!liga); setLibro(false); setPrensa(false); }}>{liga ? "Cerrar tabla" : "La tabla"}</button>}
+        <button className="lnk" onClick={() => { setLibro(!libro); setPrensa(false); setLiga(false); }}>{libro ? "Cerrar libro" : "Libro del destino"}</button>
+        <button className="lnk" onClick={() => { setPrensa(!prensa); setLibro(false); setLiga(false); }}>{prensa ? "Cerrar" : "Cristalvisión"}</button>
       </div>
     </div>
   );
@@ -2752,6 +2811,35 @@ export default function App() {
           {pj.palmares.length > 0 && <><p className="etq">Partidos</p>{pj.palmares.map((p, i) => <p key={i} className="mini">{p.res}{p.marcador ? ` ${p.marcador}` : ""} contra {p.rival}</p>)}</>}
         </div>
       </div>
+    </div>
+  );
+
+  const Liga = () => laLiga && (
+    <div className="libro liga">
+      <h3>La tabla</h3>
+      <p className="mini liga-cab">{laLiga.divNombre} · jornada {laLiga.jornada} de {laLiga.total}</p>
+      <table className="liga-tabla">
+        <thead><tr><th>#</th><th className="eq">Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>Pts</th></tr></thead>
+        <tbody>
+          {laLiga.tabla.map((t, i) => {
+            const pos = i + 1;
+            const asc = laLiga.nAsc && pos <= laLiga.nAsc;
+            const desc = laLiga.nDesc && pos > laLiga.tabla.length - laLiga.nDesc;
+            return (
+              <tr key={i} className={`${t.you ? "you" : ""} ${asc ? "asc" : ""} ${desc ? "desc" : ""}`}>
+                <td className="pos">{pos}</td><td className="eq">{t.nombre.replace(/^Los |^Las /, "")}</td>
+                <td>{t.pj}</td><td>{t.g}</td><td>{t.e}</td><td>{t.p}</td><td className="pts">{t.pts}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <div className="liga-zonas">
+        {laLiga.nAsc > 0 && <span><i className="z a" />Suben los {laLiga.nAsc} primeros</span>}
+        {laLiga.nDesc > 0 && <span><i className="z d" />Bajan los {laLiga.nDesc} últimos</span>}
+      </div>
+      <p className="liga-estado">{laLiga.estado}</p>
+      <p className="mini">Vas {laLiga.rank}º. Tu puesto sale de tus resultados de verdad ({laLiga.real.g}G {laLiga.real.e}E {laLiga.real.p}P en esta división); los rivales están simulados alrededor.</p>
     </div>
   );
 
@@ -3095,6 +3183,7 @@ export default function App() {
       <Cabecera />
       {libro && pj && <Libro />}
       {prensa && pj && <Prensa />}
+      {liga && pj && <Liga />}
       {fase === "portada" && Portada()}
       {fase === "entreacto" && entre && Entreacto()}
       {fase === "capitulo" && Capitulo()}
@@ -3157,6 +3246,22 @@ const CSS = `
 .lnk{background:none;border:0;color:var(--oro);font:inherit;font-size:.8rem;cursor:pointer;text-decoration:underline;padding:0}
 .libro{max-width:36rem;margin:1rem auto 0;background:#fff8ea;padding:1rem 1.2rem;border-radius:3px;border:1px solid var(--oro)}
 .libro h3{font-family:'Alfa Slab One',serif;margin:0 0 .4rem;color:var(--sangre)}
+.liga-cab{font-style:italic;color:var(--oro);margin:0 0 .6rem;font-size:.9rem}
+.liga-tabla{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.liga-tabla thead th{font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:rgba(35,26,18,.6);font-weight:600;padding:.25rem .3rem;border-bottom:2px solid rgba(35,26,18,.3);text-align:center}
+.liga-tabla thead th.eq{text-align:left}
+.liga-tabla tbody td{padding:.35rem .3rem;font-size:.82rem;text-align:center;border-bottom:1px solid rgba(35,26,18,.12)}
+.liga-tabla td.pos{font-family:'Alfa Slab One',serif;color:rgba(35,26,18,.55);width:1.5rem}
+.liga-tabla td.eq{text-align:left;font-weight:600}
+.liga-tabla td.pts{font-family:'Alfa Slab One',serif;color:var(--sangre)}
+.liga-tabla tr.you{background:rgba(138,30,30,.10);box-shadow:inset 3px 0 0 var(--sangre)}
+.liga-tabla tr.you td.eq{color:var(--sangre)}
+.liga-tabla tr.asc td.pos{color:var(--verde)}
+.liga-tabla tr.desc td.pos{color:var(--sangre)}
+.liga-zonas{display:flex;flex-wrap:wrap;gap:.9rem;margin:.6rem 0 .3rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;color:rgba(35,26,18,.7)}
+.liga-zonas span{display:flex;align-items:center;gap:.35rem}
+.liga-zonas i.z{width:.6rem;height:.6rem;border-radius:2px;display:inline-block}.liga-zonas i.z.a{background:var(--verde)}.liga-zonas i.z.d{background:var(--sangre)}
+.liga-estado{font-size:.9rem;font-weight:600;margin:.5rem 0 .3rem;border-left:4px solid var(--sangre);padding-left:.6rem}
 .col2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 @media (max-width:480px){.col2{grid-template-columns:1fr}.pag{margin:0 0 1rem;padding:1rem .9rem 2rem;border-radius:0}.titulo{font-size:1.7rem}.h2{font-size:1.3rem}.lead,.texto{font-size:.98rem;line-height:1.6}.razas{grid-template-columns:1fr 1fr;gap:.4rem}.raza{padding:.5rem .55rem}.raza small{font-size:.74rem}.cab{padding:.45rem .7rem}.cab-der{gap:.5rem;font-size:.74rem}}
 .fila{display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin:.15rem 0}.fila span{flex:0 0 7.5rem}.fila i{flex:1;height:5px;background:var(--oro);border-radius:3px;display:block}.fila b.neg{color:var(--sangre)}

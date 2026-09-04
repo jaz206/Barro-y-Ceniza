@@ -136,6 +136,24 @@ que decidir hasta dónde llega (ver decisiones pendientes).
     condiciones reales sobre la marca `wazzokEnLaBanda`, que ya existía. Aquí no
     hizo falta inventar prosa: solo partir la frase.
 
+## Liguilla / contexto de campeonato (Fase 3)
+
+Hay una **tabla de liga** accesible desde la cabecera ("La tabla"), solo en
+los capítulos con división (no en la infancia ni el ocaso). Es **híbrida**:
+
+- **Tu fila es real**: tu puesto sale de tus resultados de verdad (victorias,
+  empates y derrotas del palmarés en la división actual), con una proyección
+  regresada a la media de liga para que una sola victoria no te ponga invicto.
+- **Los rivales están simulados** de forma estable (barajado determinista por
+  raza/división/capítulo). No es un simulador de temporada.
+- La **división de cada capítulo** se deduce de `DIV_POR_CAP[raza][cap]` (no de
+  `pj.division`, que solo estaba puesto a medias). Zonas: suben los 2 primeros
+  (salvo Primera) y bajan los 2 últimos (salvo Sexta). La elfa empieza en
+  Primera, donde solo se puede bajar — encaja con su caída.
+
+Si algún día se afina: los nombres de rivales por división viven en
+`RIVALES_DIV`, y el arco de divisiones por rama en `DIV_POR_CAP`.
+
 ## Decisiones pendientes — NO avanzar sin el OK del cliente
 
 Ninguna de estas es un bug: son decisiones de producto. Están analizadas con
