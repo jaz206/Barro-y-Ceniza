@@ -631,7 +631,7 @@ const ENANO = {
       opciones: [
         { txt: "Pedirle que se quede. Delante de todos. Con las palabras de un enano.", req: { rel: ["faelas", 3] }, forzable: true, fx: { Honor: 2, rel: { faelas: 4, club: 2, aficion: 1 }, flag: "faelasSeQueda" }, msg: "'Eres de los Cascos', dices, y es lo más que puede decir un enano. Faelas se queda. Once enanos golpean el suelo con los pies, despacio, que es lo que hacen cuando no saben aplaudir a un elfo." },
         { txt: "Decirle que se vaya. El bosque es su casa, y la caja no.", fx: { Honor: 1, rel: { faelas: 2, dorin: 1, club: -1 }, flag: "faelasSeVa" }, msg: "Se va. En la puerta del estadio, once enanos le dan la mano uno a uno, sin mirarle, mirando la piedra. Jugarás contra él en la final. Los dos lo sabéis." },
-        { txt: "Que decida el vestuario. Con jarras. A votos.", req: { flag: "helgraMaestra" }, forzable: true, fx: { Astucia: 1, rel: { helgra: 2, club: 2, faelas: 1 }, flag: "faelasVotado" }, msg: "Helgra pone once jarras. Diez se levantan. Dorin no levanta la suya: 'No hace falta votar lo que es'. Faelas se queda. Bebe de la jarra de Dorin." },
+        { txt: "Que decida el vestuario. Con jarras. A votos.", req: { flag: "helgraMaestra" }, forzable: true, fx: { Astucia: 1, rel: { helgra: 2, club: 2, faelas: 1 }, flag: "faelasVotado", flags: ["faelasSeQueda"] }, msg: "Helgra pone once jarras. Diez se levantan. Dorin no levanta la suya: 'No hace falta votar lo que es'. Faelas se queda. Bebe de la jarra de Dorin." },
       ] },
     cristalvision: { titulo: "Diez segundos",
       texto: (pj) => `Un reportero de la Cristalvisión, con un cristal mágico flotando junto a la cabeza, te aborda en el túnel. 'Diez segundos. Di algo que se recuerde'. Es la víspera de la final. ${pj.flags.grimnirMurio ? "Todos quieren saber qué sientes por Grimnir." : ""} ${pj.flags.viudaConSoborno ? "Todos quieren saber qué había en la taquilla del árbitro." : ""} Detrás del cristal, medio Mundo Viejo y una montaña entera.`,
@@ -731,7 +731,7 @@ const ENANO = {
 };
 
 const ENANO_ALIADOS = (pj, cap) => [
-  { nombre: "Dorin Yunquefirme", ST: 4, AG: 1, AV: 10, si: cap <= 4 && !pj.flags.apotecarioParaTi || (cap === 5 && !pj.flags.dorinSeFueAndando && !pj.flags.dorinAnoto && !pj.flags.dorinEnBrazos) },
+  { nombre: "Dorin Yunquefirme", ST: 4, AG: 1, AV: 10, si: cap <= 4 && !pj.flags.apotecarioParaTi || (cap === 5 && !pj.flags.dorinSeFueAndando && !pj.flags.dorinAnoto && !pj.flags.dorinEnBrazos && !pj.flags.cajaAlrededorDeDorin) },
   { nombre: "Grimnir Barbarroja", ST: 3, AG: 2, AV: 9, si: !pj.flags.grimnirMurio && cap !== 4 },
   { nombre: "Faelas", ST: 2, AG: 5, AV: 8, si: cap >= 2 && cap !== 4 && !pj.flags.faelasSeVa && (pj.rel.faelas >= 1 || cap >= 5) },
   { nombre: "Nain", ST: 3, AG: 2, AV: 10, si: cap >= 3 && cap !== 4 },
@@ -883,7 +883,7 @@ const ORCO = {
         { txt: "Sentarte en el puente y esperar a que salga por hambre.", req: { Voluntad: 3 }, forzable: true, fx: { Voluntad: 2, rel: { grimgutz: 2 }, flag: "esperasteAGrimgutz" }, msg: "Esperas dos días. Sale. Te huele. No te come: eres pequeño y hueles a goblin, y los goblins, para un troll, son de la familia. Se sienta a tu lado. Os quedáis mirando el río. Es el fichaje más largo de tu vida." },
       ] },
     convencer: { titulo: "Cómo se convence a un troll",
-      texto: (pj) => `Grimgutz está en tu campo y no sabe qué hacer. Le das una bola: se la come. Le das otra: la mira. ${pj.flags.arbitroParaGrimgutz ? "Cada domingo espera un árbitro. Hay que explicarle que no todos." : pj.flags.esperasteAGrimgutz ? "Te sigue a todas partes. Es como tener una montaña detrás." : ""} Snotlig se ha subido a una portería y no baja. Wazzok, si está, le habla al troll en un idioma que no existe. El troll asiente.`,
+      texto: (pj) => `Grimgutz está en tu campo y no sabe qué hacer. Le das una bola: se la come. Le das otra: la mira. ${pj.flags.arbitroParaGrimgutz ? "Cada domingo espera un árbitro. Hay que explicarle que no todos." : pj.flags.esperasteAGrimgutz ? "Te sigue a todas partes. Es como tener una montaña detrás." : ""} Snotlig se ha subido a una portería y no baja. ${pj.flags.wazzokEnLaBanda ? "Wazzok le habla al troll en un idioma que no existe. El troll asiente." : ""}`,
       opciones: [
         { txt: "Enseñarle una sola cosa: cuando alguien tenga la bola, siéntate encima.", fx: { Astucia: 1, Honor: 1, rel: { grimgutz: 3, banda: 2 }, flag: "grimgutzSeSienta" }, msg: "Aprende. Es la única jugada de su vida y la hace cada partido: se sienta encima del que tiene la bola. Los rivales de Sexta empiezan a soltar la bola cuando lo ven venir. Es táctica." },
         { txt: "Dejar que Wazzok le hable. Sea lo que sea lo que le dice.", req: { flag: "wazzokEnLaBanda" }, forzable: true, fx: { Astucia: 1, rel: { wazzok: 3, grimgutz: 2 }, flag: "wazzokYGrimgutz" }, msg: "Wazzok le habla en el idioma que no existe. Grimgutz asiente. Desde ese día, cuando Wazzok señala a alguien, Grimgutz va. Es un chamán con un troll a cuerda. Ma Gorka sube las apuestas." },
@@ -922,7 +922,7 @@ const ORCO = {
 
     /* ---------- 4. EL NOMBRE ---------- */
     nombre: { titulo: "Un nombre",
-      texto: (pj) => `Da Banda sube a Quinta sin nombre, y en Quinta nadie apuesta por un equipo sin nombre: en la pizarra de Ma Gorka hay un hueco donde debería estar. ${pj.flags.gorkaApuesta ? "Ma Gorka dice que no puede apostar por un hueco." : ""} Snotlig quiere llamaros Los Cascos Robados. Grimgutz no quiere nada. Wazzok, si está, quiere algo con Gorg. Tú tienes ${pj.flags.cascoComido ? "un casco a medio comer desde los tres días" : "un cesto"}, y una idea.`,
+      texto: (pj) => `Da Banda sube a Quinta sin nombre, y en Quinta nadie apuesta por un equipo sin nombre: en la pizarra de Ma Gorka hay un hueco donde debería estar. ${pj.flags.gorkaApuesta ? "Ma Gorka dice que no puede apostar por un hueco." : ""} Snotlig quiere llamaros Los Cascos Robados. Grimgutz no quiere nada. ${pj.flags.wazzokEnLaBanda ? "Wazzok quiere algo con Gorg." : ""} Tú tienes ${pj.flags.cascoComido ? "un casco a medio comer desde los tres días" : "un cesto"}, y una idea.`,
       opciones: [
         { txt: "Los Cestos del Río. Por donde os tiraron.", fx: { Honor: 2, rel: { banda: 3, snotlig: 1 }, equipo: "Los Cestos del Río", flag: "nombreCesto" }, msg: "Los Cestos del Río. Los goblins pintan un cesto en los cascos robados. Ma Gorka lo escribe en la pizarra con la uña. Es el primer equipo de Quinta con nombre de basura, y en dos temporadas es el que más apuestas mueve." },
         { txt: "Los Cascos Robados. Como quiere Snotlig.", fx: { Astucia: 1, rel: { snotlig: 4, banda: 2, aficion: -1 }, equipo: "Los Cascos Robados", flag: "nombreCascos" }, msg: "Los Cascos Robados. Snotlig llora, que en un goblin es reírse mal. Doce equipos de Sexta reconocen sus cascos en vuestras cabezas y no dicen nada: perderían." },
@@ -980,7 +980,7 @@ const ORCO = {
           ko: { txt: "Grimgutz va a sentarse y Skabnik, desde la banda rival, le alcanza girando. Un troll tumbado por un goblin con cadena. Uzgob anota. Uno a tres.", fx: { golRival: 1, rel: { skabnik: -2 } } } } },
       ] },
     vender: { titulo: "Vender al troll",
-      texto: (pj) => `Los Diente-rotos, de Cuarta, ofrecen por Grimgutz lo que vale un campo entero. ${pj.flags.pagasteAGorka ? "No debes nada. El oro sería para cascos y apotecario." : pj.flags.gorkaEnLaBanda ? "Ma Gorka dice que la mitad es suya y que se vende." : "Es lo que le debes a Ma Gorka, exacto."} Grimgutz está en el río, mirando una mosca, sin saber que vale algo. Snotlig dice que un troll se vende. Wazzok, si está, dice que Gorg no quiere. Los goblins no dicen nada: se acuerdan del que se comió.`,
+      texto: (pj) => `Los Diente-rotos, de Cuarta, ofrecen por Grimgutz lo que vale un campo entero. ${pj.flags.pagasteAGorka ? "No debes nada. El oro sería para cascos y apotecario." : pj.flags.gorkaEnLaBanda ? "Ma Gorka dice que la mitad es suya y que se vende." : "Es lo que le debes a Ma Gorka, exacto."} Grimgutz está en el río, mirando una mosca, sin saber que vale algo. Snotlig dice que un troll se vende. ${pj.flags.wazzokEnLaBanda ? "Wazzok dice que Gorg no quiere." : ""} Los goblins no dicen nada: se acuerdan del que se comió.`,
       opciones: [
         { txt: "No venderlo. Grimgutz es de la banda.", fx: { Honor: 3, rel: { grimgutz: 5, banda: 2, gorka: -2, snotlig: -1 }, flag: "grimgutzSeQueda" }, msg: "No lo vendes. Grimgutz no se entera de nada. Esa noche se sienta a tu lado en el río, como en el puente, y os quedáis mirando el agua. Vale un campo entero y mira moscas. Es tuyo." },
         { txt: "Venderlo. Con el oro, cascos, apotecario y un año sin deber nada.", fx: { Astucia: 1, Honor: -2, oro: 100, rel: { grimgutz: -5, banda: -2, gorka: 2, snotlig: 2 }, flag: "grimgutzVendido" }, msg: "Lo vendes. Se lo llevan con cuerdas y con una vaca de cebo. Se gira una vez, en el camino, y te mira sin entender. Los Diente-rotos ganan cuatro partidos seguidos. Da Banda, ninguno. El oro compra cascos. No compra lo otro." },
@@ -1008,7 +1008,7 @@ const ORCO = {
 
     /* ---------- 6. EL REY ---------- */
     invitacion: { titulo: "Gorgomor invita",
-      texto: (pj) => `Llega un mensajero de Rey Krug con un hueso: Gorgomor invita a Da Banda a jugar contra los Rompecráneos, en Primera, un amistoso 'por el Cáliz'. ${pj.flags.robasteAKrug ? "Krug sabe quién le robó los cascos. Lo dice en el hueso, rascado." : ""} ${pj.flags.tumbasteAUzgob ? "Uzgob, que dirige los Cuatro Dedos, ha dicho en la Cristalvisión que él te vio crecer y que Krug se arrepentirá. Suena casi a orgullo." : ""} Un equipo de ${pj.flags.ascendisteis ? "Tercera" : "Cuarta"} en Gorgomor. Es una trampa: todo el mundo lo sabe. Snotlig dice que no vayáis. Ma Gorka ha apostado a que vais. ${pj.flags.wazzokMurio ? "Wazzok no está para predecirlo. Acertó una vez, y fue la suya." : "Wazzok, si está, dice que morirás el domingo. Lleva años diciéndolo."}`,
+      texto: (pj) => `Llega un mensajero de Rey Krug con un hueso: Gorgomor invita a Da Banda a jugar contra los Rompecráneos, en Primera, un amistoso 'por el Cáliz'. ${pj.flags.robasteAKrug ? "Krug sabe quién le robó los cascos. Lo dice en el hueso, rascado." : ""} ${pj.flags.tumbasteAUzgob ? "Uzgob, que dirige los Cuatro Dedos, ha dicho en la Cristalvisión que él te vio crecer y que Krug se arrepentirá. Suena casi a orgullo." : ""} Un equipo de ${pj.flags.ascendisteis ? "Tercera" : "Cuarta"} en Gorgomor. Es una trampa: todo el mundo lo sabe. Snotlig dice que no vayáis. Ma Gorka ha apostado a que vais. ${pj.flags.wazzokMurio ? "Wazzok no está para predecirlo. Acertó una vez, y fue la suya." : pj.flags.wazzokEnLaBanda ? "Wazzok dice que morirás el domingo. Lleva años diciéndolo." : ""}`,
       opciones: [
         { txt: "Ir. Con la banda entera. Que Gorgomor vea el cesto.", fx: { Ferocidad: 2, Ambición: 2, rel: { banda: 3, aficion: 3, snotlig: -1 }, flag: "fuisteAGorgomor" }, msg: "Vais. Seis goblins, un troll, un chamán que falla, un fanático si queda, y tú. Gorgomor entera sale a mirar. No se agacha. Todavía." },
         { txt: "Ir solo. Que la banda se quede a salvo.", req: { Honor: 3 }, forzable: true, fx: { Honor: 3, Voluntad: 1, rel: { banda: 2, snotlig: 3 }, flag: "fuisteSolo" }, msg: "Vas solo. Snotlig te sigue igual, a dos pasos, porque un goblin no obedece: acompaña. Gorgomor ve llegar a un orco y un goblin. Se ríe. Es la última vez." },
@@ -1024,11 +1024,11 @@ const ORCO = {
         { txt: "Decirle que la cabeza. Delante de Gorgomor. Y que se la cobre si puede.", req: { Ferocidad: 4 }, forzable: true, fx: { Ferocidad: 2, fama: 10, rel: { banda: 3, aficion: 3 }, flag: "ofrecisteLaCabeza" }, msg: "'La cabeza', dices. Gorgomor se calla. Krug baja del elefante y te huele. 'Después', dice. Ma Gorka, desde la grada, sube la apuesta. Nunca pierde." },
       ] },
     nocheEnGorgomor: { titulo: "La noche antes",
-      texto: (pj) => `${pj.flags.noFuiste ? "La noche antes de la final, en tu campo, con el elefante muerto de Krug plantado junto a la vaca." : "La noche antes de la final, en Gorgomor, bajo el elefante muerto, que es donde os han dejado dormir por gracia."} Snotlig no duerme: cuenta los cascos del cinturón, doce, y luego los goblins, ${pj.flags.goblinsEnElElefante ? "y le faltan dos" : "y están todos"}. Ma Gorka ha apostado la cueva entera. ${pj.flags.wazzokMurio ? "Las setas de Wazzok están en una bolsa que lleva Snotlig." : pj.flags.wazzokEnLaBanda ? "Wazzok, por primera vez, no predice nada. Mira el elefante." : ""} Grimgutz, si está, mira una mosca del tamaño de un puño.`,
+      texto: (pj) => `${pj.flags.noFuiste ? "La noche antes de la final, en tu campo, con el elefante muerto de Krug plantado junto a la vaca." : "La noche antes de la final, en Gorgomor, bajo el elefante muerto, que es donde os han dejado dormir por gracia."} Snotlig no duerme: cuenta los cascos del cinturón, doce, y luego los goblins, ${pj.flags.goblinsEnElElefante ? "y le faltan dos" : "y están todos"}. Ma Gorka ha apostado la cueva entera. ${pj.flags.wazzokMurio ? "Las setas de Wazzok están en una bolsa que lleva Snotlig." : pj.flags.wazzokEnLaBanda ? "Wazzok, por primera vez, no predice nada. Mira el elefante." : ""} ${pj.flags.grimgutzVendido ? "Donde dormía el troll no hay nada: un hueco frío del tamaño de un troll." : "Grimgutz mira una mosca del tamaño de un puño."}`,
       opciones: [
         { txt: "Contar los goblins con Snotlig. Con nombre. Los que están y los que no.", fx: { Honor: 2, rel: { snotlig: 3, banda: 3 }, flag: "contasteConSnotlig" }, msg: "Contáis. Grot. Los dos del elefante, si faltan. Los que quedan. Snotlig dice cada nombre como se dice un casco robado: con orgullo. Al acabar dice el tuyo. 'El pequeño'. Es el último de la lista y el primero de la banda." },
         { txt: "Ir a la orilla de la charca de Gorgomor y rugir. Que no duerma nadie.", req: { flag: "rugiste" }, forzable: true, fx: { Ferocidad: 2, rel: { aficion: 3 }, flag: "rugisteLaNoche" }, msg: "Ruges en la orilla donde te tiraron, a medianoche, y Gorgomor entera se despierta. Krug, desde el elefante, no responde. Es la primera vez que un Jefe Supremo no responde a un rugido. Mañana lo cobrarás, o lo pagarás." },
-        { txt: "Dormir en el hueco del troll. Como aquella helada.", req: { flag: "snotligDurmioConElTroll" }, forzable: true, fx: { Voluntad: 2, rel: { grimgutz: 3, snotlig: 2 }, flag: "huecoEnGorgomor" }, msg: "Te metes en el hueco entre el brazo y la barriga de Grimgutz. Snotlig se mete al lado. Los goblins alrededor. Es la banda apretada bajo el elefante de un rey, y es lo más caliente que ha dormido nadie en Gorgomor." },
+        { txt: "Dormir en el hueco del troll. Como aquella helada.", req: { flag: "snotligDurmioConElTroll", noflag: "grimgutzVendido" }, forzable: true, fx: { Voluntad: 2, rel: { grimgutz: 3, snotlig: 2 }, flag: "huecoEnGorgomor" }, msg: "Te metes en el hueco entre el brazo y la barriga de Grimgutz. Snotlig se mete al lado. Los goblins alrededor. Es la banda apretada bajo el elefante de un rey, y es lo más caliente que ha dormido nadie en Gorgomor." },
       ] },
     cristalvision: { titulo: "Diez segundos",
       texto: (pj) => `Un reportero de la Cristalvisión, con un cristal mágico flotando, te aborda en el túnel. 'Diez segundos. Di algo que se recuerde'. ${pj.flags.gorgomorSeAgacho ? "Todos quieren saber cómo un orco de goblins hizo agachar a Gorgomor." : "Todos quieren saber si un orco de goblins puede contar hasta diez."} Snotlig está detrás de ti, con los doce cascos.`,
@@ -2224,6 +2224,7 @@ export default function App() {
     const rival = escena.partido.rival;
     const has = (h) => pj.hab.includes(h);
     const defensa = m.posesion === "rival";
+    const suelta = m.posesion === "neutral";
     const poder = m.aliados.filter((a) => !a.herido).reduce((t, a) => t + a.ST + a.AG, 0) / 4;
     const fat = (m.fatiga >= 3 ? -1 : 0) + (pj.flags.apaleado ? -1 : 0);
     const climaMod = (stat, riesgo) => (m.clima === "Lluvioso" && stat === "AG") ? -1 : (m.clima === "Muy soleado" && stat === "AG" && !riesgo) ? -1 : (m.clima === "Ventisca" && stat === "MA") ? -1 : 0;
@@ -2288,7 +2289,7 @@ export default function App() {
 
   const elegir = (op, forzada) => {
     let base = pj;
-    if (forzada) base = { ...pj, pv: pj.pv - 2 };
+    if (forzada) base = { ...pj, pv: Math.max(0, pj.pv - 2) };
     if (op.tirada) { resolverTirada(op, base, forzada); return; }
     const { q, chips } = aplicar(base, op.fx);
     if (forzada) chips.unshift("−2 Voluntad (forzado)");
@@ -2334,7 +2335,7 @@ export default function App() {
     const statMod = t.stat === "MA" ? Math.floor(base.MA / 3) : base[t.stat];
     const atrKey = t.stat === "ST" ? "Ferocidad" : t.stat === "AG" ? "Astucia" : "Voluntad";
     const atrMod = Math.floor(base.atr[atrKey] / 3);
-    let mod = statMod + atrMod + (base.flags.ventaja && t.falta ? 2 : 0);
+    let mod = statMod + atrMod + ((base.flags.ventaja || (mt && mt.faltaGratis)) && t.falta ? 2 : 0);
     const llevas = ["cantoRoto", "placaEntregada", "cancionPuerta", "promesaBruk", "chicoDesague", "crioPuerta", "ojoEntregado", "jarraEntregada", "bendicionLeyenda", "cromoLeyenda", "grimnirTuvoSuTroll", "dorinSeFueAndando", "dorinAnoto", "contasteConSnotlig", "huecoEnGorgomor", "amanecerConBerthold", "bailasteDeNoche", "recetaParaTodos"].filter((f) => base.flags[f]);
     if (escena.partido && llevas.length) mod += 1;
     const ulrich = escena.partido && ORDEN[idx].cap === 6 && (base.flags.enemigoUlrich || base.flags.rencorUlrich);
@@ -2355,6 +2356,7 @@ export default function App() {
     const rama = exito ? t.ok : t.ko;
     let { q, chips } = aplicar(base, rama.fx);
     if (forzada) chips.unshift("−2 Voluntad (forzado)");
+    if (mt && mt.faltaGratis && t.falta) { chips.unshift("+2: el árbitro no ve nada"); mt.faltaGratis = false; }
     if (escena.partido && llevas.length) chips.unshift("+1 por lo que llevas contigo");
     if (ulrich) chips.unshift("−1: Ulrich Manoslargas arbitra y no ha olvidado");
     if (base.flags.apaleado && escena.partido) chips.unshift("−1: juegas apaleado");
@@ -2366,7 +2368,7 @@ export default function App() {
         let her = d6() + d6() + (q.lesiones || 0);
         if (her === 8 && has("Cabeza dura")) her = 7;
         const apot = ORDEN[idx].cap >= 3 && !(mt && mt.apotecarioUsado);
-        if (her >= 8 && apot) { const her2 = d6() + d6() + (q.lesiones || 0); chips.push(`Apotecario: heridas ${her} → ${her2}`); her = her2; if (mt) mt.apotecarioUsado = true; }
+        if (her >= 8 && apot) { const her2 = d6() + d6() + (q.lesiones || 0), mejor = Math.min(her, her2); chips.push(`Apotecario: heridas ${her} → ${her2}${her2 > her ? " (se queda con la mejor: " + mejor + ")" : ""}`); her = mejor; if (mt) mt.apotecarioUsado = true; }
         if (her <= 7) texto += " Te dejan aturdido en el barro; te levantas al turno siguiente.";
         else if (her <= 9) texto += " Te dejan KO. Ves el resto del partido desde el banquillo.";
         else {
@@ -2395,6 +2397,8 @@ export default function App() {
       if (bajasTot) chips.push(`${bajasTot} ${bajasTot === 1 ? "baja causada" : "bajas causadas"}`);
       const mvp = res !== "Derrota" && (m.tds + (rama.fx.gol ? 1 : 0) >= 1 || bajasTot >= 2);
       if (mvp) { q.spp += tabla.mvp; chips.push(`Jugador del partido (+${tabla.mvp} PE)`); }
+      const cr = q.car || {};
+      q.car = { pj: (cr.pj || 0) + 1, td: (cr.td || 0) + m.tds + (rama.fx.gol ? 1 : 0), baja: (cr.baja || 0) + bajasTot, pase: (cr.pase || 0) + (m.pases || 0), mvp: (cr.mvp || 0) + (mvp ? 1 : 0) };
       if (q.flags.apaleado) { const f = { ...q.flags }; delete f.apaleado; q.flags = f; }
       if (m.cubiertos.length) { q.rel = { ...q.rel, club: Math.min(5, q.rel.club + 1) }; chips.push(`${RELACIONES.club} +1 (cubriste a ${m.cubiertos.join(", ")})`); }
       if (escena.partido.torneo && res === "Victoria") { q.trofeos = [...(q.trofeos || []), escena.partido.torneo]; chips.push(`Trofeo: ${escena.partido.torneo}`); q.fama += 10; }
@@ -2515,6 +2519,7 @@ export default function App() {
           <p className="mini">{NIVELES[Math.min(pj.nivel - 1, NIVELES.length - 1)]} · {pj.spp} PE · siguiente a {UMBRALES.find((u) => u > pj.spp) || "—"} PE{pj.lesiones ? ` · ${pj.lesiones} herida${pj.lesiones > 1 ? "s" : ""} persistente${pj.lesiones > 1 ? "s" : ""}` : ""}</p>
           {pj.hab.length ? pj.hab.map((h) => <p key={h} className="mini"><b>{h}</b>{HABILIDADES[h] ? ` — ${HABILIDADES[h].desc}` : ""}</p>) : <p className="mini">Sin habilidades aún</p>}
           <p className="mini">Muertes: {pj.muertes} de {MAX_MUERTES}</p>
+          <p className="mini">Carrera: {(pj.palmares || []).length} partidos · {(pj.car || {}).td || 0} touchdowns · {(pj.car || {}).baja || 0} bajas · {(pj.car || {}).pase || 0} pases · {(pj.car || {}).mvp || 0} veces jugador del partido</p>
         </div>
         <div>
           <p className="etq">Relaciones</p>
@@ -2636,7 +2641,7 @@ export default function App() {
         {/* MARCADOR */}
         <div className="pm-marcador">
           <div className="pm-eq"><span className="pm-nom">{propio}</span><span className="pm-gol">{mt.marcador[0]}</span></div>
-          <div className="pm-mid">{mt.fase === "turnos" ? `min ${Math.min(mt.turno, mt.max)}/${mt.max}` : "final"}</div>
+          <div className="pm-mid">{mt.fase === "turnos" ? `turno ${Math.min(mt.turno, mt.max)}/${mt.max}` : "final"}</div>
           <div className="pm-eq"><span className="pm-gol">{mt.marcador[1]}</span><span className="pm-nom">{rivalCorto}</span></div>
         </div>
 
@@ -2711,7 +2716,9 @@ export default function App() {
         <div className="lista">
           {(typeof escena.opciones === "function" ? escena.opciones(pj) : escena.opciones).map((op, i) => {
             const ok = cumple(pj, op.req);
-            const forzable = !ok && op.forzable && !op.req.oro && pj.pv >= 2;
+            const listaOpciones = typeof escena.opciones === "function" ? escena.opciones(pj) : escena.opciones;
+            const hayJugable = listaOpciones.some((o) => cumple(pj, o.req) || (o.forzable && o.req && !o.req.oro && pj.pv >= 2));
+            const forzable = !ok && op.forzable && !op.req.oro && (pj.pv >= 2 || !hayJugable);
             return (
               <div key={i} className={`opcion ${!ok && !forzable ? "bloq" : ""}`}>
                 <button disabled={!ok && !forzable} onClick={() => elegir(op, !ok)}>
@@ -2819,6 +2826,7 @@ export default function App() {
       <LineaDeVida />
       <p className="lead">{epilogo()}</p>
       <p className="mini">Nivel {pj.nivel} · {pj.spp} PE · {pj.hab.length ? pj.hab.join(", ") : "sin habilidades"} · MA {pj.MA} ST {pj.ST} AG {pj.AG} AV {pj.AV}</p>
+      <p className="mini">{(pj.palmares || []).length} partidos · {(pj.car || {}).td || 0} touchdowns · {(pj.car || {}).baja || 0} bajas causadas · {(pj.car || {}).pase || 0} pases completados · {(pj.car || {}).mvp || 0} veces jugador del partido · {pj.muertes} muertes</p>
       {Object.keys(pj.flags).some((f) => (H.recuerdos || {})[f]) && <>
         <p className="etq">Lo que se llevó</p>
         <p className="texto">{Object.keys(pj.flags).filter((f) => (H.recuerdos || {})[f]).map((f) => H.recuerdos[f]).join(" ")}</p>
