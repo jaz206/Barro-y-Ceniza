@@ -2922,16 +2922,18 @@ const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
 .app{--cuero:#241812;--parch:#ecdfc4;--tinta:#231a12;--sangre:#8a1e1e;--oro:#b8922e;--verde:#2f5a3a;
   height:100vh;height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--cuero);color:var(--tinta);font-family:Lora,Georgia,serif;
-  background-image:radial-gradient(ellipse at top,rgba(255,255,255,.05),transparent 60%)}
+  background-image:radial-gradient(120% 80% at 50% -10%,rgba(90,55,25,.28),transparent 55%),radial-gradient(120% 100% at 50% 120%,rgba(0,0,0,.55),transparent 60%),radial-gradient(ellipse at top,rgba(255,255,255,.04),transparent 60%)}
 .app *{box-sizing:border-box}
-.pag{max-width:36rem;margin:1rem auto;background:var(--parch);padding:1.6rem 1.4rem 2.2rem;border-radius:3px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.pag{max-width:36rem;margin:1rem auto;color:var(--tinta);padding:1.7rem 1.5rem 2.2rem;border-radius:3px;border:7px solid #2b2420;
+  background:radial-gradient(70% 45% at 18% 10%,rgba(120,30,20,.09),transparent 55%),radial-gradient(65% 45% at 88% 92%,rgba(40,25,10,.22),transparent 60%),radial-gradient(40% 30% at 60% 55%,rgba(70,45,20,.10),transparent 70%),linear-gradient(180deg,#e7d9b6,var(--parch) 45%,#c9b98f);
+  box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 0 0 2px rgba(184,146,46,.5),inset 0 0 70px rgba(70,45,20,.26)}
 .centro{text-align:center}
-.titulo{font-family:'Alfa Slab One',Georgia,serif;font-size:2.1rem;line-height:1.05;margin:.2rem 0 1rem;color:var(--sangre)}
-.h2{font-family:'Alfa Slab One',Georgia,serif;font-size:1.45rem;line-height:1.15;margin:.2rem 0 .9rem}
+.titulo{font-family:'Alfa Slab One',Georgia,serif;font-size:2.2rem;line-height:1.02;margin:.2rem 0 1rem;color:var(--sangre);text-transform:uppercase;letter-spacing:.01em;text-shadow:1px 1px 0 rgba(255,248,225,.45)}
+.h2{font-family:'Alfa Slab One',Georgia,serif;font-size:1.5rem;line-height:1.12;margin:.2rem 0 .9rem;text-transform:uppercase;letter-spacing:.01em}
 .lead{font-size:1.05rem;line-height:1.7;margin:0 0 1.2rem}
 .texto{line-height:1.7;margin:0 0 1.1rem;font-size:1.02rem}
 .texto.muerte{font-family:'Alfa Slab One',serif;color:var(--sangre)}
-.etq{font-style:italic;color:var(--oro);margin:1rem 0 .4rem;font-size:.92rem}
+.etq{text-transform:uppercase;letter-spacing:.14em;font-weight:600;color:var(--sangre);margin:1rem 0 .5rem;font-size:.74rem}
 .mini{font-size:.84rem;opacity:.8;line-height:1.45;margin:.2rem 0}
 .campo{display:block;margin:0 auto 1rem;max-width:22rem;text-align:left}.campo span{display:block;font-style:italic;color:var(--oro);margin-bottom:.3rem}
 .campo input{width:100%;padding:.7rem .8rem;font:inherit;font-size:1.05rem;background:#fff8ea;color:var(--tinta);border:1px solid rgba(35,26,18,.3);border-radius:2px}
@@ -2939,7 +2941,7 @@ const CSS = `
 .razas{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.6rem 0 1rem;text-align:left}
 .raza{background:#fff8ea;color:var(--tinta);border:1px solid rgba(35,26,18,.25);padding:.6rem .7rem;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:.15rem;border-radius:2px}
 .raza b{font-weight:600}.raza small{font-size:.78rem;font-style:italic;opacity:.8}.raza.activa{border-color:var(--sangre);background:rgba(138,30,30,.08);box-shadow:inset 3px 0 0 var(--sangre)}
-.opcion button{width:100%;text-align:left;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;background:#fff8ea;color:var(--tinta);border:1px solid rgba(35,26,18,.25);border-left:4px solid var(--verde);
+.opcion button{width:100%;text-align:left;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;background:#f6ead0;color:var(--tinta);border:1px solid rgba(35,26,18,.28);border-left:5px solid var(--sangre);
   padding:.8rem .9rem;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:.25rem;border-radius:2px}
 .opcion button:disabled{cursor:not-allowed;opacity:.55;border-left-color:#999}
 .opcion.bloq b{text-decoration:line-through;text-decoration-color:rgba(35,26,18,.4)}
