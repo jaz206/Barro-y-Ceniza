@@ -16,13 +16,13 @@ React + Vite, una sola página, sin backend.
 
 ## Estado
 
-⚠️ **Este repo todavía no tiene el código fuente.** Lo único que hay es
-`build-v8-parcheado/`, el juego ya compilado con diez arreglos aplicados sobre
-el bundle. Para probarlo: descarga la carpeta y abre `index.html`.
+✅ **El código fuente ya está en el repo** (`src/`, `index.html`,
+`vite.config.js`, `package.json`), y los diez arreglos del build v8 están
+reaplicados sobre el fuente. Para probarlo: `npm install` y `npm run dev`.
 
-La primera tarea pendiente es subir aquí el proyecto fuente y volver a aplicar
-esos diez arreglos sobre él, porque en el compilado se pierden en cuanto alguien
-vuelva a construir.
+`build-v8-parcheado/` se conserva como referencia: es el juego compilado con
+esos mismos diez arreglos parcheados a mano sobre el bundle. Ya no es la única
+copia de los arreglos, así que dejó de ser frágil.
 
 ## Documentación
 

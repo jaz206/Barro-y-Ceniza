@@ -22,17 +22,23 @@
 >   observables ("se ve así", "probé X y pasó Y"), nunca pedirle que revise
 >   código o diffs.
 
-## ⚠️ Estado del repo: falta el código fuente
+## ✅ Estado del repo: el fuente ya está, y los arreglos reaplicados
 
-Ahora mismo **este repo NO tiene el proyecto fuente**. Lo único que hay es
-`build-v8-parcheado/`, que es el juego **ya compilado** con diez arreglos
-aplicados a mano sobre el bundle minificado.
+**El proyecto fuente ya está en el repo** (`src/App.jsx`, `src/main.jsx`,
+`index.html`, `vite.config.js`, `package.json`, `package-lock.json`), subido
+primero tal cual (foto fiel antes de tocar nada) y, en un commit aparte, con
+**los diez arreglos del build v8 reaplicados sobre el fuente**. Se tradujeron
+letra por letra desde el bundle parcheado, usándolo como verdad sobre el
+terreno. Verificado: `npm run build` limpio y prueba en navegador de las cuatro
+razas (tres partidos cada una) sin errores, con el marcador diciendo "turno" y
+las estadísticas de carrera acumulándose.
 
-**Eso se pierde en cuanto alguien recompile el proyecto.** La primera tarea
-pendiente, y la más importante, es subir aquí el proyecto de verdad (el `src/`,
-el `package.json`, el `vite.config`) y volver a aplicar los diez arreglos sobre
-el fuente. Están documentados uno a uno, con qué buscar y qué cambiar, en el
-informe enlazado al final.
+`build-v8-parcheado/` se conserva como referencia histórica; ya no es la única
+copia de los arreglos, así que dejó de ser frágil.
+
+> Nota de revisión pendiente: la frase alternativa del arreglo 7 ("Donde dormía
+> el troll no hay nada…") la redactó Claude en el build v8, no es voz del
+> cliente. Conviene que la repase.
 
 ## Qué es el juego, por dentro
 
