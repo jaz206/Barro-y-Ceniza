@@ -3259,7 +3259,11 @@ export default function App() {
 }
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+/* Tipografías incrustadas en el propio juego (subconjunto latino), para que
+   funcione sin conexión y sin depender de Google. Licencia OFL. */
+@font-face{font-family:'Alfa Slab One';font-style:normal;font-weight:400;font-display:swap;src:url(./fonts/alfaslabone-latin.woff2) format('woff2')}
+@font-face{font-family:'Lora';font-style:normal;font-weight:400 600;font-display:swap;src:url(./fonts/lora-latin.woff2) format('woff2')}
+@font-face{font-family:'Lora';font-style:italic;font-weight:400;font-display:swap;src:url(./fonts/lora-italic-latin.woff2) format('woff2')}
 .app{--cuero:#241812;--parch:#ecdfc4;--tinta:#231a12;--sangre:#8a1e1e;--oro:#b8922e;--verde:#2f5a3a;
   height:100vh;height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--cuero);color:var(--tinta);font-family:Lora,Georgia,serif;
   background-image:radial-gradient(120% 80% at 50% -10%,rgba(90,55,25,.28),transparent 55%),radial-gradient(120% 100% at 50% 120%,rgba(0,0,0,.55),transparent 60%),radial-gradient(ellipse at top,rgba(255,255,255,.04),transparent 60%)}
