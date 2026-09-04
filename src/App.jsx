@@ -2272,6 +2272,9 @@ export default function App() {
     const m = { ...mt, aliados: mt.aliados.map((a) => ({ ...a })), log: [...mt.log], marcador: [...mt.marcador], cubiertos: [...mt.cubiertos] };
     const rival = escena.partido.rival;
     const has = (h) => pj.hab.includes(h);
+    // Posición emergente: tu perfil te da +1 en "tu" acción (lo que se te da bien).
+    const miAccion = H.emergente ? { Blitzer: "presionar", Receptor: "correr", Lanzador: "bola", Liniero: "aguantar" }[puestoEmergente(pj).clave] : null;
+    const sig = (a) => (miAccion === a ? 1 : 0);
     const defensa = m.posesion === "rival";
     const suelta = m.posesion === "neutral";
     const poder = m.aliados.filter((a) => !a.herido).reduce((t, a) => t + a.ST + a.AG, 0) / 4;
@@ -2292,7 +2295,7 @@ export default function App() {
     else if (tac === "presionar") {
       const obj = 8 + m.fuerza + (m.estilo === "muro" ? 1 : 0) - (m.hinchas ? 1 : 0);
       m.hinchas = false;
-      const r = tirar("ST", obj, (has("Golpe mortífero") ? 1 : 0) + (has("Furia") ? 2 : 0) + (has("Agallas") && m.fuerza >= 3 ? 1 : 0) + (has("Placaje defensivo") && m.estilo === "esquivo" ? 1 : 0), true, "Placar");
+      const r = tirar("ST", obj, (has("Golpe mortífero") ? 1 : 0) + (has("Furia") ? 2 : 0) + (has("Agallas") && m.fuerza >= 3 ? 1 : 0) + (has("Placaje defensivo") && m.estilo === "esquivo" ? 1 : 0) + sig("presionar"), true, "Placar");
       m.fatiga++;
       if (r.ok) {
         m.avance += 3;
@@ -2305,14 +2308,14 @@ export default function App() {
       }
     } else if (tac === "bola") {
       const obj = 7 + m.fuerza + (m.estilo === "esquivo" ? 1 : 0);
-      const r = tirar("AG", obj, (has("Pasar") ? 1 : 0) + (has("Precisión") ? 1 : 0) + (has("Atrapar") ? 1 : 0), false, "Manos seguras");
+      const r = tirar("AG", obj, (has("Pasar") ? 1 : 0) + (has("Precisión") ? 1 : 0) + (has("Atrapar") ? 1 : 0) + sig("bola"), false, "Manos seguras");
       if (r.ok) { m.avance += 3; m.pe += tabla.pase; m.pases++; m.posesion = "propia"; linea.push(defensa ? `Te cuelas y le robas el balón de las manos. Ahora es vuestro.` : suelta ? `Recoges la bola suelta y sales jugando. Es vuestra.` : `Mueves la bola por donde no miran y ganáis metros.`); }
       else { m.avance = Math.max(0, m.avance - 2); m.avanceRival += 2; m.posesion = "rival"; linea.push(defensa ? `Llegas tarde al balón y ${rival} lo asienta.` : `Se te escurre la bola y ${rival} la recoge.`); }
     } else if (tac === "correr") {
-      const r = tirar("MA", 8, (has("Esprintar") ? 1 : 0) + (has("Pies firmes") ? 1 : 0), true, null);
+      const r = tirar("MA", 8, (has("Esprintar") ? 1 : 0) + (has("Pies firmes") ? 1 : 0) + sig("correr"), true, null);
       if (r.ok) { m.avance += 2; m.posesion = "propia"; linea.push(`Tiras de velocidad por la banda y ganas metros sin que te toquen.`); } else linea.push(`Te cierran la banda y no pasas.`);
     } else if (tac === "aguantar") {
-      const r = tirar("ST", 6 + m.fuerza, Math.floor(pj.atr.Voluntad / 3) + (has("Defensa") ? 1 : 0) + (has("Romper defensas") ? 1 : 0) + (has("Mantenerse firme") ? 1 : 0), false, "Placar");
+      const r = tirar("ST", 6 + m.fuerza, Math.floor(pj.atr.Voluntad / 3) + (has("Defensa") ? 1 : 0) + (has("Romper defensas") ? 1 : 0) + (has("Mantenerse firme") ? 1 : 0) + sig("aguantar"), false, "Placar");
       if (r.ok) { m.avanceRival = Math.max(0, m.avanceRival - 3); m.fatiga = Math.max(0, m.fatiga - 1); linea.push(`Plantas la línea y ${rival} se estrella una y otra vez. Recuperas aire.`); } else linea.push(`Aguantas a medias: te empujan un paso, pero no ceden del todo.`);
     } else if (tac === "cubrir") {
       const h = m.aliados.find((a) => a.herido);
@@ -2444,8 +2447,11 @@ export default function App() {
       chips.push(`${res} ${marc[0]}-${marc[1]} contra ${escena.partido.rival}`);
       const bajasTot = m.bajas + (exito && t.stat === "ST" && t.riesgo ? 1 : 0);
       if (bajasTot) chips.push(`${bajasTot} ${bajasTot === 1 ? "baja causada" : "bajas causadas"}`);
-      const mvp = res !== "Derrota" && (m.tds + (rama.fx.gol ? 1 : 0) >= 1 || bajasTot >= 2);
-      if (mvp) { q.spp += tabla.mvp; chips.push(`Jugador del partido (+${tabla.mvp} PE)`); }
+      // Jugador del partido: en S3 se sortea entre los nominados (1d6). Eres
+      // candidato si hiciste algo (TD, baja o pase); luego el sorteo decide.
+      const nominadoMvp = res !== "Derrota" && (m.tds + (rama.fx.gol ? 1 : 0) >= 1 || bajasTot >= 1 || (m.pases || 0) >= 1);
+      const mvp = nominadoMvp && d6() >= 5;
+      if (mvp) { q.spp += tabla.mvp; chips.push(`Jugador del partido, por sorteo (+${tabla.mvp} PE)`); }
       const cr = q.car || {};
       q.car = { pj: (cr.pj || 0) + 1, td: (cr.td || 0) + m.tds + (rama.fx.gol ? 1 : 0), baja: (cr.baja || 0) + bajasTot, pase: (cr.pase || 0) + (m.pases || 0), mvp: (cr.mvp || 0) + (mvp ? 1 : 0) };
       if (q.formaPend) { chips.push(`Forma gastada (+${q.formaPend} este partido)`); q.formaPend = 0; }
@@ -2674,6 +2680,8 @@ export default function App() {
   const PartidoVista = () => {
     const rival = escena.partido.rival;
     const ops = opcionesTurno(mt);
+    const miPuesto = H.emergente ? puestoEmergente(pj) : null;
+    const miAccionVista = miPuesto ? { Blitzer: "presionar", Receptor: "correr", Lanzador: "bola", Liniero: "aguantar" }[miPuesto.clave] : null;
     const arranque = mt.log.length === 0;
     const pos = mt.posesion;
     const propio = pj.equipo.replace(/^Los |^Las /, "");
@@ -2681,7 +2689,7 @@ export default function App() {
     const posLabel = pos === "propia" ? propio : pos === "rival" ? rivalCorto : "suelto";
     const T = ({ id, o }) => o && (
       <div className="opcion"><button disabled={mt.ko} onClick={() => jugarTurno(id)}>
-        <b>{o.nombre}</b><span className="mini">{o.det}</span>
+        <b>{o.nombre}{id === miAccionVista ? " · lo tuyo" : ""}</b><span className="mini">{o.det}</span>
       </button></div>
     );
     // barra de dominio: -1 (rival) .. +1 (nosotros)
@@ -2692,7 +2700,7 @@ export default function App() {
         {/* MARCADOR */}
         <div className="pm-marcador">
           <div className="pm-eq"><span className="pm-nom">{propio}</span><span className="pm-gol">{mt.marcador[0]}</span></div>
-          <div className="pm-mid">{mt.fase === "turnos" ? `turno ${Math.min(mt.turno, mt.max)}/${mt.max}` : "final"}</div>
+          <div className="pm-mid">{mt.fase === "turnos" ? `turno ${Math.min(mt.turno, mt.max)}/${mt.max}` : "final"}{miPuesto ? ` · ${miPuesto.nombre}` : ""}</div>
           <div className="pm-eq"><span className="pm-gol">{mt.marcador[1]}</span><span className="pm-nom">{rivalCorto}</span></div>
         </div>
 
@@ -2749,7 +2757,7 @@ export default function App() {
           <details className="pm-bitacora">
             <summary>Bitácora del partido</summary>
             {mt.intro && mt.intro.map((l, i) => <p key={"i" + i} className="mini">{l}</p>)}
-            {mt.log.map((l, i) => <p key={i} className="pm-bit-linea"><b>min {l.turno}.</b> {l.texto}{l.tecnico ? <span className="tec"> · {l.tecnico}</span> : ""}</p>)}
+            {mt.log.map((l, i) => <p key={i} className="pm-bit-linea"><b>turno {l.turno}.</b> {l.texto}{l.tecnico ? <span className="tec"> · {l.tecnico}</span> : ""}</p>)}
           </details>
         )}
       </div>
