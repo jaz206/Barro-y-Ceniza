@@ -66,6 +66,15 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   Consecuencia: algún texto con marca temporal ("en la primera jugada…")
   queda un pelín a destiempo. Si molesta en un partido concreto, se suaviza
   su intro. Es decisión del cliente hasta dónde retocar.
+- **Las jugadas clave tienen riesgo real.** Una opción arriesgada que falla
+  pasa por el sistema de heridas del reglamento (armadura → heridas →
+  apotecario → D16: aturdido / KO / magullado / apaleado / herida persistente
+  / **−1 permanente** / **muerte**), el mismo que la jugada decisiva escrita.
+  Antes solo daban fatiga. Ahora puedes morir o lesionarte de gravedad en
+  cualquier partido, y jugar apaleado (vendado) te hace más frágil (−1 a las
+  tiradas y las heridas cuentan más). El sistema vive en `tirarHerida`,
+  compartido por `jugarJugada` y `resolverTirada` (una sola copia de las
+  reglas). Morir en una jugada clave corta el partido y entra la muerte.
 
 ## Qué es el juego, por dentro
 

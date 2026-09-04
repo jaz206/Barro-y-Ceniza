@@ -2603,6 +2603,33 @@ export default function App() {
   };
 
   // Partido "jugada a jugada": cada jugada clave usa la ficha real del pj.
+  // Sistema de heridas del reglamento (armadura → heridas → apotecario → D16),
+  // compartido por la jugada decisiva escrita y por las jugadas clave. Muta q
+  // (que ya llevas apaleado, herida persistente o −1 permanente) y dice si mueres.
+  const tirarHerida = (q, m) => {
+    const has = (h) => q.hab.includes(h);
+    const chips = []; let texto = "", muerte = false;
+    const arm = d6() + d6();
+    const avEf = q.AV - (has("Furia") ? 1 : 0);
+    if (arm >= avEf) {
+      let her = d6() + d6() + (q.lesiones || 0);
+      if (her === 8 && has("Cabeza dura")) her = 7;
+      const apot = ORDEN[idx].cap >= 3 && m && !m.apotecarioUsado;
+      if (her >= 8 && apot) { const her2 = d6() + d6() + (q.lesiones || 0), mejor = Math.min(her, her2); chips.push(`Apotecario: heridas ${her} → ${her2}${her2 > her ? " (se queda con la mejor: " + mejor + ")" : ""}`); her = mejor; if (m) m.apotecarioUsado = true; }
+      if (her <= 7) texto = " Te dejan aturdido en el barro; te levantas dolorido.";
+      else if (her <= 9) texto = " Te dejan KO. Ves el resto del partido desde el banquillo.";
+      else {
+        const les = 1 + Math.floor(Math.random() * 16);
+        if (les <= 8) { chips.push("Lesión: magullado"); texto = " Sales en camilla. Magullado: nada que un barril no cure."; }
+        else if (les <= 10) { chips.push("Lesión: apaleado (próximo partido a medias)"); q.flags.apaleado = true; texto = " Apaleado. El próximo partido lo juegas a medias."; }
+        else if (les <= 12) { chips.push("Lesión grave: herida persistente"); q.flags.apaleado = true; q.lesiones = (q.lesiones || 0) + 1; texto = " Herida grave. Curará mal, y a partir de ahora cada golpe cuenta un poco más."; }
+        else if (les <= 14) { const d = d6(); const st = d <= 2 ? "MA" : d <= 4 ? "AV" : d === 5 ? "AG" : "ST"; q[st] = Math.max(1, q[st] - 1); chips.push(`Herida permanente: −1 ${st}`); texto = ` Herida permanente. ${st === "MA" ? "Ya no corres igual." : st === "AV" ? "La armadura ya no cierra." : st === "AG" ? "Las manos no obedecen del todo." : "Te falta algo en los brazos."}`; }
+        else { muerte = true; }
+      }
+    }
+    return { chips, texto, muerte };
+  };
+
   const jugarJugada = (o) => {
     const m = { ...mt, aliados: mt.aliados.map((a) => ({ ...a })), log: [...mt.log], marcador: [...mt.marcador] };
     const tabla = PE(pj.raza);
@@ -2613,10 +2640,29 @@ export default function App() {
     if (res.baja) { m.bajas++; m.pe += tabla.baja; }
     if (res.pase) { m.pases++; m.pe += tabla.pase; }
     if (res.golRival) m.marcador[1]++;
-    let extra = "";
-    if (o.riesgo && !r.ok) { const arm = d6() + d6(); if (arm >= pj.AV) { m.fatiga = (m.fatiga || 0) + 1; extra = " Sales tocado del golpe."; } }
-    m.log.push({ turno: m.jIdx + 1, texto: res.txt + extra, tecnico: r.tecnico });
+    // Una opción arriesgada que falla te expone al golpe: armadura, heridas y,
+    // si suena la flauta mala, la camilla, el −1 permanente o la muerte.
+    let extra = "", herChips = [], muerte = false, herido = false;
+    let q = pj;
+    if (o.riesgo && !r.ok) {
+      const qq = { ...pj, flags: { ...pj.flags }, hab: [...pj.hab] };
+      const h = tirarHerida(qq, m);
+      if (h.texto || h.muerte) { extra = h.texto; herChips = h.chips; muerte = h.muerte; herido = true; q = qq; }
+    }
+    m.log.push({ turno: m.jIdx + 1, texto: res.txt + extra, tecnico: r.tecnico, chips: herChips.length ? herChips : undefined });
     m.jIdx++;
+    if (muerte) {
+      // Mueres en el campo: se acaba el partido aquí y entra la muerte.
+      m.fase = "clave"; setMt(m);
+      const n = q.muertes + 1;
+      setCronica((c) => [...c, `Cayó en el campo contra ${escena.partido.rival}. ${m.marcador[0]}-${m.marcador[1]}.`]);
+      if (n > MAX_MUERTES) { setPj({ ...q, muertes: n }); setMt(null); setFase("muerteFinal"); guardarVida(`${pj.nombre} murió en el barro y nadie vino.`, true); return; }
+      const md = MUERTES[n - 1];
+      const { q: q2, chips } = aplicar({ ...q, muertes: n }, md.fx);
+      setPj(q2); setMt(null); setMuerteInfo({ ...md, chips }); setFase("muerte");
+      return;
+    }
+    if (herido) setPj(q);
     if (m.jIdx >= m.plays.length) m.fase = "clave";
     setMt(m);
   };
@@ -2696,24 +2742,10 @@ export default function App() {
     if (base.flags.apaleado && escena.partido) chips.unshift("−1: juegas apaleado");
     let texto = typeof rama.txt === "function" ? rama.txt(base) : rama.txt, muerte = false;
     if (!exito && t.riesgo) {
-      const arm = d6() + d6();
-      const avEf = q.AV - (has("Furia") ? 1 : 0);
-      if (arm >= avEf) {
-        let her = d6() + d6() + (q.lesiones || 0);
-        if (her === 8 && has("Cabeza dura")) her = 7;
-        const apot = ORDEN[idx].cap >= 3 && !(mt && mt.apotecarioUsado);
-        if (her >= 8 && apot) { const her2 = d6() + d6() + (q.lesiones || 0), mejor = Math.min(her, her2); chips.push(`Apotecario: heridas ${her} → ${her2}${her2 > her ? " (se queda con la mejor: " + mejor + ")" : ""}`); her = mejor; if (mt) mt.apotecarioUsado = true; }
-        if (her <= 7) texto += " Te dejan aturdido en el barro; te levantas al turno siguiente.";
-        else if (her <= 9) texto += " Te dejan KO. Ves el resto del partido desde el banquillo.";
-        else {
-          const les = 1 + Math.floor(Math.random() * 16);
-          if (les <= 8) { chips.push("Lesión: magullado"); texto += " Sales en camilla. Magullado: nada que un barril no cure."; }
-          else if (les <= 10) { chips.push("Lesión: apaleado (próximo partido a medias)"); q.flags.apaleado = true; texto += " Apaleado. El próximo partido lo juegas a medias."; }
-          else if (les <= 12) { chips.push("Lesión grave: herida persistente"); q.flags.apaleado = true; q.lesiones = (q.lesiones || 0) + 1; texto += " Herida grave. Curará mal, y a partir de ahora cada golpe cuenta un poco más."; }
-          else if (les <= 14) { const d = d6(); const st = d <= 2 ? "MA" : d <= 4 ? "AV" : d === 5 ? "AG" : "ST"; q[st] -= 1; chips.push(`Herida permanente: −1 ${st}`); texto += ` Herida permanente. ${st === "MA" ? "Ya no corres igual." : st === "AV" ? "La armadura ya no cierra." : st === "AG" ? "Las manos no obedecen del todo." : "Te falta algo en los brazos."}`; }
-          else { muerte = true; }
-        }
-      }
+      const h = tirarHerida(q, mt);
+      h.chips.forEach((c) => chips.push(c));
+      texto += h.texto;
+      if (h.muerte) muerte = true;
     }
     if (escena.partido) {
       const m = mt || { marcador: [0, 0], pe: 0, bajas: 0, tds: 0, pases: 0, aliados: [], cubiertos: [] };
@@ -3072,6 +3104,7 @@ export default function App() {
             ? mt.intro.map((l, i) => <p key={i} className={i === 0 ? "pm-acc-main" : "mini"}>{l}</p>)
             : <>
                 <p className="pm-acc-prev">{mt.log[mt.log.length - 1]?.texto}</p>
+                {mt.log[mt.log.length - 1]?.chips && <div className="pm-herida">{mt.log[mt.log.length - 1].chips.map((c, i) => <span key={i} className="pm-herida-chip">{c}</span>)}</div>}
                 {mt.log[mt.log.length - 1]?.tecnico && <p className="mini tec">{mt.log[mt.log.length - 1].tecnico}</p>}
               </>}
           {mt.fase === "turnos" && (enJugadas
@@ -3104,7 +3137,7 @@ export default function App() {
           <details className="pm-bitacora">
             <summary>Bitácora del partido</summary>
             {mt.intro && mt.intro.map((l, i) => <p key={"i" + i} className="mini">{l}</p>)}
-            {mt.log.map((l, i) => <p key={i} className="pm-bit-linea"><b>{enJugadas ? "jugada" : "turno"} {l.turno}.</b> {l.texto}{l.tecnico ? <span className="tec"> · {l.tecnico}</span> : ""}</p>)}
+            {mt.log.map((l, i) => <p key={i} className="pm-bit-linea"><b>{enJugadas ? "jugada" : "turno"} {l.turno}.</b> {l.texto}{l.chips ? l.chips.map((c, j) => <span key={j} className="pm-herida-chip">{c}</span>) : ""}{l.tecnico ? <span className="tec"> · {l.tecnico}</span> : ""}</p>)}
           </details>
         )}
       </div>
@@ -3389,6 +3422,8 @@ const CSS = `
 .pm-herido{color:var(--sangre);border-color:var(--sangre);text-decoration:line-through;opacity:.7}
 .pm-accion{background:#fff8ea;border:1px solid rgba(35,26,18,.2);border-left:4px solid var(--oro);border-radius:2px;padding:.7rem .85rem;margin-bottom:.8rem}
 .pm-acc-prev{margin:0 0 .4rem;padding-bottom:.4rem;border-bottom:1px dashed rgba(35,26,18,.2);line-height:1.55}
+.pm-herida{display:flex;flex-wrap:wrap;gap:.35rem;margin:.1rem 0 .4rem}
+.pm-herida-chip{display:inline-block;font-family:Oswald,sans-serif;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#fff;background:var(--sangre);padding:.12rem .45rem;border-radius:3px;margin-left:.3rem}
 .pm-acc-main{margin:.2rem 0 0;font-weight:600;line-height:1.55}
 .pm-acc-key{margin:0 0 .35rem;font-family:'Alfa Slab One',Georgia,serif;text-transform:uppercase;letter-spacing:.03em;font-size:1.02rem;color:var(--sangre);line-height:1.1}
 .pm-ficha{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-bottom:.6rem}
