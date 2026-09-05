@@ -2334,6 +2334,14 @@ const HERIDA_PROSA = {
     `El grandullón de ${r} te ha buscado todo el partido. Al final te encuentra. No te levantas.`,
   ],
 };
+// El rival también ataca: cuando no marcas (y sobre todo si pierdes la bola),
+// contraatacan. Prosa del gol rival. PENDIENTE DE REVISIÓN (voz del cliente).
+const RIVAL_MARCA = (r) => pick1([
+  `${r} recupera, corre lo que tú no corriste y cruza vuestra línea. Touchdown suyo.`,
+  `No aseguras la bola y ${r} la lleva de una sola jugada hasta el fondo. Marcan ellos.`,
+  `Un contraataque de ${r} por donde no había nadie. Su grada ruge; el marcador se mueve.`,
+  `${r} castiga el error: mientras te levantas, ya han cruzado. Gol suyo.`,
+]);
 
 /* Relato de la muerte según la etapa: no es lo mismo morir de crío que en el
    ocaso. Se intercala entre cómo caíste y cómo vuelves (el apotecario, Ludo…).
@@ -2719,7 +2727,7 @@ export default function App() {
     const r = rollKey(pj, m, o);
     const res = r.ok ? o.ok : o.ko;
     if (res.posesion) m.posesion = res.posesion;
-    if (res.gol) { m.marcador[0]++; m.tds++; m.pe += tabla.td; }
+    if (res.gol) { m.marcador[0]++; m.tds++; m.pe += tabla.td; m.posesion = "rival"; } // marcas: saque para ellos
     if (res.baja) { m.bajas++; m.pe += tabla.baja; }
     if (res.pase) { m.pases++; m.pe += tabla.pase; }
     if (res.golRival) m.marcador[1]++;
@@ -2731,6 +2739,17 @@ export default function App() {
       const qq = { ...pj, flags: { ...pj.flags }, hab: [...pj.hab] };
       const h = tirarHerida(qq, m);
       if (h.texto || h.muerte) { extra = h.texto; herChips = h.chips; muerte = h.muerte; herido = true; q = qq; }
+    }
+    // El rival también ataca en cada jugada: intenta marcar por su cuenta,
+    // resistido por tu ficha (ST/AG) y por tener tú la bola, y escalado por su
+    // fuerza. Es lo que hace que el rival marque y que ganar cueste sudor.
+    if (!res.golRival && !muerte) {
+      const def = Math.floor((pj.ST + pj.AG) / 2) - 3 + (m.posesion === "propia" ? 2 : 0);
+      if (d6() + d6() + (m.fuerza || 2) >= 10 + def) {
+        m.marcador[1]++;
+        m.posesion = "propia"; // tras marcar ellos, sacas tú
+        extra += " " + RIVAL_MARCA(m.rivalCorto);
+      }
     }
     m.log.push({ turno: m.jIdx + 1, texto: res.txt + extra, tecnico: r.tecnico, chips: herChips.length ? herChips : undefined });
     m.jIdx++;

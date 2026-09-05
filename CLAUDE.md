@@ -79,6 +79,16 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   centrada** (en `resolverTirada`, solo cuando hay partido): característica − 3
   y objetivo − 2. Sus bonos de habilidad/relaciones/forma siguen sumando por
   encima —es el momento en que tu build paga—, pero ya no salen totales de 17.
+- **El rival también ataca (partidos ganables con sudor).** Antes tus jugadas
+  marcaban pero el rival casi nunca lo hacía (los `ko` solo te quitaban la
+  bola), así que ganabas el 95-97%. Ahora, en cada jugada clave, el rival hace
+  **su propio intento de gol** (`RIVAL_MARCA`): `2d6 + fuerza ≥ 10 + defensa`,
+  donde tu defensa sale de tu ST/AG y de si tienes tú la bola. Escala con la
+  fuerza del rival y con tu ficha. Medido (simulación y partida real): un pro
+  gana la liga ~80-90% pero un final contra un rival elite (fuerza 4) baja a
+  ~30-50%; un crío sufre; una ficha muy montada gana hasta los finales duros.
+  Marcadores tipo Blood Bowl (2-1, 3-2, 1-0, y derrotas 1-3). Prosa del gol
+  rival marcada para revisión. El umbral (10) es la perilla de dificultad.
 - **Las jugadas clave tienen riesgo real.** Una opción arriesgada que falla
   pasa por el sistema de heridas del reglamento (armadura → heridas →
   apotecario → D16: aturdido / KO / magullado / apaleado / herida persistente
