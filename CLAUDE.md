@@ -70,6 +70,21 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   apaleado, herida persistente, −1 permanente y las muertes con sabor —la
   grada, el rival, el barro—) la escribió Claude imitando la voz del cliente,
   con su OK. Vive en `HERIDA_PROSA`. Marcada para revisión con el resto.
+- **Variedad de intros (para que no empiece siempre igual).** Cada jugada
+  clave del pool tiene ahora varias frases de cabecera (`h`) y de situación
+  (`situ`), elegidas de forma estable por jugada (`varia`/`semJugada`: no
+  parpadean entre renders, pero cambian de jugada a jugada y de partido a
+  partido según el rival), más una coletilla según cómo juega el rival
+  (`flavRival`: brutal/muro/esquivo/rápido). También la frase de apertura del
+  partido ("Salta al campo…") elige entre cuatro variantes. Prosa de Claude,
+  marcada para revisión.
+- **El halfling juega con su PROPIO pool** (`PLAY_POOL_HALF`, elegido por
+  `poolDe(pj)`): mismo motor y mismas tiradas (ST/AG/MA, riesgo, heridas), pero
+  otras acciones, en clave de comedia negra —rodar hecho un ovillo, dejar que
+  Ramón te confunda con la bola y te lance, la "piña" (rodar todos hechos una
+  albóndiga), sentarte encima del balón, esconderte tras el estofado del Chef—.
+  Las otras cuatro razas siguen con `PLAY_POOL`, el serio. Toda la prosa del
+  pool halfling es de Claude, marcada para revisión con el resto de la rama.
 - **Cómo se miden las acciones del partido (recalibrado).** El modificador de
   una jugada clave es tu VENTAJA sobre el estándar del reglamento
   (característica − 3; velocidad ≈ −2), no la característica en bruto, y los

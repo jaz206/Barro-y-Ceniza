@@ -2565,9 +2565,15 @@ const rollKey = (pj, m, o) => {
   else if (tot < obj && m.rerolls > 0) { m.rerolls--; d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = "2ª oportunidad"; }
   return { ok: tot >= obj, d, tecnico: `${ATRIB_PARTIDO[o.stat]} ${d[0]}+${d[1]}${mod >= 0 ? "+" : ""}${mod} = ${tot} vs ${obj}${rep ? " · repetida (" + rep + ")" : ""}` };
 };
+// Semilla estable por jugada: mismo valor mientras se muestra la jugada (no
+// parpadea entre renders), distinto entre jugadas y entre partidos (por rival).
+const semJugada = (m, salt) => { let s = (salt || 0) + (m.jIdx || 0) * 31 + (m.turno || 0) * 7; const r = m.rivalCorto || ""; for (let i = 0; i < r.length; i++) s = (s * 33 + r.charCodeAt(i)) & 0x7fffffff; return s; };
+const varia = (arr, m, salt) => arr[semJugada(m, salt) % arr.length];
+// Coletilla según cómo juega el rival: variedad "gratis" de partido a partido.
+const flavRival = (m) => m.estilo === "brutal" ? `${m.rivalCorto} no ha venido a jugar: ha venido a repartir.` : m.estilo === "muro" ? `${m.rivalCorto} se cierra en bloque, casilla a casilla.` : m.estilo === "esquivo" ? `${m.rivalCorto} no busca el choque: busca la bola sin tocarte.` : `${m.rivalCorto} corre las bandas como si les fuera la cena en ello.`;
 const PLAY_POOL = {
-  saque: (pj, m) => ({ etq: "Saque", h: "La bola en tierra de nadie",
-    situ: `El saque cae corto y la vejiga bota en el barro, en el centro, de nadie. Hay que ir a por ella antes que ${m.rivalCorto}.`,
+  saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en tierra de nadie", "El saque, al aire", "Primer balón, primer barro", "A por la vejiga"], m, 1),
+    situ: `${varia([`El saque cae corto y la vejiga bota en el barro, en el centro, de nadie.`, `La bola sube, gira contra el cielo gris y baja a un palmo de las dos líneas.`, `Silbato. La vejiga rueda muerta en mitad del campo y todos la miran a la vez.`], m, 2)} ${varia([`Hay que llegar antes que ${m.rivalCorto}.`, flavRival(m), `El que la coja manda el primer minuto.`], m, 3)}`,
     ops: [
       { txt: "Ir al choque y arrancársela a quien llegue", det: "El hombro por delante.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
         ok: { txt: "Llegas primero y con todo. Uno de ellos rueda; la bola es vuestra.", posesion: "propia" },
@@ -2579,8 +2585,8 @@ const PLAY_POOL = {
         ok: { txt: "Apareces solo en el hueco que habías visto. Es vuestra.", posesion: "propia" },
         ko: { txt: "Nadie estaba donde tú creías. Para ellos.", posesion: "rival" } },
     ] }),
-  ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: "Tienes la bola",
-    situ: `Avanzáis. La caja de ${m.rivalCorto} se cierra a cuatro pasos de su línea; el hueco se abre y se cierra.`,
+  ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: varia(["Tienes la bola", "La bola es tuya", "Toca atacar", "El hueco espera"], m, 1),
+    situ: `${varia([`Avanzáis. La caja de ${m.rivalCorto} se cierra a cuatro pasos de su línea; el hueco se abre y se cierra.`, `Tenéis la bola y campo por delante. ${m.rivalCorto} recula, ordena su muro y espera el error.`, `La bola cosida al pie, la línea de gol a la vista y ${m.rivalCorto} entre medias. Ahora o nunca.`], m, 2)} ${varia([``, flavRival(m)], m, 4)}`.trim(),
     ops: [
       { txt: "Pase raso a un compañero que está solo", det: "Ver el hueco antes de que exista.", stat: "AG", obj: 9, hab: "Pasar",
         ok: { txt: "Sueltas un pase raso que cruza el barro y cae en botas amigas. ¡Cruza! Touchdown.", gol: true, pase: true },
@@ -2591,8 +2597,8 @@ const PLAY_POOL = {
       { txt: "Esprintar por fuera de la caja", det: "La banda es tuya.", stat: "MA", obj: 9, hab: "Esprintar",
         ok: { txt: "Tiras de velocidad por la banda, dejas a la caja mirando, y cruzas. ¡Touchdown!", gol: true },
         ko: { txt: "Te cierran la banda contra la cal. Saque para ellos.", posesion: "rival" } },
-    ] }) : ({ etq: "Defensa", h: `${m.rivalCorto} sube`,
-    situ: `${m.rivalCorto} sube con la bola, en bloque, buscando su línea. Hay que pararlos antes de que crucen.`,
+    ] }) : ({ etq: "Defensa", h: varia([`${m.rivalCorto} sube`, `Te la han quitado`, `A defender`, `Ellos con la bola`], m, 1),
+    situ: `${varia([`${m.rivalCorto} sube con la bola, en bloque, buscando su línea.`, `Perdisteis la bola y ahora ${m.rivalCorto} la mueve hacia vuestro lado.`, `${m.rivalCorto} avanza con la vejiga y vosotros retrocediendo.`], m, 2)} ${varia([`Hay que pararlos antes de que crucen.`, flavRival(m), `Si cruzan aquí, encajáis.`], m, 3)}`,
     ops: [
       { txt: "Entrarle de frente al que lleva la bola", det: "Con todo. A ver quién cae.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
         ok: { txt: "Le entras en seco. Suelta la bola y se queda en el barro. Vuestra.", posesion: "propia", baja: true },
@@ -2605,8 +2611,8 @@ const PLAY_POOL = {
         ko: { txt: "Te la juegan al hueco que dejaste. Touchdown suyo.", golRival: true } },
     ] }),
   // Guerra en el centro: fuerza pura, sin balón. El que gana el choque manda el resto.
-  choque: (pj, m) => ({ etq: "Choque", h: "Guerra en el centro",
-    situ: `Antes de que la bola importe, las dos líneas se buscan. ${m.rivalCorto} pega primero. Aquí se decide quién manda el barro el resto del partido.`,
+  choque: (pj, m) => ({ etq: "Choque", h: varia(["Guerra en el centro", "Las líneas se buscan", "Primero, el barro", "Choque de hombros"], m, 1),
+    situ: `${varia([`Antes de que la bola importe, las dos líneas se buscan. ${m.rivalCorto} pega primero.`, `Aquí no hay bola que valga todavía: hay dos muros de carne midiéndose. ${m.rivalCorto} aprieta.`, `El balón puede esperar. Primero se ve quién aguanta de pie, y ${m.rivalCorto} viene con todo.`], m, 2)} ${varia([`Aquí se decide quién manda el barro el resto del partido.`, `El que gane este choque, gana el partido antes de empezarlo.`], m, 3)}`,
     ops: [
       { txt: "Ir a por el más grande de todos", det: "Si cae el grande, caen todos.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
         ok: { txt: "Lo levantas del suelo y lo devuelves a él. Su línea se abre y la vuestra pisa. La bola cae de vuestro lado.", posesion: "propia", baja: true },
@@ -2619,8 +2625,8 @@ const PLAY_POOL = {
         ko: { txt: "Te llevan por delante. Ganan metros.", posesion: "rival" } },
     ] }),
   // El baile: agilidad pura, pasar entre ellos sin chocar. Sabor élfico.
-  regate: (pj, m) => ({ etq: "Baile", h: "Pasar sin chocar",
-    situ: `No hay que placar a nadie: hay que pasar entre ellos. ${m.rivalCorto} espera el choque que no vas a darle. La bola pide piernas y muñeca, no hombro.`,
+  regate: (pj, m) => ({ etq: "Baile", h: varia(["Pasar sin chocar", "El baile", "Piernas, no hombro", "Entre líneas"], m, 1),
+    situ: `${varia([`No hay que placar a nadie: hay que pasar entre ellos.`, `Aquí no se gana pegando, se gana bailando: entrar y salir sin que te toquen.`, `El choque es de tontos hoy. Se trata de pasar entre ellos como el agua entre los dedos.`], m, 2)} ${varia([`${m.rivalCorto} espera el choque que no vas a darle. La bola pide piernas y muñeca, no hombro.`, `${m.rivalCorto} planta los pies esperando un golpe que no llega.`], m, 3)}`,
     ops: [
       { txt: "Esquivar entre dos y salir por el hueco", det: "Donde ellos no están.", stat: "AG", obj: 8, riesgo: false, hab: "Esquivar",
         ok: { txt: "Pasas entre los dos como si no estuvieran y sales con la bola cosida al pie. Vuestra.", posesion: "propia" },
@@ -2633,8 +2639,8 @@ const PLAY_POOL = {
         ko: { txt: "El pase se queda corto y lo bajan ellos. Para ellos.", posesion: "rival" } },
     ] }),
   // A las puertas: la jugada de gol. Éxito = touchdown; fallo = se lo llevan.
-  remate: (pj, m) => ({ etq: "Remate", h: "A las puertas",
-    situ: `La línea de ${m.rivalCorto} está a un paso. Un movimiento más y cruzáis; si fallas, os quedáis con las manos vacías y ellos con la bola.`,
+  remate: (pj, m) => ({ etq: "Remate", h: varia(["A las puertas", "El último paso", "A un palmo del gol", "La jugada de gol"], m, 1),
+    situ: `${varia([`La línea de ${m.rivalCorto} está a un paso.`, `Todo el partido cabe en el metro que te separa de la línea de ${m.rivalCorto}.`, `La línea de gol, ahí delante, y el último muro de ${m.rivalCorto} entre medias.`], m, 2)} ${varia([`Un movimiento más y cruzáis; si fallas, os quedáis con las manos vacías y ellos con la bola.`, `Aciertas y es touchdown; fallas y te quedas mirándolo desde el barro.`], m, 3)}`,
     ops: [
       { txt: "Pase a la esquina, donde no llega nadie", det: "La jugada de cabeza.", stat: "AG", obj: 9, hab: "Pasar",
         ok: { txt: "La dejas muerta en la esquina y un tuyo la cruza sin que nadie le toque. ¡Touchdown!", gol: true, pase: true },
@@ -2647,8 +2653,8 @@ const PLAY_POOL = {
         ko: { txt: "Te cierran contra la cal en el último paso. Saque para ellos.", posesion: "rival" } },
     ] }),
   // Muralla: ellos tienen la bola y suben a por el gol. Fallar es encajar.
-  defensa: (pj, m) => ({ etq: "Muralla", h: `${m.rivalCorto} va a por el gol`,
-    situ: `${m.rivalCorto} sube con la bola y la línea a la vista. Si no los paras aquí, cruzan. No hay más red detrás de ti.`,
+  defensa: (pj, m) => ({ etq: "Muralla", h: varia([`${m.rivalCorto} va a por el gol`, `Aguantar la ventaja`, `El último muro`, `No pueden cruzar`], m, 1),
+    situ: `${varia([`${m.rivalCorto} sube con la bola y la línea a la vista.`, `Vais por delante y ${m.rivalCorto} lo sabe: vienen a por el empate con todo.`, `${m.rivalCorto} empuja hacia vuestra línea, oliendo el gol que os deja sin premio.`], m, 2)} ${varia([`Si no los paras aquí, cruzan. No hay más red detrás de ti.`, `Eres la última línea. Detrás de ti solo está el gol suyo.`], m, 3)}`,
     ops: [
       { txt: "Entrar en seco al que la lleva", det: "Tumbarlo y que la suelte.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
         ok: { txt: "Le entras de frente, suelta la bola y se queda en el barro. La recuperáis vosotros.", posesion: "propia", baja: true },
@@ -2661,6 +2667,107 @@ const PLAY_POOL = {
         ko: { txt: "Te la juegan al hueco que dejaste al saltar. Touchdown suyo.", golRival: true } },
     ] }),
 };
+
+/* ===== POOL DEL HALFLING: MISMO MOTOR, OTRAS ACCIONES (comedia negra) =====
+   Los Comepasteles no placan: se esconden, ruedan, dejan que Ramón (el árbol)
+   los confunda con el balón y sobreviven a base de trucos. Mecánica idéntica
+   (tiras ST/AG/MA contra un objetivo, con riesgo y heridas donde toca), solo
+   cambian las acciones y su sabor. Prosa de Claude en la voz del cliente,
+   MARCADA PARA REVISIÓN con el resto de la rama halfling. */
+const PLAY_POOL_HALF = {
+  saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en el barro", "A por la vejiga, si te dejan", "Bola suelta, halfling suelto"], m, 1),
+    situ: `${varia([`La bola cae en tierra de nadie y, por una vez, tú eres más rápido que grande.`, `La vejiga rueda por el barro. ${m.rivalCorto} la mira desde muy arriba; tú, desde muy abajo.`, `Silbato. La bola bota en el centro y todos son más altos que tú, que para esto viene bien.`], m, 2)} ${varia([`Hay que cogerla antes que ${m.rivalCorto}, y sin que te pisen.`, flavRival(m)], m, 3)}`,
+    ops: [
+      { txt: "Rodar hasta ella hecho un ovillo", det: "Nadie placa a una bola de halfling.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Te haces una bola y ruedas entre las piernas de todos hasta la vejiga. Sales con ella y con barro en las orejas. Vuestra.", posesion: "propia" },
+        ko: { txt: "Ruedas directo contra una bota del tamaño de tu cabeza. Rebotas. La cogen ellos, riéndose.", posesion: "rival" } },
+      { txt: "Dejar que Ramón la coja creyendo que es un pastel", det: "El árbol ayuda. A su manera.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+        ok: { txt: "Ramón agarra la bola pensando que es de comer, se decepciona, y la deja caer justo en tus manos. Gracias, Ramón. Vuestra.", posesion: "propia" },
+        ko: { txt: "Ramón te agarra a TI pensando que eres la bola. Descubres el mundo desde diez metros antes de aterrizar en el barro. Ellos aprovechan y se la llevan.", posesion: "rival" } },
+      { txt: "Colártela mientras miran a Ramón", det: "El árbol distrae; tú trabajas.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "Mientras todos vigilan al árbol por si lanza a alguien, tú trotas hasta la bola y te la llevas silbando. Vuestra.", posesion: "propia" },
+        ko: { txt: "Te distraes tú también mirando a Ramón. Cuando reaccionas, la bola ya es suya.", posesion: "rival" } },
+    ] }),
+  ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: varia(["Tienes la bola (corre)", "A cruzar como puedas", "El hueco de los bajitos"], m, 1),
+    situ: `${varia([`Tienes la bola y una legión de armarios entre tú y la línea. Por suerte, eres pequeño y los huecos también.`, `La bola es vuestra. ${m.rivalCorto} cierra el paso con cuerpos del doble de tu tamaño; a la altura de tus rodillas, sin embargo, hay sitio.`, `Campo por delante, la línea a la vista, y un muro de gigantes. Tú les llegas a la cintura, que es donde no miran.`], m, 2)}`,
+    ops: [
+      { txt: "Colarte entre las piernas del más grande", det: "Ahí abajo nadie vigila.", stat: "AG", obj: 9, hab: "Esquivar",
+        ok: { txt: "Te cuelas entre dos pares de piernas como un pastel con mantequilla y cruzas sin que nadie te haya rozado. ¡Touchdown enano de bajito!", gol: true },
+        ko: { txt: "Un grandote cierra las rodillas en el momento justo y te quedas atrapado como una nuez en un cascanueces. Para ellos.", posesion: "rival" } },
+      { txt: "La piña: rodar todos juntos con la bola dentro", det: "Once pasteles, una albóndiga.", stat: "ST", obj: 9, riesgo: true, hab: "Mantenerse firme",
+        ok: { txt: "Os juntáis los once en una bola rodante con el balón en el centro. Nadie sabe a quién placar y la albóndiga cruza la línea entera. ¡Touchdown colectivo!", gol: true },
+        ko: { txt: "La piña se deshace a medio campo y quedáis doce halflings esparcidos por el barro como migas. La bola sale rodando hacia ellos.", posesion: "rival" } },
+      { txt: "Trepar por Ramón y saltar la línea", det: "Un árbol también es una escalera.", stat: "MA", obj: 9, hab: "Esprintar",
+        ok: { txt: "Trepas por Ramón como por un roble, saltas desde su hombro y caes al otro lado de la línea con la bola apretada. Ramón aplaude, o eso parece. ¡Touchdown!", gol: true },
+        ko: { txt: "Ramón se mueve justo cuando saltas y acabas de cara en el barro, un palmo corto. Ellos recogen la bola y a ti casi también.", posesion: "rival" } },
+    ] }) : ({ etq: "Defensa", h: varia([`${m.rivalCorto} sube (escóndete)`, "Te la han quitado", "A defender, o algo así"], m, 1),
+    situ: `${varia([`${m.rivalCorto} sube con la bola hacia vuestra línea. Placarlos está descartado: pesan tres veces lo que tú.`, `Perdisteis la bola y ahora vienen los grandotes. Un halfling no para a eso de frente; un halfling es más listo. O más cobarde. Da igual.`, `${m.rivalCorto} avanza como un carro y vosotros sois los nabos del camino. Hay que pararlos con la cabeza, no con el hombro.`], m, 2)}`,
+    ops: [
+      { txt: "Sentarte en medio y que tropiecen contigo", det: "Un obstáculo pequeño y muy tozudo.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Te sientas en el barro justo en su camino. El grandote no te ve, tropieza contigo y se come el suelo. La bola sale volando y la cazáis. Vuestra.", posesion: "propia" },
+        ko: { txt: "El grandote sí te ve, y te usa de felpudo sin bajar el ritmo. Descubres a qué sabe una bota. Cruzan.", golRival: true } },
+      { txt: "Que Bortrand les tire un cazo de estofado", det: "El Chef también defiende.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "Le haces una seña a Bortrand y un cazo de estofado hirviendo cae sobre el que lleva la bola. Se para a olerlo, se le hace la boca agua, y en ese descuido le robas la vejiga. Vuestra.", posesion: "propia" },
+        ko: { txt: "Bortrand falla la puntería y el estofado cae sobre TI. Ciego y oliendo a cerdo, no paras a nadie. Cruzan.", golRival: true } },
+      { txt: "Esconderte y esperar a que se aburran", det: "La paciencia del pastel.", stat: "AG", obj: 9,
+        ok: { txt: "Desapareces entre el barro. El portador te busca, no te encuentra, se despista, y cuando quiere darse cuenta le has quitado la bola por detrás. Vuestra.", posesion: "propia" },
+        ko: { txt: "Te escondes tan bien que tus propios compañeros tampoco te encuentran. Mientras, el rival cruza tranquilamente. Touchdown suyo.", golRival: true } },
+    ] }),
+  choque: (pj, m) => ({ etq: "Choque", h: varia(["Guerra en el centro (ay)", "Los pequeños contra los muros", "David contra doce Goliat"], m, 1),
+    situ: `${varia([`Las dos líneas se buscan. La suya es un muro de carne; la vuestra le llega a la rodilla. Esto va a doler.`, `${m.rivalCorto} pega primero, y pega fuerte. Un halfling en un choque frontal es física básica: gana la masa. Salvo que hagas trampa.`, `Toca el barro de verdad. Vosotros no ganáis un choque de frente ni de broma, así que habrá que ganarlo de otra forma.`], m, 2)}`,
+    ops: [
+      { txt: "Meterte entre sus pies y hacerle caer", det: "El leñador tira desde abajo.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "En vez de chocar, te tiras a sus tobillos como un tronco rodante. El grandote se va al suelo con estruendo y su línea con él. El campo es vuestro.", posesion: "propia", baja: true },
+        ko: { txt: "Le abrazas el tobillo y él sigue andando contigo colgado, como quien no nota una garrapata. Ellos mandan.", posesion: "rival" } },
+      { txt: "Poner a Ramón por delante y esconderte detrás", det: "El árbol es tu muro.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+        ok: { txt: "Empujas a Ramón hacia la línea rival y te pegas a su tronco. El árbol arrolla lo que pilla y tú vas detrás, a salvo. El barro es vuestro.", posesion: "propia" },
+        ko: { txt: "Ramón decide sentarse justo cuando lo necesitas de pie, y te quedas solo delante del muro. El resultado es predecible y con crujido.", posesion: "rival" } },
+      { txt: "Aguantar hecho un ovillo y no ceder", det: "Un halfling apretado es sorprendentemente duro.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Te haces una bola en el barro y clavas los pies. Empujan y empujan, pero un pastel bien apretado no hay quien lo mueva. Nadie manda todavía.", posesion: "neutral" },
+        ko: { txt: "Te aprietan tanto que sales disparado hacia atrás como un hueso de cereza. Ganan metros.", posesion: "rival" } },
+    ] }),
+  regate: (pj, m) => ({ etq: "Baile", h: varia(["Pasar sin que te toquen", "Lo que mejor sabes hacer", "Escurrirse entre gigantes"], m, 1),
+    situ: `${varia([`Por fin una jugada para ti: nada de chocar, solo escurrirse. Un halfling entre grandotes es una anguila entre bueyes.`, `Aquí no se pega, se baila, y bailar por debajo de las rodillas de ${m.rivalCorto} es la única cosa que un Comepasteles hace mejor que nadie.`, `${m.rivalCorto} planta los pies esperando un golpe. Menuda sorpresa se van a llevar cuando pases por debajo silbando.`], m, 2)}`,
+    ops: [
+      { txt: "Escurrirte entre dos por el hueco de abajo", det: "Donde no te ven.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Pasas entre dos gigantes por el hueco de sus rodillas, tan tranquilo, con la bola cosida al pie. Ni se enteran. Vuestra.", posesion: "propia" },
+        ko: { txt: "Uno baja la mano al sitio justo y te levanta del suelo por el cogote como a un gatito. Para ellos.", posesion: "rival" } },
+      { txt: "Recogerla en carrera sin frenar", det: "La cabeza antes que las piernecitas.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "La levantas del barro sin bajar el ritmo, corriendo con esas piernas cortas que van el doble de rápido por el susto. Vuestra.", posesion: "propia" },
+        ko: { txt: "El bote malo te la pasa por encima de la cabeza, que no es difícil. La cazan ellos.", posesion: "rival" } },
+      { txt: "Pasársela a Ramón, que despeja lejos", det: "Un pase al árbol nunca falla.", stat: "AG", obj: 9,
+        ok: { txt: "Le dejas la bola a Ramón, que la coge, mira el horizonte y la lanza medio campo hacia vuestra portería rival. Un pase de treinta metros sin querer. Vuestra y avanzada.", posesion: "propia", pase: true },
+        ko: { txt: "Ramón mira la bola, luego una mariposa, y elige la mariposa. La bola se queda ahí, y ellos la cogen.", posesion: "rival" } },
+    ] }),
+  remate: (pj, m) => ({ etq: "Remate", h: varia(["A las puertas (agárrate)", "El último palmo", "La jugada del pastel"], m, 1),
+    situ: `${varia([`La línea a un palmo. Todo el ridículo de la temporada o toda la gloria cabe en el paso que te falta.`, `Ahí está la línea de ${m.rivalCorto}, y el último muro de armarios entre ella y tú. Un halfling no cruza eso de frente: cruza por debajo, por encima o por sorpresa.`, `El momento. La bola en tus manos de tres palmos y la línea de gol pidiéndote un milagro pequeñito.`], m, 2)}`,
+    ops: [
+      { txt: "El pase imposible por debajo de todos", det: "Nadie mira a ras de barro.", stat: "AG", obj: 9, hab: "Esquivar",
+        ok: { txt: "Sueltas un pase raso que cruza el barro por debajo de doce entrepiernas y cae en botas amigas al otro lado. Nadie mira nunca a la altura de un halfling. ¡Touchdown!", gol: true, pase: true },
+        ko: { txt: "El pase raso choca contra una espinilla del tamaño de un tronco y rebota hacia ellos. Contraataque.", posesion: "rival" } },
+      { txt: "Que Ramón te lance por encima de la línea", det: "La bomba halfling.", stat: "ST", obj: 10, riesgo: true, hab: "Placar",
+        ok: { txt: "Te pones en la mano de Ramón, gritas '¡ahora!', y el árbol te lanza en un arco perfecto por encima de todo el muro. Aterrizas al otro lado de la línea con la bola. La grada enloquece. ¡Touchdown volando!", gol: true },
+        ko: { txt: "Ramón te lanza, sí, pero calcula fatal: acabas en la tercera fila de la grada, entre dos aficionados que comparten su bocadillo contigo. Sin gol, y con acidez.", posesion: "rival" } },
+      { txt: "Sentarte en el balón sobre la línea", det: "Si no lo sueltas, no te lo quitan.", stat: "AG", obj: 9, hab: "Manos seguras",
+        ok: { txt: "Cruzas la línea y te sientas encima del balón, tan tranquilo, mientras doce gigantes intentan en vano moverte. El árbitro, resignado, da el touchdown. La táctica más halfling de la historia. ¡Gol!", gol: true },
+        ko: { txt: "Te sientas en el balón antes de tiempo, del lado malo de la línea. Los grandotes te ruedan a ti y al balón de vuelta al centro. Para ellos.", posesion: "rival" } },
+    ] }),
+  defensa: (pj, m) => ({ etq: "Muralla", h: varia([`${m.rivalCorto} va a por el gol`, "Aguantad como sea", "El último pastel"], m, 1),
+    situ: `${varia([`Vais por delante y ${m.rivalCorto} viene a por el empate con todo. Sois lo único entre ellos y el gol, que no es mucho consuelo.`, `${m.rivalCorto} empuja hacia vuestra línea. Once halflings temblando y un árbol distraído: esa es toda vuestra muralla.`, `El rival huele el gol. Un Comepasteles no defiende con músculo —no tiene—, defiende con mañas y con suerte.`], m, 2)}`,
+    ops: [
+      { txt: "Tirarte a sus tobillos en plancha", det: "El placaje del leñador.", stat: "AG", obj: 8, riesgo: true, hab: "Esquivar",
+        ok: { txt: "Te lanzas en plancha a los tobillos del portador y lo mandas al suelo cuan largo es. Suelta la bola y la recuperáis. Un halfling acaba de placar. Histórico.", posesion: "propia", baja: true },
+        ko: { txt: "Fallas la plancha y te quedas tumbado mientras te pasan por encima como un felpudo. Cruzan. Touchdown suyo.", golRival: true } },
+      { txt: "Cerrarle el hueco escondido entre los tuyos", det: "Muchos pasteles hacen un muro.", stat: "AG", obj: 8, hab: "Placaje defensivo",
+        ok: { txt: "Os apelotonáis los once en el hueco, hombro con hombro con rodilla ajena, y el portador no encuentra por dónde. La bola muere en el atasco de halflings. No cruzan.", posesion: "rival" },
+        ko: { txt: "El grandote os aparta a los once de un manotazo, como quien espanta moscas, y cruza. Touchdown suyo.", golRival: true } },
+      { txt: "Que Ramón se plante en la línea de gol", det: "El árbol como última portería.", stat: "ST", obj: 9, hab: "Mantenerse firme",
+        ok: { txt: "Empujas a Ramón hasta la línea y lo dejas ahí plantado. El portador choca contra el tronco, rebota y suelta la bola. Ramón ni se entera. Recuperáis. No cruzan.", posesion: "propia" },
+        ko: { txt: "Ramón elige ese instante para ir a por una mariposa y deja la portería abierta de par en par. El rival cruza por el hueco del árbol. Touchdown suyo.", golRival: true } },
+    ] }),
+};
+// El halfling juega con su propio repertorio; las demás razas, con el pool serio.
+const poolDe = (pj) => pj.raza === "halfling" ? PLAY_POOL_HALF : PLAY_POOL;
 /* ===== TIPOS DE PARTIDO (Fase 2) =====
    Cada partido elige un tipo; el tipo decide el arco (cuántas jugadas clave,
    de qué clase) y cómo empiezas (marcador, quién saca). La jugada decisiva
@@ -2937,7 +3044,14 @@ export default function App() {
     const p = escena.partido, capId = ORDEN[idx].cap;
     const aliados = ALIADOS[pj.raza](pj, capId).filter((a) => a.si).map((a) => ({ ...a, herido: false }));
     const estilo = estiloDe(p.rival, p.fuerza);
-    const intro = [`Salta al campo ${pj.equipo}${aliados.length ? ` con ${aliados.map((a) => a.nombre).join(", ")}` : ", y no hay nadie en el campo a quien conozcas"}. Enfrente, ${p.rival}.`];
+    const conQuien = aliados.length ? ` con ${aliados.map((a) => a.nombre).join(", ")}` : ", y no hay nadie en el campo a quien conozcas";
+    const aperturas = [
+      `Salta al campo ${pj.equipo}${conQuien}. Enfrente, ${p.rival}.`,
+      `${p.rival} espera en el otro lado del barro. Salta ${pj.equipo}${conQuien}.`,
+      `Se llena la grada. Hoy toca ${p.rival}, y saltáis vosotros${conQuien}.`,
+      `El barro ya huele a partido. ${pj.equipo}${conQuien}, contra ${p.rival}.`,
+    ];
+    const intro = [pick1(aperturas)];
     const log = [];
     let clima = d6() + d6();
     const CLIMAS = { 2: ["Calor asfixiante", "un compañero se queda en el banquillo por el calor"], 3: ["Muy soleado", "−1 a los pases"], 11: ["Lluvioso", "−1 a recoger y recibir"], 12: ["Ventisca", "−1 a las carreras; solo pases cortos"] };
@@ -3530,7 +3644,7 @@ export default function App() {
     const rival = escena.partido.rival;
     const enJugadas = mt.modo === "jugadas";
     const ops = enJugadas ? {} : opcionesTurno(mt);
-    const jplay = enJugadas && mt.fase === "turnos" ? PLAY_POOL[mt.plays[mt.jIdx]](pj, mt) : null;
+    const jplay = enJugadas && mt.fase === "turnos" ? poolDe(pj)[mt.plays[mt.jIdx]](pj, mt) : null;
     const miPuesto = !enJugadas && H.emergente ? puestoEmergente(pj) : null;
     const miAccionVista = miPuesto ? { Blitzer: "presionar", Receptor: "correr", Lanzador: "bola", Liniero: "aguantar" }[miPuesto.clave] : null;
     const arranque = mt.log.length === 0;
