@@ -81,7 +81,7 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
 - **El halfling juega con su PROPIO pool** (`PLAY_POOL_HALF`, elegido por
   `poolDe(pj)`): mismo motor y mismas tiradas (ST/AG/MA, riesgo, heridas), pero
   otras acciones, en clave de comedia negra —rodar hecho un ovillo, dejar que
-  Ramón te confunda con la bola y te lance, la "piña" (rodar todos hechos una
+  Roblerto te confunda con la bola y te lance, la "piña" (rodar todos hechos una
   albóndiga), sentarte encima del balón, esconderte tras el estofado del Chef—.
   Las otras cuatro razas siguen con `PLAY_POOL`, el serio. Toda la prosa del
   pool halfling es de Claude, marcada para revisión con el resto de la rama.
@@ -148,7 +148,7 @@ navegador cap 1→7 (9 partidos) hasta el epílogo, sin errores.
 - Arco: 1 Villapastel · 2 La liga de los mataos (Sexta) · 3 El escándalo del árbol
   · 4 La oferta (te quiere un club de Tercera) · 5 La Copa de los Pringados ·
   6 La final imposible · 7 El ocaso del pastel. 9 partidos, con su tentación
-  central ("Ganar como los grandes": vender a Ramón, fichar por Mortaigne o
+  central ("Ganar como los grandes": vender a Roblerto, fichar por Mortaigne o
   envenenar la final) que el epílogo juzga.
 - Vive en `HALFLING`, `HALFLING_ALIADOS`, `HALFLING_TRANSICIONES`,
   `HALFLING_ENTREACTOS`, `HALFLING_TIEMPO`. Registrada en `HISTORIAS`, `ALIADOS`,
@@ -161,7 +161,7 @@ navegador cap 1→7 (9 partidos) hasta el epílogo, sin errores.
   (sin `fichaInicial`): con la dificultad nueva, el halfling **suda cada partido**
   y ganar/empatar es una gesta — que es la gracia.
 - Reutiliza a **Pipo Cazuelas**, el agente halfling de tres dedos que ya salía en
-  las noticias del mundo. Equipo: los Comepasteles, con Ramón (el árbol que te
+  las noticias del mundo. Equipo: los Comepasteles, con Roblerto (el árbol que te
   confunde con el balón) y Bortrand (el Chef que roba la cerveza rival).
 
 ## Números de serie limados — decisión de producto, mantenerla
