@@ -2797,7 +2797,11 @@ export default function App() {
   const resolverTirada = (op, base, forzada) => {
     const opTxt = op.txt;
     const t = op.tirada;
-    const statMod = t.stat === "MA" ? Math.floor(base.MA / 3) : base[t.stat];
+    // Misma escala centrada que las jugadas clave: el modificador es tu ventaja
+    // sobre el estándar (característica − 3; velocidad ≈ −2) y el objetivo se
+    // recentra a 6-8, para que los números del remate no canten frente al resto.
+    const obj = escena.partido ? Math.max(6, t.obj - 2) : t.obj;
+    const statMod = t.stat === "MA" ? Math.floor(base.MA / 3) - (escena.partido ? 2 : 0) : base[t.stat] - (escena.partido ? 3 : 0);
     const atrKey = t.stat === "ST" ? "Ferocidad" : t.stat === "AG" ? "Astucia" : "Voluntad";
     const atrMod = Math.floor(base.atr[atrKey] / 3);
     let mod = statMod + atrMod + ((base.flags.ventaja || (mt && mt.faltaGratis)) && t.falta ? 2 : 0) + (base.formaPend || 0);
@@ -2816,8 +2820,8 @@ export default function App() {
     if (t.falta) bonusHab("Jugar sucio", 2);
     const habRel = t.stat === "ST" ? "Placar" : t.stat === "AG" ? (t.riesgo ? "Esquivar" : "Manos seguras") : null;
     let dados = [d6(), d6()], total = dados[0] + dados[1] + mod, repetida = false;
-    if (total < t.obj && habRel && has(habRel)) { dados = [d6(), d6()]; total = dados[0] + dados[1] + mod; repetida = habRel; }
-    const exito = total >= t.obj;
+    if (total < obj && habRel && has(habRel)) { dados = [d6(), d6()]; total = dados[0] + dados[1] + mod; repetida = habRel; }
+    const exito = total >= obj;
     const rama = exito ? t.ok : t.ko;
     let { q, chips } = aplicar(base, rama.fx);
     if (forzada) chips.unshift("−2 Voluntad (forzado)");
@@ -2882,7 +2886,7 @@ export default function App() {
     setCronica((c) => [...c, `${escena.titulo}: ${op.txt} (${exito ? "éxito" : "fallo"})`]);
     const expulsionReal = rama.fx.expulsion && chips.includes("Expulsado");
     texto = conMarcadorMsg(texto);
-    setPanel({ texto, chips, tirada: { dados, mod, total, obj: t.obj, exito, repetida, habsUsadas }, muerte, expulsion: expulsionReal });
+    setPanel({ texto, chips, tirada: { dados, mod, total, obj, exito, repetida, habsUsadas }, muerte, expulsion: expulsionReal });
   };
 
   const continuar = () => {

@@ -75,8 +75,10 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   (característica − 3; velocidad ≈ −2), no la característica en bruto, y los
   objetivos del pool se recentran a 6-8 (`objDe`). Así 2d6 manda, el objetivo
   importa, y fallar es posible (sobre todo sin repeticiones), que es lo que
-  hace que las heridas pesen. La jugada decisiva escrita mantiene su escala
-  vieja por ahora (pendiente de alinear si molesta el contraste).
+  hace que las heridas pesen. **La jugada decisiva escrita usa la misma escala
+  centrada** (en `resolverTirada`, solo cuando hay partido): característica − 3
+  y objetivo − 2. Sus bonos de habilidad/relaciones/forma siguen sumando por
+  encima —es el momento en que tu build paga—, pero ya no salen totales de 17.
 - **Las jugadas clave tienen riesgo real.** Una opción arriesgada que falla
   pasa por el sistema de heridas del reglamento (armadura → heridas →
   apotecario → D16: aturdido / KO / magullado / apaleado / herida persistente
