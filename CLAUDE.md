@@ -122,24 +122,32 @@ patada inicial, compañeros con ficha propia y fatiga.
 Entre capítulos hay **entreactos**: dos "tardes libres" en las que eliges
 actividades (entrenar, ver a la familia, beber con alguien).
 
-## Halfling — "Los Comepasteles" (rama piloto, comedia negra)
+## Halfling — "Los Comepasteles" (5ª rama completa, comedia negra)
 
-Quinta rama **piloto** (solo capítulo 1, jugable de punta a punta) para que el
-cliente juzgue el tono antes de escribir las 10.000 palabras de una rama entera.
-La escribió Claude, **comedia negra y gamberra**, y está **pendiente de revisión
-entera** (es la primera rama 100% no-cliente).
+Quinta rama **entera y jugable** (7 capítulos, del crío de la Comarca al ocaso
+del pastel), en el mismo motor que las otras cuatro. La escribió Claude,
+**comedia negra y gamberra**, y está **pendiente de revisión entera** (es la
+primera rama 100% no-cliente). Verificada: `npm run build` limpio y recorrido en
+navegador cap 1→7 (9 partidos) hasta el epílogo, sin errores.
 
-- Vive en `HALFLING` + `HALFLING_ALIADOS`, registrada en `HISTORIAS`, `ALIADOS`,
-  `ACCESO`, `razaDefaultTipo`, `DIV_POR_CAP` (vacío, sin tabla en el piloto),
-  `MUERTE_ETAPA` y el nombre por defecto ("Berto Migas"). No entra en los bucles
-  de torneos/leyenda (solo cap 1).
-- Ficha de pringado (MA6 ST2 AG3 AV7, Esquivar): con la dificultad nueva, el
-  halfling **suda cada partido** y ganar/empatar es una gesta — que es la gracia.
+- Arco: 1 Villapastel · 2 La liga de los mataos (Sexta) · 3 El escándalo del árbol
+  · 4 La oferta (te quiere un club de Tercera) · 5 La Copa de los Pringados ·
+  6 La final imposible · 7 El ocaso del pastel. 9 partidos, con su tentación
+  central ("Ganar como los grandes": vender a Ramón, fichar por Mortaigne o
+  envenenar la final) que el epílogo juzga.
+- Vive en `HALFLING`, `HALFLING_ALIADOS`, `HALFLING_TRANSICIONES`,
+  `HALFLING_ENTREACTOS`, `HALFLING_TIEMPO`. Registrada en `HISTORIAS`, `ALIADOS`,
+  `ACCESO`, `razaDefaultTipo`, `TRANSICIONES`, `ENTREACTOS`, `TIEMPO`, `TENTACION`,
+  `IMAGENES`, `DIV_POR_CAP` (Sexta→arriba→barro), `MUERTE_ETAPA` (caps 1-7) y el
+  nombre por defecto ("Berto Migas"). **No entra en los bucles de torneos/leyenda**
+  (solo iteran [HUMANO,ENANO,ORCO,ELFO]); su copa y su final son escenas escritas
+  a mano dentro de la rama, no del sistema `TORNEOS`.
+- Ficha de pringado (MA6 ST2 AG3 AV7, Esquivar), profesional desde el principio
+  (sin `fichaInicial`): con la dificultad nueva, el halfling **suda cada partido**
+  y ganar/empatar es una gesta — que es la gracia.
 - Reutiliza a **Pipo Cazuelas**, el agente halfling de tres dedos que ya salía en
   las noticias del mundo. Equipo: los Comepasteles, con Ramón (el árbol que te
   confunde con el balón) y Bortrand (el Chef que roba la cerveza rival).
-- Si el cliente da el OK al tono, se escriben los capítulos 2-7 (arco, muertes de
-  comedia, torneo, final) y se mete en los bucles de post-proceso.
 
 ## Números de serie limados — decisión de producto, mantenerla
 

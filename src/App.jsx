@@ -1740,9 +1740,10 @@ Object.assign(HUMANO.recuerdos, { campeonLeyendo: "El troll giró medio cuerpo, 
    Comedia negra y gamberra. Rama nueva escrita 100% por Claude para que el
    cliente juzgue el tono con algo jugable. PENDIENTE DE REVISIÓN entera. */
 const HALFLING_ALIADOS = (pj, cap) => [
-  { nombre: "Ramón (el árbol)", ST: 6, AG: 1, AV: 11, si: true },
-  { nombre: "Los Comepasteles", ST: 2, AG: 3, AV: 7, si: true },
-  { nombre: "Bortrand (el Chef)", ST: 2, AG: 2, AV: 7, si: pj.rel.chef >= 0 },
+  { nombre: "Ramón (el árbol)", ST: 6, AG: 1, AV: 11, si: !pj.flags.ramonVendido && !pj.flags.fichastePorMortaigne },
+  { nombre: "Los Comepasteles", ST: 2, AG: 3, AV: 7, si: !pj.flags.fichastePorMortaigne },
+  { nombre: "Bortrand (el Chef)", ST: 2, AG: 2, AV: 7, si: pj.rel.chef >= 0 && !pj.flags.fichastePorMortaigne },
+  { nombre: "Migajas (el crío)", ST: 2, AG: 3, AV: 7, si: cap === 7 && pj.flags.enseñaste },
 ];
 const HALFLING = {
   nombre: "Halfling", lema: "Tres palmos de estatura y ninguna de sentido común.",
@@ -1753,6 +1754,12 @@ const HALFLING = {
   relInicial: { abuela: 2, pipo: 0, arbol: 0, chef: 0, equipo: 1, aficion: 0, club: 0 },
   capitulos: [
     { id: 1, titulo: "Villapastel", sub: "Comarca del Nabo, de donde nadie con dos dedos de frente se va", escenas: ["cocina", "pipo", "arbol", "chef", "primerPartido"] },
+    { id: 2, titulo: "La liga de los mataos", sub: "Sexta División, o lo que quede debajo", escenas: ["debut", "derbiPringados", "ramonYElArbitro", "palizaSemanal"] },
+    { id: 3, titulo: "El escándalo del árbol", sub: "Cuando Ramón se come lo que no debe", escenas: ["federacion", "quehacerConRamon", "sinArbol", "pipoAprovecha"] },
+    { id: 4, titulo: "La oferta", sub: "Alguien grande te quiere. Para algo.", escenas: ["ojeador", "laDecision", "elGranClub"] },
+    { id: 5, titulo: "La Copa de los Pringados", sub: "El torneo de los que no ganan nada nunca", escenas: ["copa", "semifinal", "laBorrachera", "finalCopa"] },
+    { id: 6, titulo: "La final imposible", sub: "Contra los grandes, en el barro de verdad", escenas: ["visperas", "elCristal", "granFinal"] },
+    { id: 7, titulo: "El ocaso del pastel", sub: "Lo que dura un halfling que sobrevivió", escenas: ["despues", "laAbuela", "ultimoPartido", "retiro"] },
   ],
   escenas: {
     cocina: {
@@ -1807,6 +1814,264 @@ const HALFLING = {
           ko: { txt: "Te haces bola, sí, pero un carnicero descubre que las bolas también se chutan. Cruzas media Comarca por los aires. El balón se queda en el campo; tú no.", fx: { golRival: 1 } } } },
       ],
     },
+    /* ---- CAP 2: La liga de los mataos ---- */
+    debut: {
+      titulo: "Bienvenidos a Sexta",
+      texto: (pj) => `Sexta División no es una división: es un aparcamiento de equipos que la federación no se atreve a disolver por si hay demanda. Hay un equipo de goblins, uno de campesinos con un hombre-árbol de alquiler, uno de no-muertos de bajo presupuesto (les faltan piezas) y vosotros, los Comepasteles. El calendario lo hace una tal Ma Gorka desde una cueva, y los horarios "dependen de las apuestas". ${pj.flags.firmasteAPipo ? "Pipo ya ha vendido tu debut a tres periódicos y a una fábrica de tartas." : "Nadie ha venido a veros, salvo tu abuela, que teje en primera fila calculando cuándo cobrar."} Te dan una camiseta que huele a otro y un número que ya llevó alguien que no volvió.`,
+      opciones: [
+        { txt: "Prometerte que vas a ganar algún partido esta temporada.", fx: { Ambición: 1, Voluntad: 1, flag: "prometisteGanar" }, msg: "Lo dices en voz alta en el vestuario. Silencio. Luego risas. Luego alguien apunta la fecha 'por si acaso'. Nadie apuesta a favor, ni tu abuela, que de números sabe." },
+        { txt: "Prometerte, más modesto, sobrevivir a la temporada entera.", fx: { Astucia: 1, Voluntad: 1, flag: "prometisteSobrevivir" }, msg: "El vestuario asiente. Eso sí es un objetivo realista para un Comepasteles. Bortrand lo celebra con estofado. Nadie muere ese día, que ya es empezar la casa por el tejado." },
+        { txt: "Estudiar a los rivales para saber a quién SÍ podéis ganar.", req: { Astucia: 2 }, forzable: true, fx: { Astucia: 2, flag: "estudiasteLaLiga" }, msg: "Solo hay uno más malo que vosotros: los Tragaldabas, que juegan comiendo. Ese es vuestro partido. El derbi de los descartes. La única esperanza real de la temporada, y ya es más de lo que tienen algunos." },
+      ],
+    },
+    derbiPringados: {
+      titulo: "El derbi de los descartes",
+      partido: { rival: "Los Tragaldabas de Villapán", fuerza: 1 },
+      texto: (pj) => `Los Tragaldabas de Villapán son la única esperanza de vuestra temporada: un equipo aún más halfling que el vuestro, si eso es posible, que fía la defensa a un pastel envenenado y el ataque a que al rival le entre hambre. ${pj.flags.estudiasteLaLiga ? "Los estudiaste: pierden solos si aguantas veinte minutos sin que se coman el balón." : "No sabes nada de ellos, salvo que existen y que dan pena, como vosotros, pero un poco más."} Es el único partido del año que un Comepasteles puede ganar. Doscientos halflings en la grada, cero de ellos sobrios. {marcador}. Si perdéis esto, no ganáis nada nunca, y lo sabéis.`,
+      opciones: [
+        { txt: "Robarles el balón mientras meriendan en el campo.", tirada: { stat: "AG", obj: 6, riesgo: false,
+          ok: { txt: "Se paran a media merienda a discutir de quién es el último trozo. Les quitas el balón de entre los platos y cruzas mientras siguen discutiendo. Un touchdown de puro despiste. Villapán no se entera hasta el lunes.", fx: { fama: 6, Astucia: 1, gol: 1, rel: { equipo: 2, aficion: 1 }, flag: "ganasteAlgo" } },
+          ko: { txt: "Metes la mano entre los platos y sale mal: te confunden con un canapé y casi te comen. Recuperas la mano por poco. Ellos recuperan el balón por mucho.", fx: { golRival: 1 } } } },
+        { txt: "Que Ramón despeje la merienda de un manotazo y correr tú.", req: { flag: "amigoArbol", noflag: "ramonVendido" }, forzable: true, tirada: { stat: "ST", obj: 7, riesgo: true,
+          ok: { txt: "Ramón barre la mesa de la merienda con un brazo y Villapán entero se lanza a por los pasteles que vuelan. En el caos, cruzas la línea andando, silbando. La victoria más ridícula de la historia de Sexta, y es vuestra.", fx: { fama: 8, gol: 1, rel: { arbol: 1, equipo: 2 }, flag: "ganasteAlgo" } },
+          ko: { txt: "Ramón barre la mesa, sí, pero también te barre a ti, que estabas encima cogiendo un trozo. Vuelas con los pasteles. Aterrizas en el pastel envenenado de la defensa. Sabe raro.", fx: { golRival: 1 } } } },
+        { txt: "Aburrirlos hasta que se coman entre ellos.", tirada: { stat: "AG", obj: 7, riesgo: false,
+          ok: { txt: "No haces nada. Absolutamente nada, durante veinte minutos. Villapán, sin drama que comer, empieza a picar de su propia merienda y a discutir, y a empujarse, y a placarse entre ellos. Ganáis por incomparecencia moral. 1-0. Épico.", fx: { fama: 5, Voluntad: 1, gol: 1, rel: { equipo: 1 }, flag: "ganasteAlgo" } },
+          ko: { txt: "Te aburres tú antes que ellos. Bajas la guardia para bostezar y te meriendan la jugada. Los Tragaldabas cruzan mientras masticas tu propio aburrimiento.", fx: { golRival: 1 } } } },
+      ],
+    },
+    ramonYElArbitro: {
+      titulo: "El árbitro desaparecido",
+      condicion: (pj) => !pj.flags.ramonVendido,
+      texto: (pj) => `Pasa lo que tenía que pasar. En pleno partido, el árbitro —un goblin con silbato— le saca tarjeta a Ramón por "existir con intención de placar". Ramón, que confunde lo pequeño y ruidoso con comida, se lo mete en la boca de un solo movimiento, con silbato y todo. Se hace un silencio que solo rompe el silbato, ahora dentro de Ramón, pitando cada vez que respira. La federación abre expediente. ${pj.rel.arbol >= 3 ? "Ramón te busca con la mirada, culpable, con media tarjeta amarilla asomando entre las ramas." : "Ramón ni se inmuta. Sigue buscando el balón, o el postre, que para él es lo mismo."}`,
+      opciones: [
+        { txt: "Cubrir a Ramón: 'se marchó a por tabaco, señoría'.", fx: { Honor: -1, rel: { arbol: 2 }, flag: "cubristeRamon" }, msg: "Juras que el árbitro se fue voluntariamente. Nadie te cree, pero nadie quiere acercarse a Ramón a comprobarlo. El expediente se queda en un cajón. Ramón, a su manera lentísima, lo entiende, y te trae una piedra de regalo." },
+        { txt: "Enseñar a Ramón a escupir árbitros. Solo escupir.", req: { rel: ["arbol", 2] }, forzable: true, fx: { Astucia: 1, rel: { arbol: 1 }, flag: "ramonEscupe" }, msg: "Semanas de galletas y paciencia. Ramón aprende a escupir lo que no es redondo. El árbitro sale mareado y sordo del silbato, pero vivo. Es más de lo que consigue la mayoría de la gente con un hombre-árbol suelto." },
+        { txt: "Vender a Ramón antes de que se coma a alguien importante.", fx: { oro: 100, Honor: -1, rel: { arbol: -3 }, flag: "ramonVendido", flags: ["cedisteALaTentacion"] }, msg: "Un circo de Cuarta paga cien coronas por un árbol que se come árbitros. Ramón se va sin mirar atrás, porque los árboles no miran atrás. El vestuario queda más seguro y muchísimo más triste. Ganaréis menos. Comeréis mejor. No es lo mismo." },
+      ],
+    },
+    palizaSemanal: {
+      titulo: "La paliza de los jueves",
+      partido: { rival: "Los Rompehuesos de Grauwald", fuerza: 4 },
+      texto: (pj) => `Toca lo de siempre: un equipo grande que os usa de entrenamiento. Los Rompehuesos de Grauwald tienen tres jugadores con nombre de arma de asedio y un plan de partido de una sola palabra. ${pj.flags.ramonVendido ? "Sin Ramón, la única táctica es correr y rezar, y los halflings no sois de rezar." : "Ramón, al menos, iguala un poco la báscula, aunque hoy mira una nube en vez del campo."} ${pj.flags.prometisteSobrevivir ? "Recuerdas tu promesa: sobrevivir la temporada. Hoy toca cumplirla, no ganarla." : ""} {marcador}. La grada local ha traído carteles con el número de bajas que esperan. Van ganando ellos, los carteles.`,
+      opciones: [
+        { txt: "Correr sin parar y no dejar que te toquen. Toda la tarde.", tirada: { stat: "MA", obj: 8, riesgo: false,
+          ok: { txt: "Corres. Corres como no ha corrido un halfling, esquivando placajes que abrirían un carro, y al final del caos hay un hueco y lo cruzas. No ganáis, pero anotas, y sales de pie, que era el plan. La grada guarda un cartel para la próxima.", fx: { fama: 7, AG: 0, gol: 1, rel: { aficion: 2 }, flag: "sobrevivisteLaPaliza" } },
+          ko: { txt: "Corres hasta que un Rompehuesos decide correr también, y él tiene las piernas más largas. Te alcanza. La grada tacha un número de su cartel.", fx: { golRival: 1 } } } },
+        { txt: "Meterte debajo del más grande y hacerle tropezar.", tirada: { stat: "AG", obj: 8, riesgo: true,
+          ok: { txt: "Te tiras a sus tobillos como quien se tira a una piscina de barro. El grandullón se va al suelo con un ruido de árbol talado y la mitad de su equipo por encima. En la confusión, alguien de los tuyos cruza. Milagro y hematomas.", fx: { fama: 6, Ferocidad: 1, gol: 1, rel: { equipo: 2 } } },
+          ko: { txt: "Te tiras a sus tobillos y descubres que son de hierro. Rebotas. Él ni lo nota. Te recoge Bortrand con una espátula.", fx: { golRival: 1 } } } },
+        { txt: "Aguantar la paliza entera de pie, sin más. Por orgullo.", tirada: { stat: "AG", obj: 7, riesgo: false,
+          ok: { txt: "No anotas, no lo intentas. Solo aguantas: caes, te levantas, caes, te levantas, hasta el silbato. Pierdes por goleada, pero acabas de pie y entero, y la grada rival, que vino a ver bajas, se va aplaudiendo a su pesar.", fx: { fama: 5, Voluntad: 2, rel: { aficion: 1 }, flag: "aguantasteEntero" } },
+          ko: { txt: "Aguantas, aguantas, y a falta de un minuto te confías. Un codo perdido te encuentra. Caes justo antes del silbato, que es la peor hora de caer.", fx: { golRival: 1 } } } },
+      ],
+    },
+    /* ---- CAP 3: El escándalo del árbol ---- */
+    federacion: {
+      titulo: "La federación",
+      texto: (pj) => `Te citan en la sede de la federación, un edificio con más escaleras de las que un halfling debería subir en una vida. ${pj.flags.ramonVendido ? "El asunto ya no es Ramón (ese es problema de un circo ahora), sino que un equipo de halflings 'da mala imagen del deporte por sobrevivir demasiado'. Quieren descenderos a una liga que no existe." : pj.flags.ramonEscupe ? "El asunto es Ramón: un árbol que se come árbitros y los escupe vivos es, dicen, 'un precedente'. No saben si multarte o ficharlo de ujier." : "El asunto es Ramón, que ya va por su tercer árbitro de la temporada. La federación duda entre expulsaros o cobraros entrada por el espectáculo."} Un burócrata con gafas te mira por encima de un montón de formularios. ${pj.flags.firmasteAPipo ? "A tu lado, Pipo Cazuelas se frota las manos: un escándalo es dinero." : ""}`,
+      opciones: [
+        { txt: "Discutir a base de reglamento. Te lo has leído entero.", req: { Astucia: 3 }, forzable: true, fx: { Astucia: 2, fama: 4, flag: "ganasteALaFederacion" }, msg: "Citas artículos que ni ellos sabían que existían. El burócrata, acorralado por su propio reglamento, os deja seguir 'a regañadientes y con vigilancia'. Un halfling ha ganado a la burocracia. Eso sí es histórico." },
+        { txt: "Sobornar al burócrata con la tarta de tu abuela.", fx: { oroMitad: true, rel: { aficion: 1 }, flag: "sobornasteConTarta" }, msg: "Le pones delante la tarta de nabo de tu abuela. El burócrata la prueba, cierra los ojos, firma lo que le pongas y pregunta si hay más. La corrupción, en la Comarca, sabe a mantequilla." },
+        { txt: "Aceptar el castigo y prometer portarte bien. Mentira.", fx: { Honor: 1, Voluntad: 1, flag: "prometisteBueno" }, msg: "Agachas la cabeza, prometes disciplina y firmas una amonestación. En cuanto sales, ya estás pensando en la próxima trastada. La disciplina es para los equipos que tienen algo que perder." },
+      ],
+    },
+    quehacerConRamon: {
+      titulo: "Qué hacer con un árbol",
+      condicion: (pj) => !pj.flags.ramonVendido,
+      texto: (pj) => `Ramón es un problema con raíces. Se come lo que no debe, tira lo que no toca, y la mitad de las semanas juega mirando una mariposa. Pero cuando acierta —una vez cada seis partidos— gana él solo. ${pj.rel.arbol >= 4 ? "Y además es, a su manera de banco de jardín, tu amigo: te distingue del balón, te trae piedras, te vigila mientras duermes en el autobús." : "Y además es lo único que os separa de perder por cincuenta cada domingo."} El equipo espera que decidas qué clase de árbol vais a ser.`,
+      opciones: [
+        { txt: "Entrenarlo en serio. Con pasteles y mucha paciencia.", fx: { rel: { arbol: 2, equipo: 1 }, Voluntad: 1, flag: "ramonEntrenado" }, msg: "Meses de galletas y señales. Ramón aprende a distinguir el balón del árbitro, casi. Pasa de acertar una de seis a una de cuatro, que en un hombre-árbol es un doctorado. El equipo empieza a creer en algo por primera vez." },
+        { txt: "Dejarlo a su aire. Un árbol es un árbol.", fx: { Honor: 1, rel: { arbol: 1 }, flag: "ramonLibre" }, msg: "Decides que Ramón es Ramón y que quien quiera un árbol domesticado que se compre un bonsái. Sigue mirando mariposas y comiéndose lo que no debe, pero es feliz, y su felicidad, un día, cruzará la línea por accidente." },
+        { txt: "Convertirlo en negocio: entradas para 'ver al árbol'.", req: { flag: "firmasteAPipo" }, forzable: true, fx: { oro: 60, fama: 6, Honor: -1, rel: { arbol: -1, pipo: 1 }, flag: "ramonEspectaculo" }, msg: "Pipo monta la atracción: 'Venga a ver al árbol que se comió a un árbitro'. La grada se llena de morbosos con niños. Ramón, que no entiende de qué va, posa. Ganáis dinero. Ramón deja de traerte piedras: algo ha cambiado." },
+      ],
+    },
+    sinArbol: {
+      titulo: "El partido sin red",
+      partido: { rival: "Los Cuervos Rotos de Mortaigne", fuerza: 3 },
+      texto: (pj) => `${pj.flags.ramonVendido ? "Sin Ramón desde hace semanas, jugáis como lo que sois: once pasteles corriendo." : pj.flags.ramonEntrenado ? "Ramón está sancionado un partido por lo del árbitro, así que hoy jugáis sin red, con él en la grada comiendo palomitas y mirándoos preocupado." : "Ramón hoy mira una nube y no piensa bajar, así que estáis solos."} Enfrente, un equipo de no-muertos de segunda mano —los Cuervos Rotos— a los que les faltan piezas y no les sobra piedad. ${pj.flags.aguantasteEntero ? "Al menos ya sabéis aguantar de pie. Eso hoy vale oro." : ""} {marcador}. Un partido para halflings de verdad: sin trucos, sin árbol, sin excusas.`,
+      opciones: [
+        { txt: "Jugar en piña: todos juntos, rodando como una bola de pasteles.", tirada: { stat: "AG", obj: 8, riesgo: false,
+          ok: { txt: "Os juntáis los once en una piña que rueda por el campo como una albóndiga gigante, con el balón en el centro. Los no-muertos no saben a quién placar y se les caen piezas intentándolo. La piña cruza la línea entera. Touchdown colectivo, el más halfling de todos.", fx: { fama: 8, Astucia: 1, gol: 1, rel: { equipo: 3 }, flag: "jugadaPiña" } },
+          ko: { txt: "La piña rueda bien hasta que un no-muerto mete un brazo (suyo, se le había caído) en medio y la desmonta. Os esparcís por el campo como migas. Ellos recogen el balón y una pierna.", fx: { golRival: 1 } } } },
+        { txt: "Colarte tú solo aprovechando que se les caen los brazos.", tirada: { stat: "AG", obj: 9, riesgo: true,
+          ok: { txt: "Corres entre no-muertos que se deshacen a tu paso, esquivando una mano suelta que aún intenta agarrarte por su cuenta. Cruzas. La mano cae al barro, decepcionada. Anotas y te llevas de recuerdo un dedo que no era tuyo.", fx: { fama: 7, gol: 1, Ferocidad: 1 } },
+          ko: { txt: "Esquivas los brazos sueltos pero no el que sigue pegado al más grande. Te atrapa en el aire. Descubres a qué huele Mortaigne por dentro. No te gusta.", fx: { golRival: 1 } } } },
+        { txt: "Robarles las piezas que se les caen para que no puedan jugar.", tirada: { stat: "AG", obj: 8, riesgo: false,
+          ok: { txt: "Vas recogiendo del barro cada brazo y cada pierna que sueltan y los escondes bajo la grada. A media parte, media plantilla rival juega a la pata coja. Ganáis por desmembramiento del rival, que no es deportivo, pero es efectivo.", fx: { fama: 6, Astucia: 2, gol: 1, rel: { equipo: 1 }, flag: "ladronDePiezas" } },
+          ko: { txt: "Recoges un brazo que resulta seguir teniendo opinión. Te agarra la nariz y no suelta. Mientras forcejeas con un brazo suelto, su dueño cruza tranquilo.", fx: { golRival: 1 } } } },
+      ],
+    },
+    pipoAprovecha: {
+      titulo: "El negocio de Pipo",
+      texto: (pj) => `Pipo Cazuelas te espera con dos puros encendidos, uno para cada mano de tres dedos. "Chaval, tenemos algo", dice. "La gente no viene a veros ganar, que eso no pasa. Viene a veros sufrir con gracia. Eso, amigo mío, es un producto." ${pj.flags.ramonEspectaculo ? "Ya ha triplicado la entrada con lo del árbol. Ahora quiere más." : "Tiene un plan, y los planes de Pipo siempre acaban con él más rico y contigo más famoso, o más muerto."} Sobre la mesa, un contrato nuevo. Catorce páginas, otra vez. La letra pequeña ha crecido.`,
+      opciones: [
+        { txt: "Firmar el circo. Fama es fama, aunque sea de pena.", fx: { fama: 10, oro: 40, Ambición: 1, rel: { pipo: 2, aficion: 2 }, flag: "circoDePipo" }, msg: "Firmas. Pipo os convierte en 'Los Comepasteles, los pringados más queridos del Mundo Viejo'. Vendéis camisetas donde salís perdiendo. La gente os adora precisamente por eso. Es fama de verdad, con forma de chiste." },
+        { txt: "Decirle a Pipo que quieres que os respeten, no que os rían.", req: { Ferocidad: 3 }, forzable: true, fx: { Voluntad: 2, Honor: 1, rel: { pipo: -1 }, flag: "quieresRespeto" }, msg: "Pipo te mira largo rato entre el humo. 'Respeto', repite, como si fuera una palabra de otro idioma. 'El respeto se gana ganando, chaval. Y vosotros no ganáis'. Se equivoca. Pero todavía no lo sabe, y tú tampoco." },
+        { txt: "Robarle un puro y no firmar nada. Por principio.", fx: { Astucia: 1, Honor: 1, rel: { pipo: 1 } }, msg: "Le birlas un puro de la mano de tres dedos y te vas fumando sin firmar. Pipo se ríe: 'Ese es mi chico'. No has ganado nada, pero tampoco le debes una página más, y en Pipo eso es una victoria." },
+      ],
+    },
+    /* ---- CAP 4: La oferta ---- */
+    ojeador: {
+      titulo: "El hombre del sombrero",
+      texto: (pj) => `Un hombre con sombrero caro y cara de no haber comido nunca por gusto se sienta en vuestra grada de tablones. Es ojeador de los Cuervos de Mortaigne —los de verdad, no los rotos—, un club de Tercera con dinero y sin escrúpulos. ${pj.flags.circoDePipo ? "Ha visto vuestro número de circo y ha visto las entradas que vendéis. 'Un halfling que llena estadios', dice. 'Eso lo quiero yo, para reírme de camino al banco'." : "Ha visto algo en ti que nadie ve: que corres cuando debes y caes cuando toca. 'Sirves', dice, que en su boca es un poema."} Te ofrece un contrato de Tercera: más dinero, mejor equipo, y una condición: dejar de ser un chiste.`,
+      opciones: [
+        { txt: "Escuchar. El dinero de Tercera es dinero de verdad.", fx: { Ambición: 1, flag: "escuchasteAlOjeador" }, msg: "Le escuchas. Habla de sueldos que en Villapastel comprarían el pueblo entero con horno incluido. Por un momento te ves con la camiseta de los grandes. Solo por un momento. Pero el momento se queda contigo, molestando." },
+        { txt: "Preguntarle si tu equipo, Ramón y Bortrand incluidos, viene contigo.", fx: { Honor: 2, rel: { equipo: 2 }, flag: "preguntastePorLosTuyos" }, msg: "El ojeador se ríe sin ganas. 'No compro leña ni cocineros. Te compro a ti'. Le dices que lo pensarás. Los dos sabéis que preguntar eso ya es media respuesta. En el vestuario, cuando lo cuentas, Bortrand te sirve doble ración sin decir nada." },
+        { txt: "Escupirle la respuesta. Con un trozo de tarta.", req: { Ferocidad: 4 }, forzable: true, fx: { Ferocidad: 1, fama: 5, rel: { equipo: 3, aficion: 2 }, flag: "escupisteAlOjeador" }, msg: "Le lanzas un trozo de tarta a ese sombrero que cuesta más que tu casa. 'Los Comepasteles no se venden por piezas'. La grada de tablones, cuatro borrachos y tu abuela, ruge como un estadio. El ojeador se va con nata en el ala. Es el mejor día de la temporada." },
+      ],
+    },
+    laDecision: {
+      titulo: "El cruce de caminos",
+      texto: (pj) => `${pj.flags.escupisteAlOjeador ? "Ya le escupiste, pero el ojeador ha vuelto, más serio, con más ceros. La tentación no se va escupiéndola una vez." : "El ojeador espera tu respuesta al final de la semana."} Es la decisión de tu vida y la sabes: quedarte con los Comepasteles, ser el pringado querido que pierde con gracia hasta el final; o irte a Mortaigne, dejar de ser un chiste, aprender a ganar como ganan los grandes —con veneno en la olla y precio en la cabeza— y no volver a comer tarta con tu abuela un domingo cualquiera. ${pj.rel.abuela >= 3 ? "Tu abuela no opina. Solo pone dos platos, como siempre, y espera." : "Tu abuela ya no pone tu plato. Hace tiempo que decidió por su cuenta."}`,
+      opciones: [
+        { txt: "Firmar por Mortaigne. Estás harto de que se rían.", fx: { oro: 200, Ambición: 2, fama: 12, rel: { equipo: -3, abuela: -2, aficion: -2 }, flag: "fichastePorMortaigne", flags: ["cedisteALaTentacion", "dejasteLosComepasteles"] }, msg: "Firmas. Te dan una camiseta negra, un sueldo obsceno y una libreta donde apuntar rivales. En Mortaigne se gana. También se aprende a mirar el barro de otra manera, como si nunca hubieras sido de él. La primera noche, sueñas con tarta y te despiertas con hambre de otra cosa." },
+        { txt: "Quedarte con los Comepasteles. Hasta el final, sea el que sea.", fx: { Honor: 2, Voluntad: 2, rel: { equipo: 3, abuela: 1, aficion: 2 }, flag: "teQuedaste" }, msg: "Rompes el contrato de Mortaigne delante del ojeador y vuelves al vestuario que huele a estofado. Nadie dice nada, porque los halflings no dicen esas cosas, pero esa noche Bortrand cocina como para una boda y tu abuela pone tu plato sin que se lo pidas." },
+        { txt: "Pedir tiempo. Y comerte una tarta mientras decides.", fx: { Astucia: 1, Voluntad: 1, rel: { abuela: 1 } }, msg: "Le pides una semana al ojeador y te sientas a comer con tu abuela. No decidís nada en voz alta. Pero al levantarte de la mesa ya lo sabes, aunque tardes en decirlo. Hay cosas que se deciden masticando." },
+      ],
+    },
+    elGranClub: {
+      titulo: "El domingo de siempre",
+      partido: { rival: "Los Toros Rojos de Norburgo", fuerza: 3 },
+      texto: (pj) => `${pj.flags.fichastePorMortaigne ? "Tu primer partido de Tercera con Mortaigne. El vestuario huele a formol y a dinero. Tus nuevos compañeros no hablan contigo, pero te pasan el balón porque el entrenador ha dicho que eres 'el reclamo'. Enfrente, los Toros Rojos, grandes de verdad. Aquí no hay pastel que valga: aquí se juega a hacer daño." : "Otro domingo con los Comepasteles, otro rival que os saca dos cabezas. Los Toros Rojos de Norburgo pegan primero y preguntan nunca. Pero es tu equipo el que salta al campo, y eso, aunque perdáis, ya no te lo quita nadie."} {marcador}. ${pj.flags.jugadaPiña ? "Al menos tenéis la piña. Nadie sabe defender una albóndiga de halflings." : ""}`,
+      opciones: [
+        { txt: pj => pj.flags.fichastePorMortaigne ? "Jugar sucio, como te han enseñado. Ganar es ganar." : "Jugar limpio y rápido, como sabéis.", tirada: { stat: "AG", obj: 8, riesgo: true,
+          ok: { txt: "Cruzas la línea. En Mortaigne aplauden el resultado sin mirarte; en los Comepasteles te sepultan bajo doce abrazos pequeños. El mismo touchdown sabe distinto según de quién sea la camiseta.", fx: { fama: 8, gol: 1 } },
+          ko: { txt: "Fallas, y un Toro Rojo te recuerda por qué se llaman así. Vuelas. El resultado, esta vez, no lo decides tú.", fx: { golRival: 1 } } } },
+        { txt: "Buscar al compañero mejor colocado y dársela.", tirada: { stat: "AG", obj: 9, riesgo: false,
+          ok: { txt: "Sueltas un pase que cruza el barro y cae en botas amigas. Cruza. El pase de un halfling que ve el campo desde abajo mejor que nadie: nadie mira nunca a la altura de un halfling.", fx: { fama: 7, Astucia: 1, gol: 1, pase: 1 } },
+          ko: { txt: "El pase se va alto, que es fácil cuando mides tres palmos. Lo caza el rival. Contraataque.", fx: { golRival: 1 } } } },
+        { txt: "Meterte entre las piernas del más grande y hacerle el ridículo.", tirada: { stat: "AG", obj: 8, riesgo: true,
+          ok: { txt: "Le pasas entre las piernas y sales por detrás con el balón mientras él sigue buscándote delante. La grada, sea de quien sea, se ríe con él, no contigo. Cruzas. Humillar a un grande siendo pequeño no tiene precio.", fx: { fama: 8, Ferocidad: 1, gol: 1, rel: { aficion: 1 } } },
+          ko: { txt: "Te metes entre sus piernas y las cierra. Descubres que un halfling también cabe en un bolsillo si lo aprietan bien.", fx: { golRival: 1 } } } },
+      ],
+    },
+    /* ---- CAP 5: La Copa de los Pringados ---- */
+    copa: {
+      titulo: "La Copa de los Pringados",
+      texto: (pj) => `Existe, de verdad, un torneo para los equipos que no ganan nada nunca: la Copa de los Pringados, que la federación inventó "para que los últimos también tengan una final que perder". ${pj.flags.fichastePorMortaigne ? "Mortaigne no juega esta copa: es de pobres. Pero te enteras de que los Comepasteles sí, y de que van bien, y algo te pica por dentro donde antes había pastel." : "Los Comepasteles clasifican por la puerta de atrás, que es la única que tenéis."} Ocho equipos de pena, un trofeo de latón abollado, y por primera vez la posibilidad real de ganar algo con forma de copa. ${pj.rel.aficion >= 2 ? "Vuestra afición, cuatro borrachos y una abuela, ha alquilado un carro para seguiros." : ""}`,
+      opciones: [
+        { txt: "Tomártelo en serio. Es la primera copa que podéis ganar.", fx: { Ambición: 1, Voluntad: 1, rel: { equipo: 1 }, flag: "enSerioLaCopa" }, msg: "Entrenáis. De verdad. Ramón mira menos mariposas, Bortrand cocina para dar fuerza y no solo sabor, y tú aprendes las jugadas al derecho y al revés. Un equipo de pringados tomándose algo en serio da hasta miedo." },
+        { txt: "Tomártelo a broma, como todo. Es una copa de mentira.", fx: { Astucia: 1, rel: { aficion: 1 }, flag: "aBromaLaCopa" }, msg: "Decidís ir de risa, con la camiseta al revés y un pastel de mascota. La gente os adora. Pero por dentro, aunque no lo digas, ya has mirado el trofeo dos veces más de la cuenta." },
+        { txt: "Convencer a Pipo de que la Copa de los Pringados vende.", req: { flag: "firmasteAPipo" }, forzable: true, fx: { oro: 30, fama: 6, rel: { pipo: 1 }, flag: "pipoEnLaCopa" }, msg: "Pipo huele el dinero de la pena y monta apuestas a que perdéis en cada ronda. Cobra las dos veces: cuando perdéis, gana; cuando ganáis, gana más, porque nadie lo esperaba. Es asqueroso y es genial." },
+      ],
+    },
+    semifinal: {
+      titulo: "La semifinal imposible",
+      partido: { rival: "Los Escupefuegos de la Charca", fuerza: 2 },
+      texto: (pj) => `Semifinal de la Copa de los Pringados. Enfrente, los Escupefuegos de la Charca: un equipo de goblins con un lanzallamas casero que el reglamento "estudia si prohibir". Cada dos jugadas se prende fuego alguien, casi siempre ellos. ${pj.flags.enSerioLaCopa ? "Vosotros, entrenados por primera vez, sabéis exactamente qué hacer: dejar que se quemen solos y recoger las cenizas." : "Vosotros, a lo loco, pensáis apagar el fuego con estofado, que es un plan tan malo que podría funcionar."} {marcador}. Una final de la Copa de los Pringados os espera si sobrevivís a esto sin achicharraros.`,
+      opciones: [
+        { txt: "Esperar a que se prendan fuego solos y colarte en el humo.", tirada: { stat: "AG", obj: 7, riesgo: false,
+          ok: { txt: "Esperas. En la jugada tres se prenden fuego dos goblins y el lanzallamas. Aprovechas la humareda y el griterío para cruzar sin que nadie te vea, tosiendo pero entero. A la final. La afición borracha llora de emoción y de humo.", fx: { fama: 8, Astucia: 1, gol: 1, rel: { equipo: 2, aficion: 1 }, flag: "aLaFinalPringados" } },
+          ko: { txt: "Esperas demasiado cerca. El goblin del lanzallamas estornuda. Descubres a qué huele un halfling a la parrilla. Bortrand, profesional, toma nota de la temperatura.", fx: { golRival: 1 } } } },
+        { txt: "Que Bortrand apague el lanzallamas con una olla de estofado.", req: { rel: ["chef", 2] }, forzable: true, tirada: { stat: "ST", obj: 8, riesgo: false,
+          ok: { txt: "Bortrand vuelca una olla de estofado sobre el lanzallamas, que se atraganta y explota en una nube de olor a guiso. Los goblins, distraídos por el hambre repentina, se olvidan del partido. Cruzáis mientras comen del suelo. A la final por la vía culinaria.", fx: { fama: 7, gol: 1, rel: { chef: 2, equipo: 1 }, flag: "aLaFinalPringados" } },
+          ko: { txt: "El estofado, al fuego, no se apaga: se fríe. Ahora hay un lanzallamas que además huele riquísimo. Los goblins juegan más motivados que nunca, con hambre.", fx: { golRival: 1 } } } },
+        { txt: "Prender fuego a su banquillo tú primero. Guerra sucia.", req: { Ferocidad: 4 }, forzable: true, tirada: { stat: "AG", obj: 9, riesgo: true,
+          ok: { txt: "Les robas el lanzallamas y les quemas el banquillo con su propia arma. Es antideportivo, es peligroso, y funciona: juegan a diez porque el resto apaga sillas. Cruzáis entre las llamas. No es bonito, pero es una final.", fx: { fama: 6, Ferocidad: 1, gol: 1, Honor: -1, flag: "aLaFinalPringados" } },
+          ko: { txt: "Coges el lanzallamas y descubres que no viene con instrucciones. El retroceso te manda a la charca. Sales mojado, chamuscado y sin balón, que es difícil estar las tres cosas a la vez.", fx: { golRival: 1 } } } },
+      ],
+    },
+    laBorrachera: {
+      titulo: "La noche antes",
+      texto: (pj) => `La noche antes de la primera final de vuestra vida, Bortrand comete el error de su carrera: para "relajar al equipo", saca la cerveza que llevaba toda la temporada robando a los rivales. Toda. A la vez. ${pj.flags.ramonEntrenado || pj.flags.ramonLibre ? "Ramón, que no bebe pero absorbe, se empapa por las raíces y empieza a florecer fuera de temporada, lo cual, en un hombre-árbol borracho, es preocupante." : ""} A las tres de la mañana, media plantilla canta, Pipo llora de felicidad contando dinero imaginario, y tú tienes en la mano una jarra y una final en menos de doce horas.`,
+      opciones: [
+        { txt: "Beber con ellos. Una final se juega mejor sin miedo.", fx: { Voluntad: -1, rel: { equipo: 2 }, flag: "bebisteAntesDeLaFinal" }, msg: "Bebéis hasta el amanecer. Al día siguiente jugaréis resacosos y felices, que para un halfling es el estado natural. El miedo, al menos, se ha quedado dormido en la barra. Mañana ya veremos." },
+        { txt: "Mandar a todos a la cama. Mañana hay que estar entero.", req: { Voluntad: 3 }, forzable: true, fx: { Voluntad: 1, Honor: 1, rel: { equipo: -1 }, flag: "cortasteLaFiesta" }, msg: "Recoges jarras y mandas a dormir a doce halflings que te miran como si les hubieras robado la Navidad. Al día siguiente estaréis frescos y de mal humor. Ser el responsable de un equipo de pringados es el trabajo más ingrato del mundo." },
+        { txt: "Esconder una jarra para el descanso de mañana. Por si acaso.", fx: { Astucia: 1, rel: { chef: 1 }, flag: "jarraEscondida" }, msg: "Guardas una jarra debajo del banquillo con la astucia de quien ha aprendido de Bortrand. Mañana, si la cosa va mal, un trago a media parte puede ser la diferencia entre la gloria y el ridículo. O entre el ridículo y otro ridículo." },
+      ],
+    },
+    finalCopa: {
+      titulo: "La final de latón",
+      partido: { rival: "Los Segadores de Kleinfeld", fuerza: 3, torneo: "Copa de los Pringados" },
+      texto: (pj) => `La final de la Copa de los Pringados. Enfrente, los Segadores de Kleinfeld, campesinos grandes con guadañas de mentira y ganas de verdad, que llevan tres años perdiendo esta copa y no piensan perder la cuarta contra unos pasteles. El trofeo, de latón abollado, brilla en el centro del campo como si fuera de oro, porque para vosotros lo es. ${pj.flags.bebisteAntesDeLaFinal ? "Jugáis con una resaca de campeonato: veis dos balones y placáis al que no toca." : pj.flags.cortasteLaFiesta ? "Jugáis frescos y de mal humor, que resulta ser una combinación temible." : ""} ${pj.rel.aficion >= 3 ? "Vuestra afición ha crecido: hay hasta gente que no es de Villapastel animándoos, porque todo el mundo quiere que gane el pringado una vez." : ""} {marcador}. Una copa. Podríais ganar una copa.`,
+      opciones: [
+        { txt: "La jugada de la piña, a lo grande, con todo el equipo.", req: { flag: "jugadaPiña" }, forzable: true, tirada: { stat: "AG", obj: 8, riesgo: true,
+          ok: { txt: "Los once os hacéis albóndiga y rodáis hacia la línea con el balón dentro y a Ramón empujando por detrás como una apisonadora vegetal. Los Segadores siegan el aire. La piña cruza. Habéis ganado la Copa de los Pringados. El latón nunca ha brillado tanto.", fx: { fama: 15, Ambición: 1, gol: 1, rel: { equipo: 3, aficion: 3 }, flag: "campeon", flags: ["ganasteLaCopa"] } },
+          ko: { txt: "La piña rueda perfecta hasta que la resaca colectiva os manda a todos en direcciones distintas. Os deshacéis a tres pasos de la línea. Los Segadores recogen el balón y la copa.", fx: { golRival: 1 } } } },
+        { txt: "Colarte tú solo con todo lo aprendido esta temporada.", tirada: { stat: "AG", obj: 9, riesgo: true,
+          ok: { txt: "Todo lo que has aprendido —esquivar, esperar, leer el hueco desde abajo— cabe en esta jugada. Te cuelas entre guadañas, esperas el bote, y cruzas solo, en silencio, con la copa a la vista. Campeones de los pringados. Tu abuela suelta la labor. Es la primera vez.", fx: { fama: 15, AG: 0, gol: 1, rel: { abuela: 2, aficion: 3 }, flag: "campeon", flags: ["ganasteLaCopa"] } },
+          ko: { txt: "Te cuelas entre las guadañas de mentira y descubres que una de ellas era de verdad. Sales de pie, por poco, pero sin balón. La copa se queda en Kleinfeld un año más.", fx: { golRival: 1 } } } },
+        { txt: "Que Bortrand les envenene el descanso. Ganar como sea.", req: { flag: "aprendizChef" }, forzable: true, fx: { Honor: -3, gol: 1, fama: 8, rel: { chef: 1, equipo: -1 }, flag: "campeon", flags: ["ganasteLaCopa", "envenenasteLaFinal", "cedisteALaTentacion"], msg: "Bortrand echa algo verde al estofado del descanso rival. En la segunda parte, los Segadores juegan doblados de la tripa y vosotros cruzáis a placer. Levantáis la copa. Sabe a latón y a algo más, algo que no se te va del paladar en mucho tiempo." } },
+      ],
+    },
+    /* ---- CAP 6: La final imposible ---- */
+    visperas: {
+      titulo: "Lo que nadie esperaba",
+      texto: (pj) => `${pj.flags.ganasteLaCopa ? "Ganar la Copa de los Pringados os ha convertido en una historia. Y las historias, en este deporte, suben. Os han invitado —por morbo, por marketing, por lo que sea— a jugar la final de un torneo de verdad contra un grande." : "No habéis ganado nada, pero habéis perdido con tanta gracia toda la temporada que la Cristalvisión os ha invitado a la final de un torneo de verdad 'para dar color'. Sois el color."} Contra los Carniceros de Bögenhafen, los mismos que en tu primer domingo vinieron a Villapastel a hacer manos. Han crecido. Tú también, aunque midas lo mismo. ${pj.rel.abuela >= 3 ? "Tu abuela ha sacado el mantel bueno, el que solo sale en las bodas y los entierros." : ""}`,
+      opciones: [
+        { txt: "Prometer al equipo que esta vez no sois el chiste.", fx: { Voluntad: 2, rel: { equipo: 2 }, flag: "noSoisElChiste" }, msg: "Lo dices en el vestuario y, por una vez, nadie se ríe. Doce halflings, un árbol y un cocinero te miran como se mira a alguien que se ha creído algo. Y creérselo, a veces, es media victoria. La otra media es no morir." },
+        { txt: "Recordarles que sois el chiste, y que el chiste puede ganar.", fx: { Astucia: 1, rel: { equipo: 1, aficion: 1 }, flag: "elChisteGana" }, msg: "'Somos el chiste', les dices, 'y el chiste es que nadie nos toma en serio hasta que es tarde'. El vestuario ríe, pero afila la risa. Un equipo que sabe reírse de sí mismo es difícil de asustar." },
+        { txt: "No prometer nada. Ir a cenar con tu abuela.", req: { rel: ["abuela", 3] }, forzable: true, fx: { Voluntad: 1, rel: { abuela: 2 }, flag: "cenaConLaAbuela" }, msg: "Dejas al equipo y vas a casa. Tu abuela pone dos platos y no habla de fútbol. Al final, sin levantar la vista del guiso: 'Mañana, si te parten, te parten enteros. No a medias'. Es lo más cerca que estará de decir que te quiere." },
+      ],
+    },
+    elCristal: {
+      titulo: "Diez segundos en el cristal",
+      texto: (pj) => `Un reportero de la Cristalvisión, con un cristal mágico flotando junto a la cabeza, te para en el túnel. "Diez segundos", dice. "Di algo que se recuerde. Eres el halfling que ha llegado a una final de verdad. Medio Mundo Viejo quiere reírse contigo o de ti." ${pj.flags.circoDePipo ? "Pipo, detrás del cristal, hace gestos de que sonrías y vendas camisetas." : ""} Detrás del cristal está todo el que alguna vez se rió de un pequeño que quería jugar.`,
+      opciones: [
+        { txt: "'Nos vais a ganar. Pero os vais a acordar de nosotros.'", fx: { fama: 10, Ambición: 1, rel: { aficion: 3 }, flag: "fraseDelCristal" }, msg: "Lo dices mirando al cristal sin parpadear. La Cristalvisión lo pone de titular en toda la liga. En Bögenhafen, los Carniceros lo oyen en la taberna y, por primera vez, no se ríen del todo." },
+        { txt: "'Venimos a comer. Traigo tarta para todos, ganemos o no.'", fx: { fama: 8, Honor: 1, rel: { aficion: 2, abuela: 1 }, flag: "traeTarta" }, msg: "Sacas una tarta de tu abuela del bolsillo y la ofreces al cristal. Es lo más halfling que ha salido nunca en la Cristalvisión. La gente os adora aún más. Los Carniceros, que también tienen abuela, se remueven incómodos." },
+        { txt: "Comerte al reportero con la mirada y no decir nada.", req: { Ferocidad: 3 }, forzable: true, fx: { Ferocidad: 1, fama: 6, flag: "elMudoPequeño" }, msg: "Miras al cristal en silencio, con cara de pastelero cabreado, diez segundos enteros. La Cristalvisión, que no sabe qué hacer con un halfling que da miedo, te llama 'el Mudo Pequeño' toda la temporada. Funciona: nadie sabe qué esperar de ti." },
+      ],
+    },
+    granFinal: {
+      titulo: "La final imposible",
+      partido: { rival: "Los Carniceros de Bögenhafen", fuerza: 4, torneo: "Cáliz de Consolación" },
+      texto: (pj) => `Los Carniceros de Bögenhafen, otra vez, en una final de verdad, con sesenta mil personas que han venido a ver a David hacer el ridículo contra Goliat, y a quedarse por si acaso. ${pj.flags.fraseDelCristal ? "Tu frase está en boca de todos: 'os vais a acordar de nosotros'. Ahora toca demostrarlo o comérsela." : ""} ${pj.flags.cenaConLaAbuela ? "Recuerdas a tu abuela: 'que te partan entero, no a medias'." : ""} Enfrente, el mismo carnicero que en tu primer domingo te dio una palmada 'de buen rollo' que te sentó en la harina. Te reconoce. Sonríe. Ha esperado esto tanto como tú. {marcador}. El silbato suena, y por una vez no suena a sentencia: suena a que cualquier cosa puede pasar.`,
+      opciones: [
+        { txt: "Colártele entre las piernas al carnicero grande. Otra vez. La última.", tirada: { stat: "AG", obj: 9, riesgo: true,
+          ok: { txt: "Como el primer día, pero al revés: te cuelas entre sus piernas y esta vez no sales por la bota, sales por delante, con el balón, y cruzas la línea de la final de verdad mientras sesenta mil personas se ponen de pie. El carnicero se queda mirando el hueco por donde te fuiste. La Comarca del Nabo entra en erupción. Habéis ganado. Un equipo de pasteles ha ganado una final de verdad.", fx: { fama: 25, Ambición: 1, gol: 1, rel: { equipo: 3, aficion: 3, abuela: 2 }, flag: "campeon", flags: ["ganasteLaFinal", "ganasteEnGrande"] } },
+          ko: { txt: "Te cuelas entre sus piernas y esta vez las cierra a tiempo. Te atrapa, te levanta a la altura de su cara, y por un segundo os miráis los dos, el grande y el pequeño, entendiéndolo todo. Luego te deja en el barro, casi con cariño. Perdéis. Pero sesenta mil personas han visto a un halfling intentarlo, y eso no se olvida.", fx: { fama: 12, Voluntad: 2, golRival: 1, rel: { aficion: 2 }, flag: "perdisteConHonor" } } } },
+        { txt: "La piña, todo el equipo, a por la gloria o a por la enfermería.", req: { flag: "jugadaPiña" }, forzable: true, tirada: { stat: "ST", obj: 9, riesgo: true,
+          ok: { txt: "Los once, más Ramón empujando, os hacéis una albóndiga imparable que rueda entre carniceros que no saben a quién pegar. La piña cruza la línea en la final de verdad, y estalla en doce halflings celebrando encima del balón. Campeones. De verdad. Sin comillas.", fx: { fama: 25, gol: 1, rel: { equipo: 3, aficion: 3 }, flag: "campeon", flags: ["ganasteLaFinal", "ganasteEnGrande"] } },
+          ko: { txt: "La piña rueda hasta que los Carniceros, que sí saben lo que es una albóndiga, la parten por la mitad de una patada coordinada. Os esparcís por la final entera. Recogéis a los heridos y la dignidad, en ese orden.", fx: { golRival: 1, Voluntad: 1, flag: "perdisteConHonor" } } } },
+        { txt: "Devolverle al carnicero la palmada 'de buen rollo'. Con todo.", req: { Ferocidad: 4 }, forzable: true, tirada: { stat: "ST", obj: 10, riesgo: true,
+          ok: { txt: "Coges carrerilla desde la otra punta y le saltas encima como un proyectil de mantequilla, y le das la palmada 'de buen rollo' que él te dio hace toda una vida, solo que la tuya lo sienta a él en el barro delante de sesenta mil personas. En el silencio, coges el balón y cruzas. La venganza más pequeña y más grande del Mundo Viejo.", fx: { fama: 22, Ferocidad: 2, gol: 1, rel: { aficion: 3 }, flag: "campeon", flags: ["ganasteLaFinal", "vengasteLaPalmada"] } },
+          ko: { txt: "Saltas, y el carnicero te caza en el aire como quien caza una mosca. 'Buen intento, canijo', dice, y te devuelve al suelo. Pero lo has intentado delante de todos, y en su cara, por un instante, ha habido algo parecido al respeto.", fx: { golRival: 1, Ferocidad: 1, flag: "perdisteConHonor" } } } },
+      ],
+    },
+    /* ---- CAP 7: El ocaso del pastel ---- */
+    despues: {
+      titulo: "Lo que vino después",
+      texto: (pj) => `${pj.flags.ganasteEnGrande ? "Ganar aquella final os convirtió en leyenda: la única vez que un equipo de halflings ganó algo que importara. Os hicieron cromos, canciones, y un pastel con vuestra cara que se vendía en toda la Comarca y sabía regular." : pj.flags.perdisteConHonor ? "No ganasteis, pero perder así, de pie, delante de sesenta mil personas, os hizo más famosos que ganar. La gente recuerda al pequeño que lo intentó mejor que a los grandes que lo lograron." : "La temporada pasó, como pasan las cosas de los halflings, sin mucho ruido y con mucha comida."} Han pasado los años. ${pj.flags.fichastePorMortaigne ? "Volviste de Mortaigne, tarde y con la camiseta negra guardada en un cajón que no abres. Los Comepasteles te acogieron sin preguntar, porque los halflings no preguntan." : "Sigues en Villapastel, más lento, más ancho, con las rodillas que avisan del tiempo."} Te duele comer, que en un halfling es la última alarma.`,
+      opciones: [
+        { txt: "Enseñar a los pequeños del pueblo a jugar. Y a caer.", fx: { Honor: 2, rel: { equipo: 1, aficion: 1 }, flag: "enseñaste" }, msg: "Montas una escuela en el campo de tablones. Les enseñas a esquivar, a esperar, a hacer la piña, y sobre todo a caer sin romperse. La mitad quiere ser tú. La otra mitad quiere ser Ramón. Ninguno quiere ser carnicero. Algo has hecho bien." },
+        { txt: "Retirarte a la cocina, a amasar. Pero ahora con paz.", fx: { Voluntad: 2, rel: { abuela: 1 }, flag: "vuelvesAlaCocina" }, msg: "Cuelgas las botas y vuelves al horno. Amasas, pero ya no con odio: con las manos de alguien que ha vivido. El pan sale más blando. La gente viene de lejos a comprarlo y a que les cuentes, otra vez, lo de la palmada al carnicero." },
+        { txt: "Seguir jugando. Aunque duela. Aunque te partan.", fx: { Ferocidad: 1, Voluntad: 1, rel: { equipo: 1 }, flag: "sigues" }, msg: "No sabes parar. Sigues saltando al campo cada domingo, más lento, más magullado, corriendo con la memoria de las piernas que tenías. Un halfling que no sabe retirarse es lo más triste y lo más bonito que hay en el barro." },
+      ],
+    },
+    laAbuela: {
+      titulo: "La abuela",
+      texto: (pj) => `${pj.rel.abuela >= 3 ? "Tu abuela sigue tejiendo en primera fila del campo de tablones, más despacio, calculando apuestas que ya no cobra porque le da pereza el carro." : "Tu abuela ya casi no viene al campo. Dice que hace frío. Tú sabes que no es el frío."} Un día la encuentras en la cocina, con el guiso a medias y la labor caída, mirando por la única ventana que da al camino, la misma por la que tú soñabas con irte. "Todos los carros que pasaban", dice, sin girarse, "y tú fuiste el único tonto que se subió a uno". Es lo más parecido a un orgullo que le has oído nunca.`,
+      opciones: [
+        { txt: "Sentarte a comer con ella. En silencio, como toca.", fx: { Honor: 2, Voluntad: 1, rel: { abuela: 2 }, flag: "ultimaComida" }, msg: "Coméis en silencio, que entre halflings es la conversación más honda que hay. Al levantarte, te guarda un trozo de tarta 'para el camino'. No hay camino. Los dos lo sabéis. Te lo comes de vuelta a casa, despacio, para que dure." },
+        { txt: "Contarle, por fin, lo de la palmada al carnicero, con detalle.", fx: { rel: { abuela: 1, aficion: 1 }, flag: "leContasteALaAbuela" }, msg: "Se lo cuentas todo: la carrera, el salto, la cara del grande sentado en el barro. Ella teje y escucha, y al final, sin levantar la vista: 'Menudo tonto'. Pero teje sonriendo, que en tu abuela es una ovación de pie." },
+        { txt: "Prometerle que dejarás el barro. Aunque los dos sepáis que mientes.", fx: { Honor: -1, Voluntad: 1, rel: { abuela: 1 }, flag: "mentiraPiadosa" }, msg: "Le prometes que lo dejas, que te quedas en la cocina, que se acabó el correr detrás de un balón. Ella asiente, guarda la labor, y pone dos platos para mañana. Los dos sabéis que mañana no vas a estar. Es una mentira de las buenas." },
+      ],
+    },
+    ultimoPartido: {
+      titulo: "El último domingo",
+      partido: { rival: "Los Tragaldabas de Villapán", fuerza: 2 },
+      texto: (pj) => `Tu último partido, y el destino, que tiene sentido del humor halfling, te enfrenta a los Tragaldabas de Villapán, los mismos del derbi de los descartes de aquella primera temporada, ahora con nietos gordos en el equipo. Es un partido que no decide nada: ni copa, ni liga, ni gloria. Solo tú, el barro, y las rodillas diciéndote que es la última vez. ${pj.flags.enseñaste ? "En la grada, media escuela de pequeños que enseñaste mira, aprendiendo cómo se dice adiós." : ""} ${pj.rel.abuela >= 4 ? "Tu abuela ha venido, con el mantel bueno y la labor, a ver el último." : ""} {marcador}. No hay nada en juego. Por eso importa tanto.`,
+      opciones: [
+        { txt: "Una última carrera. Todo lo que te queda, de una vez.", tirada: { stat: "MA", obj: 8, riesgo: false,
+          ok: { txt: "Corres una última vez con todo lo que las rodillas te dejan, esquivas a un nieto gordo, y cruzas la línea despacio, saboreándolo. Te tumbas en la zona de anotación y no te levantas enseguida, riéndote, mirando el cielo de la Comarca. Un buen sitio para el último touchdown.", fx: { fama: 8, gol: 1, rel: { equipo: 2, aficion: 2 }, flag: "ultimoTD" } },
+          ko: { txt: "Corres, y las rodillas te fallan a tres pasos de la línea. Te caes solo, sin que nadie te toque, que es la forma más honesta de que se acabe. Te levantas, te sacudes el barro, y sonríes: al menos ha sido corriendo.", fx: { Voluntad: 2, flag: "caisteSolo" } } } },
+        { txt: "Dar el último pase a un joven del equipo. Que cruce él.", req: { flag: "enseñaste" }, forzable: true, tirada: { stat: "AG", obj: 8, riesgo: false,
+          ok: { txt: "En lugar de cruzar tú, sueltas un pase perfecto a uno de los pequeños que enseñaste, y él cruza su primer touchdown mientras tú miras desde atrás, con las manos en las rodillas, respirando. Tu último acto en el barro es hacer a otro. No hay mejor final para un maestro.", fx: { fama: 6, Honor: 2, gol: 1, pase: 1, rel: { equipo: 3 }, flag: "paseFinal" } },
+          ko: { txt: "El pase se va largo, que las manos también avisan. El pequeño no llega. Pero corre a por ti, no a por el balón, y te ayuda a salir del campo, y eso también es enseñar algo.", fx: { Honor: 1, golRival: 1 } } } },
+        { txt: "Sentarte encima del balón, como el primer día. Cerrar el círculo.", tirada: { stat: "AG", obj: 7, riesgo: false,
+          ok: { txt: "Te sientas encima del balón, te haces bola una última vez, y aguantas la tarde entera mientras los Tragaldabas se cansan y se van a merendar. El partido acaba 0-0, como empezó tu carrera. Cierras el círculo sentado sobre un balón, que es exactamente donde empezaste. Perfecto.", fx: { fama: 5, Voluntad: 2, rel: { equipo: 2, aficion: 1 }, flag: "cerrasteElCirculo" } },
+          ko: { txt: "Te haces bola, pero ya no rebotas como antes: rebotas menos y duele más. Un nieto gordo te chuta, más suave que su abuelo, casi con respeto. Cruzas media Comarca por última vez, riéndote de lo poco que cambia todo.", fx: { golRival: 1, Voluntad: 1 } } } },
+      ],
+    },
+    retiro: {
+      titulo: "Cuelgas las botas",
+      texto: (pj) => `Se acabó. Cuelgas unas botas que nunca te quedaron bien del todo en el clavo del vestuario que huele a estofado. ${pj.flags.ganasteEnGrande ? "Eres una leyenda: el halfling que ganó una final de verdad. Los pequeños de toda la Comarca juegan a ser tú, y pierden, y no les importa." : pj.flags.ganasteLaCopa ? "Tienes una copa de latón abollado en la repisa del horno, y es más que muchos grandes con vitrinas enteras." : "No ganaste casi nada, pero sobreviviste a todo, que en un halfling es la mayor de las hazañas."} ${pj.flags.fichastePorMortaigne ? "La camiseta negra de Mortaigne sigue en un cajón. Un día la quemas en el horno. Huele a formol. El pan de esa hornada nadie lo compra." : ""} Ramón, si sigue, mira una mariposa. Bortrand cocina. Pipo cuenta un dinero que ya no os debe. Y tú, por fin, te sientas a la mesa de tu abuela sin prisa.`,
+      opciones: [
+        { txt: "Cerrar el libro. Ya está escrito.", fx: {}, msg: "Cierras el Libro del destino de un halfling que quiso jugar al deporte más brutal del Mundo Viejo, y lo hizo, y sobrevivió a más de lo que sobrevive un pastel. No es poca cosa. No es poca cosa para nadie." },
+      ],
+    },
   },
   muertes: [
     { titulo: "El Chef", texto: "Te despiertas en la mesa de la cocina de Bortrand con un embudo en la boca y estofado bajándote por la garganta a presión. 'Todo se arregla comiendo', dice, echándote más. Vuelves a la vida por pura digestión. Algo de ti, eso sí, se ha quedado en el otro lado, y no es precisamente el apetito.", fx: { stat: { AV: -1 }, Voluntad: 1 } },
@@ -1818,6 +2083,31 @@ const HALFLING = {
   recuerdos: { conOdio: "Amasabas el pan con odio.", firmasteAPipo: "Le debes tartas a Pipo de por vida.", amigoArbol: "Ramón te distinguía del balón por el olor a mantequilla.", teSentaste: "Te sentaste encima del balón y sobreviviste.", labomba: "Volaste por encima de doce carniceros.", anotasteElPrimero: "Anotaste el primer touchdown halfling que se recuerda en Villapastel.", aprendizChef: "Aprendiste a robar cerveza con Bortrand." },
 };
 
+// Transiciones del halfling: la voz de la Comarca entre capítulo y capítulo.
+const HALFLING_TRANSICIONES = {
+  2: (pj) => `Pasa un invierno de harina y frío. Firmas con los Comepasteles de Villapastel, que en la Comarca es como firmar por no ir a ninguna parte. ${pj.flags.firmasteAPipo ? "Pipo Cazuelas ya te descuenta la primera tarta del sueldo, y aún no has cobrado." : "Tu abuela guarda el contrato en la lata de las galletas, que es donde guarda lo importante."} Ramón sigue en su charca, mirando cosas redondas. Bortrand afila los cuchillos de la cocina, que aquí es afilar el equipo. La Sexta División te espera, si a eso se le puede llamar esperar.`,
+  3: (pj) => `Pasan dos temporadas de perder con dignidad y comer con ganas. ${pj.flags.anotasteElPrimero ? "Aquel touchdown tuyo, el primero que anota un halfling en Villapastel, aún se cuenta en las cocinas, cada vez más adornado." : "Nadie recuerda que ganarais nada, pero recuerdan bien lo que se comió en la grada."} ${pj.flags.amigoArbol ? "Ramón ya te distingue del balón por el olor a mantequilla, casi siempre." : "Ramón todavía duda, a veces, si lanzarte a ti o al balón."} Y entonces empieza el lío del árbol, que va a dar que hablar hasta en la federación.`,
+  4: (pj) => `${pj.flags.ramonVendido ? "Sin Ramón, que acabó de atracción en un circo de Tercera, jugáis como once pasteles corriendo. Pero al menos ya nadie os come al mediocampo." : pj.flags.ramonEscupe ? "Lo del árbol que se come árbitros y los escupe vivos os ha hecho famosos por el motivo equivocado, que en un halfling es el único motivo posible." : "Ramón sigue con vosotros, con expediente abierto y todo, que es lo más cerca de una estrella que tendréis nunca."} La Comarca ya sabe tu nombre, y eso, en un sitio donde nadie se va, es peligroso: significa que alguien de fuera también lo ha oído.`,
+  5: (pj) => `${pj.flags.fichastePorMortaigne ? "Pasa un año de camiseta negra y compañeros que huelen a formol. En Mortaigne aprendes a jugar de verdad y a echar de menos el estofado. El dinero es bueno. El vestuario no habla. Te pasan el balón porque el entrenador dijo que eres 'el reclamo'." : pj.flags.teQuedaste ? "Rechazaste a Mortaigne y te quedaste en el barro de Villapastel, donde el estofado es gratis y el respeto también. La gente del pueblo te mira distinto: como se mira a alguien que pudo irse y no lo hizo." : "Pasa un año más de lo de siempre: perder, comer, sobrevivir. Pero corre un rumor de que este año hay una copa que hasta vosotros podríais oler de cerca."} La Copa de los Pringados, dicen, es el único torneo que un equipo como el vuestro puede soñar con ganar. O al menos con llegar.`,
+  6: (pj) => `${pj.flags.ganasteLaCopa ? "La Copa de los Pringados descansa, abollada y gloriosa, en la repisa del horno. Que un equipo de halflings ganara algo con nombre de trofeo ha puesto patas arriba la Comarca entera." : "Os quedasteis a las puertas de la Copa, que para un Comepasteles es casi como ganarla: nadie esperaba que llegarais a la puerta."} Y ahora llega lo imposible: una final de verdad, contra los grandes, con la Cristalvisión mirando y medio Mundo Viejo dispuesto a reírse de vosotros. ${pj.flags.firmasteAPipo ? "Pipo ya vende camisetas con tu cara. Le debes hasta el aire." : "Tu abuela ha empezado a tejer más rápido, que en ella es señal de nervios."}`,
+  7: (pj) => `${pj.flags.ganasteEnGrande ? "Ganasteis la final imposible, y desde entonces sois leyenda: la única vez que un equipo de halflings ganó algo que importara de verdad. Os hicieron cromos, canciones, y un pastel con vuestra cara que sabía regular." : pj.flags.perdisteConHonor ? "No ganasteis la final, pero perder así, de pie, ante sesenta mil personas, os hizo más famosos que ganar. La gente recuerda al pequeño que lo intentó." : "La final pasó, como pasa todo en la Comarca, sin mucho ruido y con mucha comida."} Han pasado los años. Corres más despacio, comes con más cuidado, y las rodillas te avisan del tiempo que hace y del que te queda. Ramón, si sigue, mira mariposas. Es hora de ir cerrando el libro, despacio, para que dure.`,
+};
+// Tardes libres del halfling: comer, cocinar, aguantar. Comedia de la Comarca.
+const HALFLING_ENTREACTOS = [
+  { id: "cocinaAbuela", caps: [2, 3, 4, 5, 6, 7], txt: "Tardes en la cocina con tu abuela, amasando.", fx: { stat: { ST: 1 }, rel: { abuela: 1 } }, msg: "Amasas pan hasta que los brazos no responden. Tu abuela dice que un buen puño de masa y un buen puño de placaje son la misma cosa. No sabes si bromea." },
+  { id: "correrNabos", caps: [2, 3, 4, 5, 6, 7], txt: "Correr entre los nabos al amanecer, antes de que aprieten.", fx: { stat: { MA: 1 } }, msg: "Corres por el campo de nabos hasta que sale el sol. Un halfling que corre es una rareza; que corra rápido, un milagro. Tú andas por lo primero." },
+  { id: "esquivarRamon", caps: [2, 3, 4], txt: "Entrenar esquivas dejando que Ramón intente lanzarte.", req: { rel: ["arbol", 1] }, fx: { stat: { AG: 1 }, rel: { arbol: 1 } }, msg: "Ramón te confunde con el balón y te lanza. Aprendes a caer rodando y a oler cuándo va a agacharse. Es el entrenamiento de agilidad más peligroso de la Comarca." },
+  { id: "robarCerveza", caps: [3, 4, 5, 6], txt: "Ayudar a Bortrand a 'redistribuir' la cerveza del rival.", req: { rel: ["chef", 1] }, fx: { Astucia: 1, rel: { chef: 2 } }, msg: "Bortrand te enseña a vaciar un barril ajeno sin que nadie lo note. No es fuerza ni agilidad: es arte. Los rivales juegan sedientos y de mal humor, que es peor." },
+  { id: "comerConEquipo", caps: [2, 3, 4, 5, 6, 7], txt: "Un banquete con el equipo, que une más que ganar.", fx: { rel: { equipo: 2 }, Voluntad: 1 }, msg: "Coméis hasta que no cabe una miga más. Un equipo halfling que come junto es un equipo que muere junto, con la tripa llena, que es como hay que morir." },
+  { id: "aguantarGolpes", caps: [4, 5, 6, 7], txt: "Dejar que te placen los grandotes del pueblo, para acostumbrarte.", fx: { stat: { AV: 1 } }, msg: "Los mozos más brutos de Villapastel te usan de saco. Aprendes a encajar y a levantarte, que en un pastel es toda la técnica que hay." },
+  { id: "tartasFirmadas", caps: [5, 6, 7], txt: "Firmar tartas en la puerta del horno para los que apuestan por ti.", fx: { fama: 8, rel: { aficion: 2 } }, msg: "Firmas tartas hasta que se acaba el azúcar glas. Un crío te pregunta si duele que te placen. Le das un trozo y le dices que sí, pero que se come mejor de pie." },
+  { id: "descansarPasteles", caps: [6, 7], txt: "No hacer nada. Comer, dormir, curar.", fx: { Voluntad: 1, rel: { club: 1 } }, msg: "Duermes doce horas y comes catorce. Un halfling en reposo es una fuerza de la naturaleza inversa: cuanto menos hace, mejor está." },
+];
+// Lo que el tiempo hace solo en la Comarca (guardado si el capítulo no aplica).
+const HALFLING_TIEMPO = {
+  7: (pj) => (!pj.flags.retirado && pj.MA > 2) ? { stat: { MA: -1 } } : null, // el ocaso pesa en las piernas
+};
+
 const HISTORIAS = { humano: HUMANO, enano: ENANO, orco: ORCO, elfo: ELFO, halfling: HALFLING };
 
 // Tentación central de cada protagonista (hilo que el epílogo juzga)
@@ -1826,6 +2116,7 @@ const TENTACION = {
   enano: { nombre: "Romper la caja", flag: "cedisteALaTentacion", test: (pj) => pj.flags.abristeLaCaja || pj.flags.finCajaQueSeAbre || pj.flags.traicionasteLaCaja },
   orco: { nombre: "Ser rey", flag: "cedisteALaTentacion", test: (pj) => pj.flags.jefeSupremo || pj.flags.segundoSupremo || pj.flags.gorkaEnLaBanda },
   elfo: { nombre: "Olvidar la culpa", flag: "cedisteALaTentacion", test: (pj) => pj.flags.olvido || pj.flags.volvisteALaCorte || pj.flags.aceptasteAtodo },
+  halfling: { nombre: "Ganar como los grandes", flag: "cedisteALaTentacion", test: (pj) => pj.flags.fichastePorMortaigne || pj.flags.ramonVendido || pj.flags.envenenasteLaFinal },
 };
 // Imagen inolvidable al abrir cada capítulo (una línea evocadora)
 const IMAGENES = {
@@ -1833,6 +2124,7 @@ const IMAGENES = {
   enano: { 1: "Una caja de once enanos avanzando una casilla por turno hacia la nada.", 2: "Un elfo corriendo solo alrededor de un campo que practica la caja.", 3: "Una pizarra con ochenta años de tiza y una jugada de elfo dibujada al lado.", 4: "Una ciudad con ventanas donde nadie te dice la casilla.", 5: "Un capitán de ciento setenta años sentado en el barro con el balón en el regazo.", 6: "Una apisonadora de vapor con cuchillas a la que llaman La Viuda.", 7: "Una tiza partida por la mitad sobre una pizarra en blanco." },
   orco: { 1: "Un cesto enganchado en una raíz, con una cría dentro.", 2: "Un campo de nabos con una portería robada y una vaca que muge.", 3: "Un troll de río mirando una mosca del tamaño de un puño.", 4: "Doce cascos robados colgando del cinturón de un goblin.", 5: "Una pared de taberna con los nombres de todos los que deben, escritos con una uña.", 6: "Un elefante muerto usado de portería en la plaza de Gorgomor.", 7: "Un río, un cesto vacío, y una charca que sigue tirando pequeños." },
   elfo: { 1: "Un cristal de la Cristalvisión encendiéndose en un banquete.", 2: "Un cartel de tres metros con tu cara sobre una grada.", 3: "Una halfling en un barril, comiendo, que te mira cada mañana.", 4: "Dos platos en una mesa, y uno siempre vacío.", 5: "Un carro con el sello del Roble llegando a un campo de nabos.", 6: "Una copa de latón torcida en la repisa de un granero.", 7: "El hueco liso en la corteza del Roble donde estuvo tu nombre." },
+  halfling: { 1: "Una tarta enfriándose en la ventana de un horno de la Comarca.", 2: "Un árbol enorme mirando fijamente algo pequeño y redondo en el barro.", 3: "Un árbitro asomando de la boca de un árbol, vivo y muy sorprendido.", 4: "Un ojeador de sombrero caro sentado en una grada de tablones.", 5: "Una copa de latón abollado sobre un montón de pasteles.", 6: "Sesenta mil personas en pie mirando a algo de tres palmos.", 7: "Un par de botas colgadas de un clavo en un vestuario que huele a estofado." },
 };
 
 /* ====================== PARTIDOS V2, TORNEOS Y CRISTALVISIÓN ====================== */
@@ -1986,6 +2278,7 @@ const TRANSICIONES = {
   enano: ENANO_TRANSICIONES,
   orco: ORCO_TRANSICIONES,
   elfo: ELFO_TRANSICIONES,
+  halfling: HALFLING_TRANSICIONES,
 };
 
 /* Cómo gastas el tiempo entre capítulos: cada tarde es un entrenamiento o una persona */
@@ -2004,6 +2297,7 @@ const ENTREACTOS = {
   enano: ENANO_ENTREACTOS,
   orco: ORCO_ENTREACTOS,
   elfo: ELFO_ENTREACTOS,
+  halfling: HALFLING_ENTREACTOS,
 };
 
 /* Lo que el tiempo hace solo: muertes y consecuencias entre capítulos */
@@ -2016,6 +2310,7 @@ const TIEMPO = {
   enano: ENANO_TIEMPO,
   orco: { ...ORCO_TIEMPO, 2: (pj) => !pj.pro ? { fichaPro: true } : null }, // Da Banda tiene campo: ficha de profesional
   elfo: ELFO_TIEMPO,
+  halfling: HALFLING_TIEMPO,
 };
 
 /* Noticias de la Cristalvisión */
@@ -2201,7 +2496,7 @@ const DIV_POR_CAP = {
   enano: { 1: 2, 2: 2, 3: 3, 4: 3, 5: 2, 6: 1 },
   orco: { 2: 6, 3: 6, 4: 5, 5: 4, 6: 3 },
   elfo: { 1: 1, 2: 2, 3: 4, 4: 6, 5: 6, 6: 6 },
-  halfling: {}, // piloto: sin tabla de liga en el capítulo 1
+  halfling: { 2: 6, 3: 6, 4: 5, 5: 5, 6: 4, 7: 6 }, // de la Sexta hacia arriba y de vuelta al barro
 };
 const divisionDe = (raza, cap) => (DIV_POR_CAP[raza] || {})[cap] || null;
 const RIVALES_DIV = {
@@ -2469,6 +2764,12 @@ const MUERTE_ETAPA = {
   },
   halfling: {
     1: "Morir de crío en tu primer domingo, aplastado por un carnicero que ni te vio. En las cocinas de la Comarca lo contarán con cariño: el enclenque que quiso jugar. Y se reirán, que es como los halflings lloran.",
+    2: "Recién firmado con los Comepasteles, muerto antes del segundo partido. Tu abuela guarda el contrato en la lata de las galletas y ya no lo saca.",
+    3: "En pleno lío del árbol, aplastado entre la federación y un carnicero. Una muerte tan absurda que hasta el burócrata de las gafas apunta la fecha con respeto.",
+    4: "Justo cuando alguien grande se había fijado en ti. El ojeador del sombrero caro cierra la libreta y se va a buscar otro enclenque con suerte.",
+    5: "A las puertas de la única copa que un pastel podía soñar. Te velan con el estofado que sobró y una tarta que nadie se atreve a cortar.",
+    6: "En la final imposible, ante sesenta mil personas y la Cristalvisión. La muerte más vista de la historia de un halfling, y la más ridícula, que en ti es un honor.",
+    7: "Viejo, para lo que dura un pastel, con las rodillas ya avisadas. Tu abuela, si vive, guarda tu plato una noche más antes de rendirse.",
   },
 };
 const etapaMuerte = (raza, cap) => (MUERTE_ETAPA[raza] && MUERTE_ETAPA[raza][cap]) || "";
