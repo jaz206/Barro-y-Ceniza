@@ -1736,7 +1736,89 @@ Object.assign(HUMANO.recuerdos, { campeonLeyendo: "El troll giró medio cuerpo, 
 /* ---------- ELFO ---------- */
 
 
-const HISTORIAS = { humano: HUMANO, enano: ENANO, orco: ORCO, elfo: ELFO };
+/* ====================== HALFLING — "LOS COMEPASTELES" (PILOTO, cap 1) ======================
+   Comedia negra y gamberra. Rama nueva escrita 100% por Claude para que el
+   cliente juzgue el tono con algo jugable. PENDIENTE DE REVISIÓN entera. */
+const HALFLING_ALIADOS = (pj, cap) => [
+  { nombre: "Ramón (el árbol)", ST: 6, AG: 1, AV: 11, si: true },
+  { nombre: "Los Comepasteles", ST: 2, AG: 3, AV: 7, si: true },
+  { nombre: "Bortrand (el Chef)", ST: 2, AG: 2, AV: 7, si: pj.rel.chef >= 0 },
+];
+const HALFLING = {
+  nombre: "Halfling", lema: "Tres palmos de estatura y ninguna de sentido común.",
+  puesto: "Comepasteles", reglas: ["Chef Maestro"],
+  base: { MA: 6, ST: 2, AG: 3, AV: 7, hab: ["Esquivar"] },
+  equipoInicial: "Los Comepasteles de Villapastel",
+  rel: { abuela: "Tu abuela", pipo: "Pipo Cazuelas", arbol: "Ramón, el árbol", chef: "Bortrand, el Chef", equipo: "Los Comepasteles", aficion: "Los que apuestan a que pierdes", club: "El horno" },
+  relInicial: { abuela: 2, pipo: 0, arbol: 0, chef: 0, equipo: 1, aficion: 0, club: 0 },
+  capitulos: [
+    { id: 1, titulo: "Villapastel", sub: "Comarca del Nabo, de donde nadie con dos dedos de frente se va", escenas: ["cocina", "pipo", "arbol", "chef", "primerPartido"] },
+  ],
+  escenas: {
+    cocina: {
+      titulo: "El último pastel",
+      texto: (pj) => `En Villapastel hay dos leyes: no dejar que se enfríe el horno y no salir de la Comarca. Tú llevas toda la vida amasando y toda la vida mirando por la única ventana que da al camino cómo pasan los carros de los equipos de verdad —grandes, con dientes— rumbo a ciudades con nombre. Hoy uno se ha parado a comprar tarta. El blitzer que baja a pagar te mira desde muy arriba, te da una palmada "de buen rollo" que te sienta en la harina, y se va riéndose. Tu abuela, sin levantar la vista del guiso: "A ese algún día se lo come el suyo. Tú amasa".`,
+      opciones: [
+        { txt: "Amasar. Pero con odio.", fx: { Ferocidad: 2, flag: "conOdio" }, msg: "Amasas el pan más duro de la historia de la Comarca. Se parte un cuchillo cortándolo. Guardas la mitad para tirársela a alguien, algún día, desde muy cerca." },
+        { txt: "Dejar el delantal en el suelo y salir por la ventana.", fx: { Ambición: 2, Voluntad: 1, flag: "porLaVentana" }, msg: "Sales por la ventana que da al camino. Tu abuela ni se gira: 'La cena a las ocho. Estés muerto o no'." },
+        { txt: "Preguntarle a la abuela cómo se juega a que no te maten.", fx: { Astucia: 1, rel: { abuela: 1 }, flag: "consejoAbuela" }, msg: "'No dejes que te vean pequeño', dice. 'Y si te ven, muérdeles el tobillo'. Es el mejor consejo táctico que recibirás en toda tu carrera." },
+      ],
+    },
+    pipo: {
+      titulo: "El agente de tres dedos",
+      texto: (pj) => `Te encuentra un halfling con un puro más grande que su brazo y tres dedos en una mano. "Pipo Cazuelas", dice, "agente. Represento a jugadores de todas las razas. Bueno, de la nuestra. Bueno, a ti". Te enseña un contrato de catorce páginas. ${pj.flags.conOdio ? "Huele el odio en ti y sonríe: 'Con eso duras tres partidos. Igual cuatro'." : "Te mira de arriba abajo, que en un halfling es poco: 'Enclenque. Perfecto. Los enclenques dan pena, y la pena vende entradas'."} La letra pequeña, dice, "es un formalismo". La letra pequeña dice que le debes el diez por ciento de todo y una tarta semanal de por vida.`,
+      opciones: [
+        { txt: "Firmar sin leer. Total.", fx: { Ambición: 1, rel: { pipo: 2 }, flag: "firmasteAPipo" }, msg: "Firmas. Pipo se guarda el contrato y una de tus tartas por adelantado. 'Bienvenido al deporte, chaval'. Ya le debes dinero y aún no has jugado." },
+        { txt: "Leer las catorce páginas. Todas.", req: { Astucia: 2 }, forzable: true, fx: { Astucia: 2, rel: { pipo: -1 }, flag: "leisteContrato" }, msg: "Tardas dos horas. En la página nueve descubres que, en caso de muerte, tus tartas pasan a Pipo 'a perpetuidad'. Le tachas la línea. Pipo te respeta, que es peor que caerle bien." },
+        { txt: "Regatearle a base de tartas.", fx: { rel: { pipo: 1 }, Astucia: 1 }, msg: "Acabáis en un cinco por ciento y dos tartas al mes. Es la mejor negociación de tu vida y la peor de la suya. A partir de ahí sois amigos, que en Pipo significa que te robará más despacio." },
+      ],
+    },
+    arbol: {
+      titulo: "El fichaje estrella",
+      texto: (pj) => `Un equipo de halflings no gana partidos: gana tiempo hasta que se despierta el árbol. El de los Comepasteles vive en la charca de detrás del horno y responde, a veces, al nombre de Ramón. Mide lo que tres carros, tiene la inteligencia de un banco de jardín y una manía preocupante: coge del suelo lo pequeño y redondo y lo lanza muy lejos. En un campo, eso es el balón. Fuera del campo, eso eres tú.`,
+      opciones: [
+        { txt: "Hacerte amigo del árbol. A base de pasteles.", fx: { rel: { arbol: 2 }, Honor: 1, flag: "amigoArbol" }, msg: "Le llevas pastel cada día. Ramón aprende a distinguirte del balón por el olor a mantequilla. Es lo más parecido a un seguro de vida que vas a tener." },
+        { txt: "Comerte tú el pastel que era para Ramón.", fx: { Voluntad: 1, rel: { arbol: -1 }, flag: "teComisteSuPastel" }, msg: "Está buenísimo. Ramón se entera, porque los árboles se enteran de todo despacio. A partir de hoy te mira como se mira a un balón que encima te ha robado la merienda." },
+        { txt: "Mantenerte muy lejos de Ramón.", fx: { Astucia: 1, Voluntad: 1, flag: "lejosArbol" }, msg: "Decides que el árbol es cosa de los demás. Es la decisión más sensata que tomarás en tu carrera, y por eso mismo no durará." },
+      ],
+    },
+    chef: {
+      titulo: "El Chef",
+      texto: (pj) => `El otro fichaje de un equipo halfling es el Chef. El vuestro se llama Bortrand y cocina tan bien que el reglamento lo considera un arma: si el rival prueba su estofado antes del partido, se le olvida a qué había venido. Bortrand no juega. Bortrand cocina y, de paso, "se ocupa" de la cerveza del vestuario visitante, que desaparece como por arte de magia. Nadie ha probado nada. Todos lo saben.`,
+      opciones: [
+        { txt: "Aprender a robar cerveza con Bortrand.", fx: { Astucia: 2, rel: { chef: 2 }, flag: "aprendizChef" }, msg: "Bortrand te enseña a entrar en un vestuario ajeno con una bandeja y salir con seis jarras. 'La clave es que nadie sospecha del que trae comida'. Lo apuntas para el resto de tu vida." },
+        { txt: "Pedirle que envenene un poco al rival. Solo un poco.", req: { Ferocidad: 3 }, forzable: true, fx: { Ferocidad: 1, Honor: -2, rel: { chef: 1 }, flag: "envenenador" }, msg: "'¿Envenenar? Yo cocino', dice Bortrand, ofendidísimo, mientras echa algo verde a la olla del rival. 'Otra cosa es que a la gente le siente mal la buena comida'." },
+        { txt: "Comerte tú el estofado, por si acaso.", fx: { Voluntad: 1, rel: { chef: 1 }, flag: "teComisteElEstofado" }, msg: "Te comes una ración de prueba. Y otra. Y otra. Cuando llega el rival, tú tampoco recuerdas a qué habías venido. Bortrand toma nota: los domingos, esconderte la comida." },
+      ],
+    },
+    primerPartido: {
+      titulo: "El primer domingo",
+      partido: { rival: "Los Carniceros de Bögenhafen", fuerza: 4 },
+      texto: (pj) => `Los Carniceros de Bögenhafen son lo que su nombre promete: doce tipos que entre semana parten reses y los domingos parten halflings, por variar. Vienen a Villapastel a "hacer manos" antes de la temporada de verdad. La apuesta local no es quién gana —eso está claro— sino cuántos Comepasteles acaban el partido de pie. La cifra que más se repite es "cero". ${pj.flags.aprendizChef ? "Bortrand ya ha vaciado su vestuario de cerveza: juegan sedientos y de mal humor, que es peor." : ""} ${pj.flags.amigoArbol ? "Ramón te huele la mantequilla y, por una vez, parece tener claro de qué lado estás." : "Ramón mira el balón, luego a ti, y no termina de decidir cuál de los dos lanzar."} {marcador}. El silbato suena como suena una sentencia.`,
+      opciones: [
+        { txt: "Colártele entre las piernas al carnicero más grande y correr.", tirada: { stat: "AG", obj: 8, riesgo: true,
+          ok: { txt: "Te cuelas entre dos pares de piernas como un pastel con mantequilla, esquivas al tercero porque tropieza con Ramón, y cruzas la línea sin que nadie te haya rozado. Villapastel entra en shock: un halfling ha anotado. La abuela, en la grada, sigue tejiendo, pero teje más rápido.", fx: { fama: 8, Ambición: 1, gol: 1, rel: { equipo: 2, aficion: 2 }, flag: "anotasteElPrimero" } },
+          ko: { txt: "Te cuelas entre las piernas y sales por el otro lado directo a la bota de un carnicero que ni te ve venir. Vuelas. Aterrizas. Cuentas todas las estrellas del Mundo Viejo, que son unas cuantas.", fx: { golRival: 1 } } } },
+        { txt: "Que Ramón te lance a la zona de anotación como una bomba de mantequilla.", req: { flag: "amigoArbol" }, forzable: true, tirada: { stat: "ST", obj: 7, riesgo: true,
+          ok: { txt: "Ramón te agarra, apuntas al hueco, y sales disparado por encima de doce carniceros que miran hacia arriba con la boca abierta. Cruzas la línea volando y aterrizas de morros, pero cruzas. La jugada se hará famosa. La copiarán fatal en toda la Comarca.", fx: { fama: 10, Ferocidad: 1, gol: 1, rel: { arbol: 2, aficion: 2 }, flag: "labomba" } },
+          ko: { txt: "Ramón te agarra, se distrae con una mariposa, y te lanza a la grada. Caes de lleno sobre el puesto de tartas de tu abuela. Ella, sin inmutarse, te quita una pasa de la oreja: 'Te lo dije'.", fx: { Voluntad: 1, golRival: 1 } } } },
+        { txt: "Sentarte encima del balón y aguantar el chaparrón.", tirada: { stat: "AG", obj: 7, riesgo: false,
+          ok: { txt: "Te sientas encima del balón, te haces bola, y aguantas doce placajes que rebotan en ti como en un flan. El partido muere 0-0 de puro aburrimiento, que para un Comepasteles es una gesta que se cantará en las cocinas durante generaciones.", fx: { Voluntad: 2, rel: { equipo: 2, aficion: 1 }, flag: "teSentaste" } },
+          ko: { txt: "Te haces bola, sí, pero un carnicero descubre que las bolas también se chutan. Cruzas media Comarca por los aires. El balón se queda en el campo; tú no.", fx: { golRival: 1 } } } },
+      ],
+    },
+  },
+  muertes: [
+    { titulo: "El Chef", texto: "Te despiertas en la mesa de la cocina de Bortrand con un embudo en la boca y estofado bajándote por la garganta a presión. 'Todo se arregla comiendo', dice, echándote más. Vuelves a la vida por pura digestión. Algo de ti, eso sí, se ha quedado en el otro lado, y no es precisamente el apetito.", fx: { stat: { AV: -1 }, Voluntad: 1 } },
+    { titulo: "Ramón", texto: "Ramón te recoge del barro creyéndote el balón, te aprieta para lanzarte, y del susto el corazón te arranca a latir de nuevo. Te suelta, decepcionado de que no seas redondo. Le debes la vida y un pastel. Desde entonces andas un pelín más lento.", fx: { stat: { MA: -1 }, Voluntad: 1 } },
+    { titulo: "Pipo", texto: "Pipo Cazuelas huele el dinero hasta en un halfling muerto. Paga a un curandero de tres al cuarto que te devuelve 'con garantía de treinta días'. Te falta un dedo, como a él, pero respiras, y ahora le debes el doble. 'La próxima la pagas tú', dice. Y no hay próxima gratis.", fx: { stat: { AG: -1 }, Honor: -1 } },
+  ],
+  epilogo: (pj, rasgo) => `${pj.nombre} fue ${rasgo}, midió tres palmos y sobrevivió a bastante más de lo que sobrevive un pastel en aquella cocina. ${pj.flags.teSentaste ? "Inventó la táctica de sentarse encima del balón, que hoy enseñan hasta los orcos." : pj.flags.labomba ? "Su touchdown volando por encima de doce carniceros se copió fatal en toda la Comarca durante años." : ""} ${pj.rel.abuela >= 3 ? "Su abuela le guardó la cena cada noche, muerto o vivo, hasta que una noche no hubo que guardarla." : "Su abuela dejó de poner su plato el día que se fue, y no lo volvió a poner."} ${pj.muertes > 0 ? `Murió ${pj.muertes + 1} veces, todas ridículas, y solo la última contó.` : ""} Que un halfling durase tanto fue, según Pipo Cazuelas, "el mejor negocio que hice; y perdí dinero".`,
+  portada: `Naces en Villapastel, en la Comarca del Nabo, donde lo más violento que pasa es la bronca por el último trozo de tarta. Tu madre cocina para cuarenta; tu padre se come a treinta. Y tú, que a duras penas levantas una jarra llena, decides dedicarte al deporte más brutal del Mundo Viejo. Todo el pueblo se ríe. Tú también te ríes. Pero tú, además, firmas.`,
+  recuerdos: { conOdio: "Amasabas el pan con odio.", firmasteAPipo: "Le debes tartas a Pipo de por vida.", amigoArbol: "Ramón te distinguía del balón por el olor a mantequilla.", teSentaste: "Te sentaste encima del balón y sobreviviste.", labomba: "Volaste por encima de doce carniceros.", anotasteElPrimero: "Anotaste el primer touchdown halfling que se recuerda en Villapastel.", aprendizChef: "Aprendiste a robar cerveza con Bortrand." },
+};
+
+const HISTORIAS = { humano: HUMANO, enano: ENANO, orco: ORCO, elfo: ELFO, halfling: HALFLING };
 
 // Tentación central de cada protagonista (hilo que el epílogo juzga)
 const TENTACION = {
@@ -1777,6 +1859,7 @@ const ALIADOS = {
   enano: ENANO_ALIADOS,
   orco: ORCO_ALIADOS,
   elfo: ELFO_ALIADOS,
+  halfling: HALFLING_ALIADOS,
 };
 
 /* Torneos: una final por capítulo si has ganado al menos un partido en él */
@@ -1996,7 +2079,7 @@ const HABILIDADES = {
   "Cabeza dura": { cat: "R", desc: "Rasgo. Solo te dejan KO con un 9 en la tirada de heridas." },
 };
 const CATEGORIAS = { G: "General", A: "Agilidad", F: "Fuerza", P: "Pase", T: "Triquiñuelas", R: "Rasgo" };
-const ACCESO = { humano: { p: ["G", "F"], s: ["A", "P", "T"] }, enano: { p: ["G", "A"], s: ["F", "P", "T"] }, orco: { p: ["G", "F"], s: ["A", "P", "T"] }, elfo: { p: ["A", "G"], s: ["F", "P", "T"] } };
+const ACCESO = { humano: { p: ["G", "F"], s: ["A", "P", "T"] }, enano: { p: ["G", "A"], s: ["F", "P", "T"] }, orco: { p: ["G", "F"], s: ["A", "P", "T"] }, elfo: { p: ["A", "G"], s: ["F", "P", "T"] }, halfling: { p: ["A", "G"], s: ["P", "T"] } };
 const UMBRALES = [6, 14, 26, 42, 62, 92];
 const NIVELES = ["Novato", "Experimentado", "Veterano", "Estrella emergente", "Estrella", "Superestrella", "Leyenda"];
 const nivelDe = (spp) => 1 + UMBRALES.filter((u) => spp >= u).length;
@@ -2118,6 +2201,7 @@ const DIV_POR_CAP = {
   enano: { 1: 2, 2: 2, 3: 3, 4: 3, 5: 2, 6: 1 },
   orco: { 2: 6, 3: 6, 4: 5, 5: 4, 6: 3 },
   elfo: { 1: 1, 2: 2, 3: 4, 4: 6, 5: 6, 6: 6 },
+  halfling: {}, // piloto: sin tabla de liga en el capítulo 1
 };
 const divisionDe = (raza, cap) => (DIV_POR_CAP[raza] || {})[cap] || null;
 const RIVALES_DIV = {
@@ -2298,7 +2382,7 @@ const MATCH_TIPOS = {
   muro:       { plays: ["defensa", "defensa"], marcInicial: [1, 0], bola: "rival" },
   ultima:     { plays: [] },
 };
-const razaDefaultTipo = { humano: "liga", enano: "caja", orco: "bandada", elfo: "exhibicion" };
+const razaDefaultTipo = { humano: "liga", enano: "caja", orco: "bandada", elfo: "exhibicion", halfling: "liga" };
 const tipoDe = (p, raza) => p.tipo || (p.torneo ? "final" : (razaDefaultTipo[raza] || "liga"));
 const MATCH_PLAYS = (tipo) => (MATCH_TIPOS[tipo] || MATCH_TIPOS.liga).plays;
 
@@ -2382,6 +2466,9 @@ const MUERTE_ETAPA = {
     5: "En el borde, con la revancha a un paso. Trescientos años para morir justo antes de saber si valió la pena.",
     6: "En la final de Sexta, jugando por una copa de nabos. La Reina no lo verá; tú tampoco.",
     7: "Al fin vieja, para lo que dura un humano. Tú, que ibas a durar siglos, mueres a su ritmo, y quizá por eso sonríes.",
+  },
+  halfling: {
+    1: "Morir de crío en tu primer domingo, aplastado por un carnicero que ni te vio. En las cocinas de la Comarca lo contarán con cariño: el enclenque que quiso jugar. Y se reirán, que es como los halflings lloran.",
   },
 };
 const etapaMuerte = (raza, cap) => (MUERTE_ETAPA[raza] && MUERTE_ETAPA[raza][cap]) || "";
@@ -2499,7 +2586,7 @@ export default function App() {
   const esPrimeraDeCap = cap && cap.escenas[0] === ORDEN[idx].id;
 
   const empezar = () => {
-    const p = nuevoPj(nombre.trim() || { humano: "Josef hijo", enano: "Balin el Rápido", orco: "El Pequeño", elfo: "Aelindra" }[raza], raza);
+    const p = nuevoPj(nombre.trim() || { humano: "Josef hijo", enano: "Balin el Rápido", orco: "El Pequeño", elfo: "Aelindra", halfling: "Berto Migas" }[raza], raza);
     p.legado = vidas.slice(0, 3);
     setPj(p); setIdx(0); setCronica([]); setFase("capitulo");
   };

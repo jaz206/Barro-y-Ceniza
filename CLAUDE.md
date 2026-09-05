@@ -122,6 +122,25 @@ patada inicial, compañeros con ficha propia y fatiga.
 Entre capítulos hay **entreactos**: dos "tardes libres" en las que eliges
 actividades (entrenar, ver a la familia, beber con alguien).
 
+## Halfling — "Los Comepasteles" (rama piloto, comedia negra)
+
+Quinta rama **piloto** (solo capítulo 1, jugable de punta a punta) para que el
+cliente juzgue el tono antes de escribir las 10.000 palabras de una rama entera.
+La escribió Claude, **comedia negra y gamberra**, y está **pendiente de revisión
+entera** (es la primera rama 100% no-cliente).
+
+- Vive en `HALFLING` + `HALFLING_ALIADOS`, registrada en `HISTORIAS`, `ALIADOS`,
+  `ACCESO`, `razaDefaultTipo`, `DIV_POR_CAP` (vacío, sin tabla en el piloto),
+  `MUERTE_ETAPA` y el nombre por defecto ("Berto Migas"). No entra en los bucles
+  de torneos/leyenda (solo cap 1).
+- Ficha de pringado (MA6 ST2 AG3 AV7, Esquivar): con la dificultad nueva, el
+  halfling **suda cada partido** y ganar/empatar es una gesta — que es la gracia.
+- Reutiliza a **Pipo Cazuelas**, el agente halfling de tres dedos que ya salía en
+  las noticias del mundo. Equipo: los Comepasteles, con Ramón (el árbol que te
+  confunde con el balón) y Bortrand (el Chef que roba la cerveza rival).
+- Si el cliente da el OK al tono, se escriben los capítulos 2-7 (arco, muertes de
+  comedia, torneo, final) y se mete en los bucles de post-proceso.
+
 ## Números de serie limados — decisión de producto, mantenerla
 
 En todo el juego **no aparece "Blood Bowl" ni una vez**, y es a propósito:
