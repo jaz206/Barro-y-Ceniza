@@ -2571,6 +2571,21 @@ const semJugada = (m, salt) => { let s = (salt || 0) + (m.jIdx || 0) * 31 + (m.t
 const varia = (arr, m, salt) => arr[semJugada(m, salt) % arr.length];
 // Coletilla según cómo juega el rival: variedad "gratis" de partido a partido.
 const flavRival = (m) => m.estilo === "brutal" ? `${m.rivalCorto} no ha venido a jugar: ha venido a repartir.` : m.estilo === "muro" ? `${m.rivalCorto} se cierra en bloque, casilla a casilla.` : m.estilo === "esquivo" ? `${m.rivalCorto} no busca el choque: busca la bola sin tocarte.` : `${m.rivalCorto} corre las bandas como si les fuera la cena en ello.`;
+
+/* ===== CRÓNICA DEL PARTIDO (idea del cliente) =====
+   Cada jugada clave se abre narrando el estado REAL del partido: qué os jugáis,
+   qué parte es, el marcador, quién está tocado o con el boticario y a quién le
+   toca (atacar/defender). Se compone de datos vivos del partido, así que sirve
+   para los 38 partidos sin escribir uno a uno. Prosa de Claude marcada para
+   revisión. */
+const numTxt = (n) => ["cero", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete"][n] ?? String(n);
+const marcadorFrase = (m) => { const [a, b] = m.marcador; if (a === b) return a === 0 ? "seguís sin mojar, 0-0" : `vais igualados a ${numTxt(a)}`; return a > b ? `vais por delante ${a}-${b}` : `perdéis ${a}-${b}`; };
+const parteFrase = (m) => { const total = m.plays ? m.plays.length : 1; if (total <= 1) return "Última jugada"; if (m.jIdx === 0) return "Primera parte"; if (m.jIdx >= total - 1) return "Segunda parte"; return "Se acaba la primera parte"; };
+const lesionadosFrase = (pj, m) => { const fuera = (m.aliados || []).filter((a) => a.herido).map((a) => a.nombre); let s = ""; if (fuera.length === 1) s = `${fuera[0]} está en el banquillo con el boticario.`; else if (fuera.length > 1) s = `${fuera.slice(0, 2).join(" y ")} están fuera, con el boticario.`; if (pj.flags.apaleado) s = (s ? s + " " : "") + "Tú mismo juegas vendado, a media máquina."; return s; };
+const contextoFrase = (pj, m) => { if (m.jIdx !== 0) return ""; if (m.torneo) return `${m.torneo}. No hay red debajo.`; const r = m.racha || 0; if (r <= -2) return `Lleváis una mala racha y este partido lo necesitáis de verdad.`; if (r >= 3) return `Venís lanzados, y la grada lo nota.`; return `Un partido de los que hay que sacar adelante.`; };
+const accionFrase = (kind, m) => kind === "saque" ? "El balón bota en el centro, de nadie." : kind === "ataque" ? (m.posesion === "propia" ? "Y tienes tú el balón." : "Ellos suben con la bola: os toca defender.") : kind === "defensa" ? "Ellos van a por el gol y sois la última línea." : kind === "remate" ? "Estáis a un paso de su línea." : kind === "choque" ? "Las dos líneas se buscan en el barro." : kind === "regate" ? "Toca pasar entre ellos sin que te toquen." : "";
+const cronicaSitu = (pj, m, kind) => [contextoFrase(pj, m), `${parteFrase(m)} y ${marcadorFrase(m)}.`, lesionadosFrase(pj, m), accionFrase(kind, m)].filter(Boolean).join(" ");
+const cronicaH = (pj, m, kind) => (kind === "ataque" && m.posesion !== "propia") ? "Os toca defender" : kind === "defensa" ? "El último muro" : kind === "remate" ? "A las puertas" : kind === "ataque" ? "Tienes el balón" : kind === "saque" ? (m.jIdx === 0 ? "Empieza el partido" : "Balón dividido") : kind === "choque" ? "Guerra en el centro" : kind === "regate" ? "A bailar" : "Al barro";
 const PLAY_POOL = {
   saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en tierra de nadie", "El saque, al aire", "Primer balón, primer barro", "A por la vejiga"], m, 1),
     situ: `${varia([`El saque cae corto y la vejiga bota en el barro, en el centro, de nadie.`, `La bola sube, gira contra el cielo gris y baja a un palmo de las dos líneas.`, `Silbato. La vejiga rueda muerta en mitad del campo y todos la miran a la vez.`], m, 2)} ${varia([`Hay que llegar antes que ${m.rivalCorto}.`, flavRival(m), `El que la coja manda el primer minuto.`], m, 3)}`,
@@ -3055,7 +3070,7 @@ export default function App() {
     const log = [];
     let clima = d6() + d6();
     const CLIMAS = { 2: ["Calor asfixiante", "un compañero se queda en el banquillo por el calor"], 3: ["Muy soleado", "−1 a los pases"], 11: ["Lluvioso", "−1 a recoger y recibir"], 12: ["Ventisca", "−1 a las carreras; solo pases cortos"] };
-    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: 2, apotecarioUsado: false, posesion: "neutral", log, intro };
+    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: 2, apotecarioUsado: false, posesion: "neutral", log, intro, torneo: p.torneo, raza: pj.raza, racha: pj.racha || 0 };
     const aplicarClima = () => { m.clima = CLIMAS[clima] ? CLIMAS[clima][0] : "Clima perfecto"; if (CLIMAS[clima]) intro.push(`Clima: ${CLIMAS[clima][0]} (${CLIMAS[clima][1]}).`); if (clima === 2 && m.aliados.length) { const v = pick1(m.aliados); v.herido = true; intro.push(`${v.nombre} se queda en el banquillo con la lengua fuera.`); } };
     aplicarClima();
     const ev = d6() + d6();
@@ -3645,6 +3660,10 @@ export default function App() {
     const enJugadas = mt.modo === "jugadas";
     const ops = enJugadas ? {} : opcionesTurno(mt);
     const jplay = enJugadas && mt.fase === "turnos" ? poolDe(pj)[mt.plays[mt.jIdx]](pj, mt) : null;
+    // Crónica: la cabecera y la situación se cuentan con el estado real del
+    // partido (parte, marcador, lesionados, a quién le toca). Las acciones de
+    // abajo las sigue poniendo el pool (serio o halfling).
+    if (jplay) { const kind = mt.plays[mt.jIdx]; jplay.h = cronicaH(pj, mt, kind); jplay.situ = cronicaSitu(pj, mt, kind); }
     const miPuesto = !enJugadas && H.emergente ? puestoEmergente(pj) : null;
     const miAccionVista = miPuesto ? { Blitzer: "presionar", Receptor: "correr", Lanzador: "bola", Liniero: "aguantar" }[miPuesto.clave] : null;
     const arranque = mt.log.length === 0;

@@ -71,13 +71,24 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   grada, el rival, el barro—) la escribió Claude imitando la voz del cliente,
   con su OK. Vive en `HERIDA_PROSA`. Marcada para revisión con el resto.
 - **Variedad de intros (para que no empiece siempre igual).** Cada jugada
-  clave del pool tiene ahora varias frases de cabecera (`h`) y de situación
-  (`situ`), elegidas de forma estable por jugada (`varia`/`semJugada`: no
-  parpadean entre renders, pero cambian de jugada a jugada y de partido a
-  partido según el rival), más una coletilla según cómo juega el rival
-  (`flavRival`: brutal/muro/esquivo/rápido). También la frase de apertura del
-  partido ("Salta al campo…") elige entre cuatro variantes. Prosa de Claude,
-  marcada para revisión.
+  clave del pool tiene varias frases de cabecera (`h`) y de situación (`situ`)
+  base (`varia`/`semJugada`/`flavRival`), y la frase de apertura del partido
+  ("Salta al campo…") elige entre cuatro variantes. Prosa de Claude, marcada
+  para revisión.
+- **Crónica del partido (idea del cliente, FASE 1 — en co-diseño).** Encima de
+  las frases base, cada jugada clave se abre ahora narrando el ESTADO REAL del
+  partido: qué os jugáis (racha/torneo), qué parte es (`parteFrase`), el
+  marcador (`marcadorFrase`), quién está tocado o con el boticario
+  (`lesionadosFrase`) y a quién le toca (`accionFrase`: tienes el balón / os
+  toca defender). Se compone de datos vivos (`cronicaSitu`/`cronicaH`,
+  aplicadas al `jplay` en el render), así que vale para los 38 partidos sin
+  escribir uno a uno. Ejemplo real: "Primera parte y perdéis 0-1. Ellos suben:
+  os toca defender" → "Segunda parte y perdéis 0-1. Estáis a un paso de su
+  línea". **Pendiente de fases siguientes** (acordadas con el cliente, aún por
+  construir): el texto de cierre que se adapta al marcador y a las lesiones,
+  partidos con final escrito (gana/pierde por guion), un "momento del prota" de
+  éxito garantizado con cuentagotas, compañeros que caen durante el juego, y
+  4 acciones en las jugadas gordas. Prosa de Claude, marcada para revisión.
 - **El halfling juega con su PROPIO pool** (`PLAY_POOL_HALF`, elegido por
   `poolDe(pj)`): mismo motor y mismas tiradas (ST/AG/MA, riesgo, heridas), pero
   otras acciones, en clave de comedia negra —rodar hecho un ovillo, dejar que
