@@ -27,14 +27,22 @@ juego, verificar de verdad (build + navegador) antes de dar nada por hecho.**
 
 - [x] **Fase 0 — Documentos y decisión.** Biblia y 7 capítulos + duelo en
   `docs/`. Biblia declarada normativa en `CLAUDE.md`. Esta hoja de ruta.
-- [ ] **Fase 1 — Piloto halfling a 1D6.** Solo el halfling (el resto sigue en
-  2d6 mientras tanto, ramificando por raza, como se hizo con el pool de jugadas).
-  Incluye: ficha S3 del halfling (pro 5/2/3+/4+/7+, **debut** 4/2/4+/5+/6+ en
-  caps 1-2) + escena de firma; motor 1D6 para sus jugadas y su jugada decisiva;
-  objetivos del pool convertidos a números objetivo; atributos fuera del dado;
-  repeticiones (habilidad / equipo por `rel.equipo` / Voluntad). Verificar con
-  simulación (letalidad §3.5 ≈ 1,5 %) y recorrido en navegador. **Que el cliente
-  lo juegue y valide el tacto antes de seguir.**
+- [x] **Fase 1 — Piloto halfling a 1D6 (HECHO).** El halfling juega ya con el
+  motor de la biblia; las otras cuatro razas siguen en 2d6 (`es1d6(pj)`
+  ramifica por raza). Implementado: ficha S3 pro (5/2/AG3+/AV7+) + ficha de
+  debut (4/2/AG4+/AV6+) en caps 1-2 con firma como profesional en el cap 3
+  (`fichaInicial`+`firmaCap`+`HALFLING_TIEMPO[3]`); `rollKey1d6` para las
+  jugadas clave; rama 1D6 en `resolverTirada` para la jugada decisiva;
+  Escurridizo (−1 armadura) en `tirarHerida`; gol del rival a `d6+FU≥7`;
+  segunda oportunidad de equipo según `rel.equipo` (§2.4). El display muestra
+  objetivos S3 (`AG+`, `Fuerza 4+`) y un solo dado. Verificado: build limpio,
+  recorrido halfling cap1→7 hasta el epílogo sin errores, y las otras cuatro
+  razas siguen sin errores en 2d6.
+  *Nota de implementación:* el "aviso de la AG al revés" de abajo se resolvió
+  **sin darle la vuelta al número**: se conserva la convención del juego (más
+  alto, mejor) y la tirada convierte a objetivo S3 con `7 − AG` (la misma
+  fórmula que ya usaba el display), así que ni `aplicar` ni la ficha de
+  debut→pro necesitaron tocarse.
 - [ ] **Fase 2 — Extender 1D6 a las otras cuatro razas**, una a una, con sus
   fichas S3 (§6) y su ficha de debut donde corresponda. Al terminar, se retira el
   motor 2d6 y el ramal por raza.

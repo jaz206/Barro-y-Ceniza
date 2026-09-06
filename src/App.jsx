@@ -1747,8 +1747,14 @@ const HALFLING_ALIADOS = (pj, cap) => [
 ];
 const HALFLING = {
   nombre: "Halfling", lema: "Tres palmos de estatura y ninguna de sentido común.",
-  puesto: "Comepasteles", reglas: ["Chef Maestro"],
-  base: { MA: 6, ST: 2, AG: 3, AV: 7, hab: ["Esquivar"] },
+  puesto: "Comepasteles", reglas: ["Chef Maestro", "Escurridizo"],
+  // Ficha S3 de la biblia (§6, §23). Motor 1D6 (piloto). AG se guarda en la
+  // convención del juego (más alto, mejor); el display y la tirada la convierten
+  // a objetivo S3 con 7−AG (AG 4 = 3+). Profesional: MV5 FU2 AG3+ AV7+.
+  base: { MA: 5, ST: 2, AG: 4, AV: 7, hab: ["Esquivar"] },
+  // Ficha de debut (caps 1-2): MV4 FU2 AG4+ AV6+, sin habilidad de puesto.
+  fichaInicial: { MA: 4, ST: 2, AG: 3, AV: 6, hab: [] },
+  firmaCap: 3,
   equipoInicial: "Los Comepasteles de Villapastel",
   rel: { abuela: "Tu abuela", pipo: "Pipo Cazuelas", arbol: "Roblerto, el árbol", chef: "Bortrand, el Chef", equipo: "Los Comepasteles", aficion: "Los que apuestan a que pierdes", club: "El horno" },
   relInicial: { abuela: 2, pipo: 0, arbol: 0, chef: 0, equipo: 1, aficion: 0, club: 0 },
@@ -2108,6 +2114,7 @@ const HALFLING_ENTREACTOS = [
 ];
 // Lo que el tiempo hace solo en la Comarca (guardado si el capítulo no aplica).
 const HALFLING_TIEMPO = {
+  3: (pj) => !pj.pro ? { fichaPro: true } : null, // firma como profesional (biblia §6.1): de la ficha de debut a la de puesto
   7: (pj) => (!pj.flags.retirado && pj.MA > 2) ? { stat: { MA: -1 } } : null, // el ocaso pesa en las piernas
 };
 
@@ -2567,6 +2574,30 @@ const rollKey = (pj, m, o) => {
   if (tot < obj && o.hab && has(o.hab)) { d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = o.hab; }
   else if (tot < obj && m.rerolls > 0) { m.rerolls--; d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = "2ª oportunidad"; }
   return { ok: tot >= obj, d, tecnico: `${ATRIB_PARTIDO[o.stat]} ${d[0]}+${d[1]}${mod >= 0 ? "+" : ""}${mod} = ${tot} vs ${obj}${rep ? " · repetida (" + rep + ")" : ""}` };
+};
+
+/* ===== MOTOR 1D6 DE LA BIBLIA (§2) — PILOTO: SOLO EL HALFLING =====
+   Un dado contra número objetivo. 1 natural falla siempre, 6 acierta siempre.
+   Agilidad/velocidad: objetivo = 7 − AG (la misma conversión del display).
+   Fuerza: objetivo 4, con +1 por punto de FU de ventaja sobre el rival y −1 por
+   desventaja (sin tope). Modificadores de situación con tope ±2 (§2.3). Las
+   otras cuatro razas siguen en 2d6 hasta que les toque la migración. */
+const es1d6 = (pj) => pj && pj.raza === "halfling";
+const objS3 = (pj) => 7 - pj.AG; // objetivo de agilidad (AG 4 → 3+)
+const rollKey1d6 = (pj, m, o) => {
+  const has = (h) => pj.hab.includes(h);
+  const fuerza = o.stat === "ST";
+  const objetivo = fuerza ? 4 : objS3(pj);
+  const diffFU = fuerza ? (pj.ST - (m.fuerza || 2)) : 0; // sin tope (§2.3)
+  const climaMal = ((m.clima === "Lluvioso" || m.clima === "Muy soleado") && !fuerza) ? -1 : 0;
+  const sit = Math.max(-2, Math.min(2, climaMal + (pj.formaPend || 0) + (m.fatiga >= 3 ? -1 : 0) + (pj.flags.apaleado ? -1 : 0) + (o.bonus || 0)));
+  const mod = diffFU + sit;
+  const tira = () => { const n = d6(); return { n, ok: n === 1 ? false : n === 6 ? true : (n + mod >= objetivo) }; };
+  let t = tira(), rep = null;
+  if (!t.ok && o.hab && has(o.hab)) { t = tira(); rep = o.hab; }
+  else if (!t.ok && m.rerolls > 0) { m.rerolls--; t = tira(); rep = "2ª oportunidad"; }
+  const sg = mod > 0 ? `+${mod}` : mod < 0 ? `${mod}` : "";
+  return { ok: t.ok, d: [t.n], tecnico: `${ATRIB_PARTIDO[o.stat]} 1D6: ${t.n}${sg} vs ${objetivo}+${rep ? " · repetida (" + rep + ")" : ""}` };
 };
 // Semilla estable por jugada: mismo valor mientras se muestra la jugada (no
 // parpadea entre renders), distinto entre jugadas y entre partidos (por rival).
@@ -3077,7 +3108,7 @@ export default function App() {
     const log = [];
     let clima = d6() + d6();
     const CLIMAS = { 2: ["Calor asfixiante", "un compañero se queda en el banquillo por el calor"], 3: ["Muy soleado", "−1 a los pases"], 11: ["Lluvioso", "−1 a recoger y recibir"], 12: ["Ventisca", "−1 a las carreras; solo pases cortos"] };
-    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: 2, apotecarioUsado: false, posesion: "neutral", log, intro, torneo: p.torneo, raza: pj.raza, racha: pj.racha || 0 };
+    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: (es1d6(pj) ? (pj.rel.equipo >= 3 ? 2 : 1) : 2), apotecarioUsado: false, posesion: "neutral", log, intro, torneo: p.torneo, raza: pj.raza, racha: pj.racha || 0 };
     const aplicarClima = () => { m.clima = CLIMAS[clima] ? CLIMAS[clima][0] : "Clima perfecto"; if (CLIMAS[clima]) intro.push(`Clima: ${CLIMAS[clima][0]} (${CLIMAS[clima][1]}).`); if (clima === 2 && m.aliados.length) { const v = pick1(m.aliados); v.herido = true; intro.push(`${v.nombre} se queda en el banquillo con la lengua fuera.`); } };
     aplicarClima();
     const ev = d6() + d6();
@@ -3225,7 +3256,9 @@ export default function App() {
     const rival = (m && m.rivalCorto) || "el rival";
     const chips = []; let texto = "", muerte = false;
     const arm = d6() + d6();
-    const avEf = q.AV - (has("Furia") ? 1 : 0);
+    // Escurridizo (§3.3): −1 a la armadura del halfling. Es lo que lo hace frágil
+    // (AR efectiva 6 → muerte ~1,5% por fallo de riesgo, biblia §3.5).
+    const avEf = q.AV - (has("Furia") ? 1 : 0) - (q.raza === "halfling" ? 1 : 0);
     if (arm >= avEf) {
       let her = d6() + d6() + (q.lesiones || 0);
       if (her === 8 && has("Cabeza dura")) her = 7;
@@ -3248,7 +3281,7 @@ export default function App() {
   const jugarJugada = (o) => {
     const m = { ...mt, aliados: mt.aliados.map((a) => ({ ...a })), log: [...mt.log], marcador: [...mt.marcador] };
     const tabla = PE(pj.raza);
-    const r = rollKey(pj, m, o);
+    const r = es1d6(pj) ? rollKey1d6(pj, m, o) : rollKey(pj, m, o);
     const res = r.ok ? o.ok : o.ko;
     if (res.posesion) m.posesion = res.posesion;
     if (res.gol) { m.marcador[0]++; m.tds++; m.pe += tabla.td; m.posesion = "rival"; } // marcas: saque para ellos
@@ -3268,8 +3301,12 @@ export default function App() {
     // resistido por tu ficha (ST/AG) y por tener tú la bola, y escalado por su
     // fuerza. Es lo que hace que el rival marque y que ganar cueste sudor.
     if (!res.golRival && !muerte) {
-      const def = Math.floor((pj.ST + pj.AG) / 2) - 3 + (m.posesion === "propia" ? 2 : 0);
-      if (d6() + d6() + (m.fuerza || 2) >= 10 + def) {
+      // 1D6 (halfling, biblia): el rival marca si d6 + su fuerza ≥ 7 (umbral
+      // calibrado para "difícil pero posible"; §MIGRACION-1D6). 2d6 el resto.
+      const marcaRival = es1d6(pj)
+        ? (d6() + (m.fuerza || 2) >= 7)
+        : (d6() + d6() + (m.fuerza || 2) >= 10 + (Math.floor((pj.ST + pj.AG) / 2) - 3 + (m.posesion === "propia" ? 2 : 0)));
+      if (marcaRival) {
         m.marcador[1]++;
         m.posesion = "propia"; // tras marcar ellos, sacas tú
         extra += " " + RIVAL_MARCA(m.rivalCorto);
@@ -3343,33 +3380,51 @@ export default function App() {
     // Misma escala centrada que las jugadas clave: el modificador es tu ventaja
     // sobre el estándar (característica − 3; velocidad ≈ −2) y el objetivo se
     // recentra a 6-8, para que los números del remate no canten frente al resto.
-    const obj = escena.partido ? Math.max(6, t.obj - 2) : t.obj;
-    const statMod = t.stat === "MA" ? Math.floor(base.MA / 3) - (escena.partido ? 2 : 0) : base[t.stat] - (escena.partido ? 3 : 0);
-    const atrKey = t.stat === "ST" ? "Ferocidad" : t.stat === "AG" ? "Astucia" : "Voluntad";
-    const atrMod = Math.floor(base.atr[atrKey] / 3);
-    let mod = statMod + atrMod + ((base.flags.ventaja || (mt && mt.faltaGratis)) && t.falta ? 2 : 0) + (base.formaPend || 0);
-    const llevas = ["cantoRoto", "placaEntregada", "cancionPuerta", "promesaBruk", "chicoDesague", "crioPuerta", "ojoEntregado", "jarraEntregada", "bendicionLeyenda", "cromoLeyenda", "grimnirTuvoSuTroll", "dorinSeFueAndando", "dorinAnoto", "contasteConSnotlig", "huecoEnGorgomor", "amanecerConBerthold", "bailasteDeNoche", "recetaParaTodos"].filter((f) => base.flags[f]);
-    if (escena.partido && llevas.length) mod += 1;
-    const ulrich = escena.partido && ORDEN[idx].cap === 6 && (base.flags.enemigoUlrich || base.flags.rencorUlrich);
-    if (ulrich) mod -= 1;
-    if (base.flags.apaleado && escena.partido) mod -= 1;
     const has = (h) => base.hab.includes(h);
     const habsUsadas = [];
-    const bonusHab = (h, n) => { if (has(h)) { mod += n; habsUsadas.push(`${h} +${n}`); } };
-    const estiloRival = escena.partido ? estiloDe(escena.partido.rival, escena.partido.fuerza) : "";
-    if (t.stat === "ST") { if (t.riesgo) { bonusHab("Golpe mortífero", 1); bonusHab("Furia", 2); if ((escena.partido?.fuerza || 2) >= 3) bonusHab("Agallas", 1); if (estiloRival === "esquivo") bonusHab("Placaje defensivo", 1); } else { bonusHab("Defensa", 1); bonusHab("Romper defensas", 1); bonusHab("Placaje defensivo", 1); } }
-    if (t.stat === "AG") { if (t.riesgo) { bonusHab("Saltar", 1); if (base.ST >= 4) bonusHab("Abrirse paso", 1); } else { bonusHab("Pasar", 2); bonusHab("Precisión", 1); bonusHab("Atrapar", 1); } }
-    if (t.stat === "MA") { bonusHab("Esprintar", 1); if (t.riesgo) bonusHab("Pies firmes", 1); }
-    if (t.falta) bonusHab("Jugar sucio", 2);
-    const habRel = t.stat === "ST" ? "Placar" : t.stat === "AG" ? (t.riesgo ? "Esquivar" : "Manos seguras") : null;
-    let dados = [d6(), d6()], total = dados[0] + dados[1] + mod, repetida = false;
-    if (total < obj && habRel && has(habRel)) { dados = [d6(), d6()]; total = dados[0] + dados[1] + mod; repetida = habRel; }
-    const exito = total >= obj;
+    const amuleto = ["cantoRoto", "placaEntregada", "cancionPuerta", "promesaBruk", "chicoDesague", "crioPuerta", "ojoEntregado", "jarraEntregada", "bendicionLeyenda", "cromoLeyenda", "grimnirTuvoSuTroll", "dorinSeFueAndando", "dorinAnoto", "contasteConSnotlig", "huecoEnGorgomor", "amanecerConBerthold", "bailasteDeNoche", "recetaParaTodos"].some((f) => base.flags[f]);
+    const ulrich = escena.partido && ORDEN[idx].cap === 6 && (base.flags.enemigoUlrich || base.flags.rencorUlrich);
+    let obj, mod, dados, total, repetida = false, exito, uno = false;
+    if (es1d6(base)) {
+      // 1D6 (biblia §2): agilidad/velocidad → objetivo 7−AG; fuerza → 4 con la
+      // diferencia de FU (sin tope). Situación con tope ±2. Sin atributos al dado.
+      uno = true;
+      const fuerza = t.stat === "ST";
+      obj = fuerza ? 4 : (7 - base.AG);
+      const diffFU = fuerza ? (base.ST - (escena.partido?.fuerza || 2)) : 0;
+      let sit = (base.formaPend || 0) + (((base.flags.ventaja || (mt && mt.faltaGratis)) && t.falta) ? 2 : 0) + (escena.partido && amuleto ? 1 : 0) + (base.flags.apaleado && escena.partido ? -1 : 0) + (ulrich ? -1 : 0);
+      sit = Math.max(-2, Math.min(2, sit));
+      mod = diffFU + sit;
+      const habRel = t.stat === "ST" ? "Placar" : t.stat === "AG" ? (t.riesgo ? "Esquivar" : "Manos seguras") : null;
+      const tira = () => { const n = d6(); return { n, ok: n === 1 ? false : n === 6 ? true : (n + mod >= obj) }; };
+      let tr = tira();
+      if (!tr.ok && habRel && has(habRel)) { tr = tira(); repetida = habRel; habsUsadas.push(habRel); }
+      dados = [tr.n]; total = tr.n + mod; exito = tr.ok;
+    } else {
+      obj = escena.partido ? Math.max(6, t.obj - 2) : t.obj;
+      const statMod = t.stat === "MA" ? Math.floor(base.MA / 3) - (escena.partido ? 2 : 0) : base[t.stat] - (escena.partido ? 3 : 0);
+      const atrKey = t.stat === "ST" ? "Ferocidad" : t.stat === "AG" ? "Astucia" : "Voluntad";
+      const atrMod = Math.floor(base.atr[atrKey] / 3);
+      mod = statMod + atrMod + ((base.flags.ventaja || (mt && mt.faltaGratis)) && t.falta ? 2 : 0) + (base.formaPend || 0);
+      if (escena.partido && amuleto) mod += 1;
+      if (ulrich) mod -= 1;
+      if (base.flags.apaleado && escena.partido) mod -= 1;
+      const bonusHab = (h, n) => { if (has(h)) { mod += n; habsUsadas.push(`${h} +${n}`); } };
+      const estiloRival = escena.partido ? estiloDe(escena.partido.rival, escena.partido.fuerza) : "";
+      if (t.stat === "ST") { if (t.riesgo) { bonusHab("Golpe mortífero", 1); bonusHab("Furia", 2); if ((escena.partido?.fuerza || 2) >= 3) bonusHab("Agallas", 1); if (estiloRival === "esquivo") bonusHab("Placaje defensivo", 1); } else { bonusHab("Defensa", 1); bonusHab("Romper defensas", 1); bonusHab("Placaje defensivo", 1); } }
+      if (t.stat === "AG") { if (t.riesgo) { bonusHab("Saltar", 1); if (base.ST >= 4) bonusHab("Abrirse paso", 1); } else { bonusHab("Pasar", 2); bonusHab("Precisión", 1); bonusHab("Atrapar", 1); } }
+      if (t.stat === "MA") { bonusHab("Esprintar", 1); if (t.riesgo) bonusHab("Pies firmes", 1); }
+      if (t.falta) bonusHab("Jugar sucio", 2);
+      const habRel = t.stat === "ST" ? "Placar" : t.stat === "AG" ? (t.riesgo ? "Esquivar" : "Manos seguras") : null;
+      dados = [d6(), d6()]; total = dados[0] + dados[1] + mod;
+      if (total < obj && habRel && has(habRel)) { dados = [d6(), d6()]; total = dados[0] + dados[1] + mod; repetida = habRel; }
+      exito = total >= obj;
+    }
     const rama = exito ? t.ok : t.ko;
     let { q, chips } = aplicar(base, rama.fx);
     if (forzada) chips.unshift("−2 Voluntad (forzado)");
     if (mt && mt.faltaGratis && t.falta) { chips.unshift("+2: el árbitro no ve nada"); mt.faltaGratis = false; }
-    if (escena.partido && llevas.length) chips.unshift("+1 por lo que llevas contigo");
+    if (escena.partido && amuleto) chips.unshift("+1 por lo que llevas contigo");
     if (ulrich) chips.unshift("−1: Ulrich Manoslargas arbitra y no ha olvidado");
     if (base.flags.apaleado && escena.partido) chips.unshift("−1: juegas apaleado");
     let texto = typeof rama.txt === "function" ? rama.txt(base) : rama.txt, muerte = false;
@@ -3429,7 +3484,7 @@ export default function App() {
     setCronica((c) => [...c, `${escena.titulo}: ${op.txt} (${exito ? "éxito" : "fallo"})`]);
     const expulsionReal = rama.fx.expulsion && chips.includes("Expulsado");
     texto = conMarcadorMsg(texto);
-    setPanel({ texto, chips, tirada: { dados, mod, total, obj, exito, repetida, habsUsadas }, muerte, expulsion: expulsionReal });
+    setPanel({ texto, chips, tirada: { dados, mod, total, obj, exito, repetida, habsUsadas, uno }, muerte, expulsion: expulsionReal });
   };
 
   const continuar = () => {
@@ -3687,7 +3742,9 @@ export default function App() {
     const KJ = ({ o }) => (
       <div className="opcion"><button onClick={() => jugarJugada(o)}>
         <b>{o.txt}</b><span className="mini">{o.det}</span>
-        <span className="mini kj-attr">{ATRIB_PARTIDO[o.stat]} · tú {modDe(pj, o.stat) + (o.bonus || 0) >= 0 ? "+" : ""}{modDe(pj, o.stat) + (o.bonus || 0)}{o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}{o.bonus ? ` · Roblerto ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}</span>
+        <span className="mini kj-attr">{es1d6(pj)
+          ? `${ATRIB_PARTIDO[o.stat]} 1D6 · ${o.stat === "ST" ? "4+ (según fuerza rival)" : (7 - pj.AG) + "+"}${o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}${o.bonus ? ` · Roblerto ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}`
+          : `${ATRIB_PARTIDO[o.stat]} · tú ${modDe(pj, o.stat) + (o.bonus || 0) >= 0 ? "+" : ""}${modDe(pj, o.stat) + (o.bonus || 0)}${o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}${o.bonus ? ` · Roblerto ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}`}</span>
       </button></div>
     );
     // barra de dominio: -1 (rival) .. +1 (nosotros)
@@ -3720,8 +3777,8 @@ export default function App() {
             <span className="pm-tit">Tu ficha</span>
             <span className="pm-stat">MA {pj.MA}</span>
             <span className="pm-stat">ST {pj.ST}</span>
-            <span className="pm-stat">AG {pj.AG}</span>
-            <span className="pm-stat">AV {pj.AV}</span>
+            <span className="pm-stat">AG {es1d6(pj) ? `${7 - pj.AG}+` : pj.AG}</span>
+            <span className="pm-stat">AV {es1d6(pj) ? `${pj.AV}+` : pj.AV}</span>
             {pj.hab.length > 0 && <span className="pm-habs">{pj.hab.join(" · ")}</span>}
           </div>
         )}
@@ -3802,7 +3859,7 @@ export default function App() {
                 <button disabled={!ok && !forzable} onClick={() => elegir(op, !ok)}>
                   <b>{op.txt}</b>
                   {op.req && <span className={`req ${ok ? "ok" : ""}`}>{ok ? "Cumples: " : "Requiere: "}{textoReq(op.req, RELACIONES)}{!ok && forzable ? " · forzar por 2 Voluntad" : ""}</span>}
-                  {op.tirada && <span className="mini">Tirada de {op.tirada.stat} contra {op.tirada.obj}{op.tirada.riesgo ? " · si fallas, lesión" : ""}{op.tirada.falta ? " · falta" : ""}</span>}
+                  {op.tirada && <span className="mini">{es1d6(pj) ? `1D6 · ${ATRIB_PARTIDO[op.tirada.stat] || op.tirada.stat} ${op.tirada.stat === "ST" ? "4+ (según fuerza rival)" : (7 - pj.AG) + "+"}` : `Tirada de ${op.tirada.stat} contra ${op.tirada.obj}`}{op.tirada.riesgo ? " · si fallas, lesión" : ""}{op.tirada.falta ? " · falta" : ""}</span>}
                 </button>
               </div>
             );
@@ -3810,7 +3867,9 @@ export default function App() {
         </div>
       ) : (
         <div className={`panel ${panel.tirada ? (panel.tirada.exito ? "ok" : "ko") : ""}`} role="status" aria-live="polite">
-          {panel.tirada && <div className="dados" role="img" aria-label={`Tirada: ${panel.tirada.dados[0]} y ${panel.tirada.dados[1]}, ${panel.tirada.mod >= 0 ? "más" : "menos"} ${Math.abs(panel.tirada.mod)}, total ${panel.tirada.total} contra ${panel.tirada.obj}. ${panel.tirada.exito ? "Éxito" : "Fallo"}.`}><span className="dado" aria-hidden="true">{panel.tirada.dados[0]}</span><span className="dado" aria-hidden="true">{panel.tirada.dados[1]}</span><span className="suma" aria-hidden="true">+{panel.tirada.mod} = <b>{panel.tirada.total}</b> <em>/ {panel.tirada.obj}</em></span>{panel.tirada.repetida && <em className="mini" aria-hidden="true">repetida con {panel.tirada.repetida}</em>}{panel.tirada.habsUsadas?.length > 0 && <em className="mini" aria-hidden="true">· {panel.tirada.habsUsadas.join(", ")}</em>}</div>}
+          {panel.tirada && (panel.tirada.uno
+            ? <div className="dados" role="img" aria-label={`Tirada de un dado: ${panel.tirada.dados[0]}${panel.tirada.mod ? `, ${panel.tirada.mod >= 0 ? "más" : "menos"} ${Math.abs(panel.tirada.mod)}` : ""}, contra ${panel.tirada.obj} o más. ${panel.tirada.exito ? "Éxito" : "Fallo"}.`}><span className="dado" aria-hidden="true">{panel.tirada.dados[0]}</span><span className="suma" aria-hidden="true">{panel.tirada.mod ? `${panel.tirada.mod >= 0 ? "+" : ""}${panel.tirada.mod} ` : ""}<em>/ {panel.tirada.obj}+</em></span>{panel.tirada.repetida && <em className="mini" aria-hidden="true">repetida con {panel.tirada.repetida}</em>}</div>
+            : <div className="dados" role="img" aria-label={`Tirada: ${panel.tirada.dados[0]} y ${panel.tirada.dados[1]}, ${panel.tirada.mod >= 0 ? "más" : "menos"} ${Math.abs(panel.tirada.mod)}, total ${panel.tirada.total} contra ${panel.tirada.obj}. ${panel.tirada.exito ? "Éxito" : "Fallo"}.`}><span className="dado" aria-hidden="true">{panel.tirada.dados[0]}</span><span className="dado" aria-hidden="true">{panel.tirada.dados[1]}</span><span className="suma" aria-hidden="true">+{panel.tirada.mod} = <b>{panel.tirada.total}</b> <em>/ {panel.tirada.obj}</em></span>{panel.tirada.repetida && <em className="mini" aria-hidden="true">repetida con {panel.tirada.repetida}</em>}{panel.tirada.habsUsadas?.length > 0 && <em className="mini" aria-hidden="true">· {panel.tirada.habsUsadas.join(", ")}</em>}</div>)}
           <p className="texto">{panel.texto}</p>
           {panel.muerte && <p className="texto muerte">No te levantas.</p>}
           <Chips items={panel.chips} />
