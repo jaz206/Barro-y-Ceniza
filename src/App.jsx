@@ -2559,7 +2559,7 @@ const rollKey = (pj, m, o) => {
   const has = (h) => pj.hab.includes(h);
   const obj = objDe(o);
   const clima = (m.clima === "Lluvioso" && o.stat === "AG") ? -1 : (m.clima === "Muy soleado" && o.stat === "AG") ? -1 : (m.clima === "Ventisca" && o.stat === "MA") ? -1 : 0;
-  const mod = modDe(pj, o.stat) + clima + (pj.formaPend || 0) + (m.fatiga >= 3 ? -1 : 0) + (pj.flags.apaleado ? -1 : 0);
+  const mod = modDe(pj, o.stat) + clima + (pj.formaPend || 0) + (m.fatiga >= 3 ? -1 : 0) + (pj.flags.apaleado ? -1 : 0) + (o.bonus || 0);
   let d = [d6(), d6()], tot = d[0] + d[1] + mod, rep = null;
   if (tot < obj && o.hab && has(o.hab)) { d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = o.hab; }
   else if (tot < obj && m.rerolls > 0) { m.rerolls--; d = [d6(), d6()]; tot = d[0] + d[1] + mod; rep = "2ª oportunidad"; }
@@ -2689,6 +2689,10 @@ const PLAY_POOL = {
    (tiras ST/AG/MA contra un objetivo, con riesgo y heridas donde toca), solo
    cambian las acciones y su sabor. Prosa de Claude en la voz del cliente,
    MARCADA PARA REVISIÓN con el resto de la rama halfling. */
+// Confianza de Roblerto (rel.arbol, la "mini-relación" del cliente): pesa en
+// sus jugadas, en la narración y en la tirada. Buena: te reconoce y va a la
+// primera (+1). Mala: no se fía ni de ti ni del balón (−1).
+const confRob = (pj) => { const c = (pj.rel && pj.rel.arbol) || 0; return c >= 2 ? { b: 1, sabor: "Te reconoce por el olor a mantequilla y va a la primera." } : c <= -1 ? { b: -1, sabor: "Te mira. Mira el balón. Te mira otra vez. Decide que los dos sois sospechosos." } : { b: 0, sabor: "" }; };
 const PLAY_POOL_HALF = {
   saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en el barro", "A por la vejiga, si te dejan", "Bola suelta, halfling suelto"], m, 1),
     situ: `${varia([`La bola cae en tierra de nadie y, por una vez, tú eres más rápido que grande.`, `La vejiga rueda por el barro. ${m.rivalCorto} la mira desde muy arriba; tú, desde muy abajo.`, `Silbato. La bola bota en el centro y todos son más altos que tú, que para esto viene bien.`], m, 2)} ${varia([`Hay que cogerla antes que ${m.rivalCorto}, y sin que te pisen.`, flavRival(m)], m, 3)}`,
@@ -2696,7 +2700,7 @@ const PLAY_POOL_HALF = {
       { txt: "Rodar hasta ella hecho un ovillo", det: "Nadie placa a una bola de halfling.", stat: "AG", obj: 8, hab: "Esquivar",
         ok: { txt: "Te haces una bola y ruedas entre las piernas de todos hasta la vejiga. Sales con ella y con barro en las orejas. Vuestra.", posesion: "propia" },
         ko: { txt: "Ruedas directo contra una bota del tamaño de tu cabeza. Rebotas. La cogen ellos, riéndose.", posesion: "rival" } },
-      { txt: "Dejar que Roblerto la coja creyendo que es un pastel", det: "El árbol ayuda. A su manera.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+      { txt: "Dejar que Roblerto la coja creyendo que es un pastel", det: confRob(pj).sabor || "El árbol ayuda. A su manera.", bonus: confRob(pj).b, stat: "ST", obj: 8, riesgo: true, hab: "Placar",
         ok: { txt: "Roblerto agarra la bola pensando que es de comer, se decepciona, y la deja caer justo en tus manos. Gracias, Roblerto. Vuestra.", posesion: "propia" },
         ko: { txt: "Roblerto te agarra a TI pensando que eres la bola. Descubres el mundo desde diez metros antes de aterrizar en el barro. Ellos aprovechan y se la llevan.", posesion: "rival" } },
       { txt: "Colártela mientras miran a Roblerto", det: "El árbol distrae; tú trabajas.", stat: "AG", obj: 8, hab: "Manos seguras",
@@ -2712,7 +2716,7 @@ const PLAY_POOL_HALF = {
       { txt: "La piña: rodar todos juntos con la bola dentro", det: "Once pasteles, una albóndiga.", stat: "ST", obj: 9, riesgo: true, hab: "Mantenerse firme",
         ok: { txt: "Os juntáis los once en una bola rodante con el balón en el centro. Nadie sabe a quién placar y la albóndiga cruza la línea entera. ¡Touchdown colectivo!", gol: true },
         ko: { txt: "La piña se deshace a medio campo y quedáis doce halflings esparcidos por el barro como migas. La bola sale rodando hacia ellos.", posesion: "rival" } },
-      { txt: "Trepar por Roblerto y saltar la línea", det: "Un árbol también es una escalera.", stat: "MA", obj: 9, hab: "Esprintar",
+      { txt: "Trepar por Roblerto y saltar la línea", det: confRob(pj).sabor || "Un árbol también es una escalera.", bonus: confRob(pj).b, stat: "MA", obj: 9, hab: "Esprintar",
         ok: { txt: "Trepas por Roblerto como por un roble, saltas desde su hombro y caes al otro lado de la línea con la bola apretada. Roblerto aplaude, o eso parece. ¡Touchdown!", gol: true },
         ko: { txt: "Roblerto se mueve justo cuando saltas y acabas de cara en el barro, un palmo corto. Ellos recogen la bola y a ti casi también.", posesion: "rival" } },
     ] }) : ({ etq: "Defensa", h: varia([`${m.rivalCorto} sube (escóndete)`, "Te la han quitado", "A defender, o algo así"], m, 1),
@@ -2734,7 +2738,7 @@ const PLAY_POOL_HALF = {
       { txt: "Meterte entre sus pies y hacerle caer", det: "El leñador tira desde abajo.", stat: "AG", obj: 8, hab: "Esquivar",
         ok: { txt: "En vez de chocar, te tiras a sus tobillos como un tronco rodante. El grandote se va al suelo con estruendo y su línea con él. El campo es vuestro.", posesion: "propia", baja: true },
         ko: { txt: "Le abrazas el tobillo y él sigue andando contigo colgado, como quien no nota una garrapata. Ellos mandan.", posesion: "rival" } },
-      { txt: "Poner a Roblerto por delante y esconderte detrás", det: "El árbol es tu muro.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+      { txt: "Poner a Roblerto por delante y esconderte detrás", det: confRob(pj).sabor || "El árbol es tu muro.", bonus: confRob(pj).b, stat: "ST", obj: 8, riesgo: true, hab: "Placar",
         ok: { txt: "Empujas a Roblerto hacia la línea rival y te pegas a su tronco. El árbol arrolla lo que pilla y tú vas detrás, a salvo. El barro es vuestro.", posesion: "propia" },
         ko: { txt: "Roblerto decide sentarse justo cuando lo necesitas de pie, y te quedas solo delante del muro. El resultado es predecible y con crujido.", posesion: "rival" } },
       { txt: "Aguantar hecho un ovillo y no ceder", det: "Un halfling apretado es sorprendentemente duro.", stat: "ST", obj: 7, hab: "Mantenerse firme",
@@ -2750,7 +2754,7 @@ const PLAY_POOL_HALF = {
       { txt: "Recogerla en carrera sin frenar", det: "La cabeza antes que las piernecitas.", stat: "AG", obj: 8, hab: "Manos seguras",
         ok: { txt: "La levantas del barro sin bajar el ritmo, corriendo con esas piernas cortas que van el doble de rápido por el susto. Vuestra.", posesion: "propia" },
         ko: { txt: "El bote malo te la pasa por encima de la cabeza, que no es difícil. La cazan ellos.", posesion: "rival" } },
-      { txt: "Pasársela a Roblerto, que despeja lejos", det: "Un pase al árbol nunca falla.", stat: "AG", obj: 9,
+      { txt: "Pasársela a Roblerto, que despeja lejos", det: confRob(pj).sabor || "Un pase al árbol nunca falla.", bonus: confRob(pj).b, stat: "AG", obj: 9,
         ok: { txt: "Le dejas la bola a Roblerto, que la coge, mira el horizonte y la lanza medio campo hacia vuestra portería rival. Un pase de treinta metros sin querer. Vuestra y avanzada.", posesion: "propia", pase: true },
         ko: { txt: "Roblerto mira la bola, luego una mariposa, y elige la mariposa. La bola se queda ahí, y ellos la cogen.", posesion: "rival" } },
     ] }),
@@ -2760,7 +2764,7 @@ const PLAY_POOL_HALF = {
       { txt: "El pase imposible por debajo de todos", det: "Nadie mira a ras de barro.", stat: "AG", obj: 9, hab: "Esquivar",
         ok: { txt: "Sueltas un pase raso que cruza el barro por debajo de doce entrepiernas y cae en botas amigas al otro lado. Nadie mira nunca a la altura de un halfling. ¡Touchdown!", gol: true, pase: true },
         ko: { txt: "El pase raso choca contra una espinilla del tamaño de un tronco y rebota hacia ellos. Contraataque.", posesion: "rival" } },
-      { txt: "Que Roblerto te lance por encima de la línea", det: "La bomba halfling.", stat: "ST", obj: 10, riesgo: true, hab: "Placar",
+      { txt: "Que Roblerto te lance por encima de la línea", det: confRob(pj).sabor || "La bomba halfling.", bonus: confRob(pj).b, stat: "ST", obj: 10, riesgo: true, hab: "Placar",
         ok: { txt: "Te pones en la mano de Roblerto, gritas '¡ahora!', y el árbol te lanza en un arco perfecto por encima de todo el muro. Aterrizas al otro lado de la línea con la bola. La grada enloquece. ¡Touchdown volando!", gol: true },
         ko: { txt: "Roblerto te lanza, sí, pero calcula fatal: acabas en la tercera fila de la grada, entre dos aficionados que comparten su bocadillo contigo. Sin gol, y con acidez.", posesion: "rival" } },
       { txt: "Sentarte en el balón sobre la línea", det: "Si no lo sueltas, no te lo quitan.", stat: "AG", obj: 9, hab: "Manos seguras",
@@ -2776,7 +2780,7 @@ const PLAY_POOL_HALF = {
       { txt: "Cerrarle el hueco escondido entre los tuyos", det: "Muchos pasteles hacen un muro.", stat: "AG", obj: 8, hab: "Placaje defensivo",
         ok: { txt: "Os apelotonáis los once en el hueco, hombro con hombro con rodilla ajena, y el portador no encuentra por dónde. La bola muere en el atasco de halflings. No cruzan.", posesion: "rival" },
         ko: { txt: "El grandote os aparta a los once de un manotazo, como quien espanta moscas, y cruza. Touchdown suyo.", golRival: true } },
-      { txt: "Que Roblerto se plante en la línea de gol", det: "El árbol como última portería.", stat: "ST", obj: 9, hab: "Mantenerse firme",
+      { txt: "Que Roblerto se plante en la línea de gol", det: confRob(pj).sabor || "El árbol como última portería.", bonus: confRob(pj).b, stat: "ST", obj: 9, hab: "Mantenerse firme",
         ok: { txt: "Empujas a Roblerto hasta la línea y lo dejas ahí plantado. El portador choca contra el tronco, rebota y suelta la bola. Roblerto ni se entera. Recuperáis. No cruzan.", posesion: "propia" },
         ko: { txt: "Roblerto elige ese instante para ir a por una mariposa y deja la portería abierta de par en par. El rival cruza por el hueco del árbol. Touchdown suyo.", golRival: true } },
     ] }),
@@ -3680,7 +3684,7 @@ export default function App() {
     const KJ = ({ o }) => (
       <div className="opcion"><button onClick={() => jugarJugada(o)}>
         <b>{o.txt}</b><span className="mini">{o.det}</span>
-        <span className="mini kj-attr">{ATRIB_PARTIDO[o.stat]} · tú {modDe(pj, o.stat) >= 0 ? "+" : ""}{modDe(pj, o.stat)}{o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}</span>
+        <span className="mini kj-attr">{ATRIB_PARTIDO[o.stat]} · tú {modDe(pj, o.stat) + (o.bonus || 0) >= 0 ? "+" : ""}{modDe(pj, o.stat) + (o.bonus || 0)}{o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}{o.bonus ? ` · Roblerto ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}</span>
       </button></div>
     );
     // barra de dominio: -1 (rival) .. +1 (nosotros)

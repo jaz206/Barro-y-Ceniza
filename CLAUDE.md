@@ -96,6 +96,13 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   albóndiga), sentarte encima del balón, esconderte tras el estofado del Chef—.
   Las otras cuatro razas siguen con `PLAY_POOL`, el serio. Toda la prosa del
   pool halfling es de Claude, marcada para revisión con el resto de la rama.
+- **La confianza de Roblerto pesa en sus jugadas (nota del cliente).** La
+  relación con el árbol (`rel.arbol`, que sube con pasteles y baja si le robas)
+  ya no es solo texto: en las 6 jugadas con Roblerto del pool halfling cambia la
+  narración y la tirada (`confRob`). Buena (≥2): "te reconoce por el olor y va a
+  la primera", +1 al dado. Mala (≤−1): "te mira, mira el balón, decide que los
+  dos sois sospechosos", −1. El modificador sale a la vista en la opción
+  ("Roblerto +1/−1"). Vía un campo `bonus` que `rollKey` ya suma a la tirada.
 - **Cómo se miden las acciones del partido (recalibrado).** El modificador de
   una jugada clave es tu VENTAJA sobre el estándar del reglamento
   (característica − 3; velocidad ≈ −2), no la característica en bruto, y los
