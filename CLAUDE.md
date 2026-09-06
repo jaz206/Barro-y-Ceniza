@@ -113,6 +113,10 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   albóndiga), sentarte encima del balón, esconderte tras el estofado del Chef—.
   Las otras cuatro razas siguen con `PLAY_POOL`, el serio. Toda la prosa del
   pool halfling es de Claude, marcada para revisión con el resto de la rama.
+  **Si vendes a Roblerto (o fichas por Mortaigne), sus 7 jugadas se sustituyen
+  por variantes "sin árbol"** (`sinRoblerto(pj)`): a pulso, la muralla de
+  halflings, a pelo… más pobres y con −1, para que la ausencia se note en cada
+  partido. Antes las jugadas de Roblerto salían aunque lo hubieras vendido (bug).
 - **Jugada que no busca ganar, "reputación con el equipo" (nota del cliente).**
   El primer partido del halfling (`primerPartido`) tiene una 4ª opción:
   "proteger a un compañero caído" en vez de buscar el gol. Prueba de ST (que ya
