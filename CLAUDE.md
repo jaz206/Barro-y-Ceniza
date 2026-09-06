@@ -96,6 +96,14 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   albóndiga), sentarte encima del balón, esconderte tras el estofado del Chef—.
   Las otras cuatro razas siguen con `PLAY_POOL`, el serio. Toda la prosa del
   pool halfling es de Claude, marcada para revisión con el resto de la rama.
+- **Jugada que no busca ganar, "reputación con el equipo" (nota del cliente).**
+  El primer partido del halfling (`primerPartido`) tiene una 4ª opción:
+  "proteger a un compañero caído" en vez de buscar el gol. Prueba de ST (que ya
+  incorpora Ferocidad en el motor), riesgo real. Éxito o fallo dejan la marca
+  `protegisteCaido` y suben `rel.equipo` (la reputación en el vestuario, +3/+1),
+  sin buscar touchdown — define quién es el prota. Vuelve en la víspera de la
+  final (cap 6, `visperas`), contra esos mismos Carniceros: si protegiste, el
+  vestuario te sigue. Prosa del cliente (la escribió él), marcada igualmente.
 - **La confianza de Roblerto pesa en sus jugadas (nota del cliente).** La
   relación con el árbol (`rel.arbol`, que sube con pasteles y baja si le robas)
   ya no es solo texto: en las 6 jugadas con Roblerto del pool halfling cambia la
