@@ -3,3 +3,7 @@ dist/
 *.zip
 .env*
 .DS_Store
+
+# Tablero de tarjetas (storyboard) generado
+halfling-storyboard.html
+tools/storyboard/.tmp/

@@ -239,6 +239,29 @@ los capítulos con división (no en la infancia ni el ocaso). Es **híbrida**:
 Si algún día se afina: los nombres de rivales por división viven en
 `RIVALES_DIV`, y el arco de divisiones por rama en `DIV_POR_CAP`.
 
+## Tablero de tarjetas / storyboard (herramienta de revisión, aparte del juego)
+
+Para que el cliente **vea y organice** la historia y los partidos como fichas
+(idea suya), hay un generador en `tools/storyboard/`:
+
+- `tools/storyboard/build.mjs` extrae el contenido de una rama **desde
+  `src/App.jsx`** (con esbuild, resolviendo cada `texto(pj)` con un jugador
+  neutro), así el tablero **no se escribe a mano y no se desincroniza** del
+  juego. `tools/storyboard/template.html` es la web (una sola página, vanilla
+  JS, sin backend). Salida: `halfling-storyboard.html` en la raíz (ignorada por
+  git; se regenera con `node tools/storyboard/build.mjs`).
+- Es una **web aparte**, publicada como Artifact privado del cliente. Muestra
+  los 7 capítulos del halfling en orden con escenas, partidos (rival/fuerza),
+  transiciones, tardes libres y las 3 muertes. El cliente puede leer, **marcar**
+  (OK / revisar / reescribir / cortar), **anotar** y **reordenar dentro del
+  capítulo** (▲▼); todo se guarda en su navegador (localStorage). Un botón
+  "Copiar cambios para Claude" vuelca sus notas/marcas/reordenamientos como
+  texto para pegármelo, y **yo aplico los cambios al juego** (flujo acordado:
+  "ver y organizar", sin sincronización automática de vuelta).
+- De momento **solo el halfling** (la rama pendiente de revisar entera). Si
+  funciona, se extiende a las otras cuatro ramas (el generador ya vale para
+  todas cambiando la rama que exporta).
+
 ## El resultado deja huella (Fase 4)
 
 Ganar o perder ya mueve cosas, sin escribir dos versiones de cada partido

@@ -1,0 +1,343 @@
+<title>Los Comepasteles · Guion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Archivo:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ground:#ece6da; --surface:#f6f2ea; --surface-2:#f0ebe0; --ink:#26211b; --muted:#726858;
+  --line:#dbd2c1; --line-2:#cabfa8; --ember:#b0472c; --gold:#9d6f13; --blood:#7c2b22;
+  --review:#2f6f6a; --ok:#4a7c3f; --shadow:rgba(60,45,25,.13);
+  --serif:"Newsreader",Georgia,serif; --disp:"Fraunces","Newsreader",Georgia,serif;
+  --ui:"Archivo",system-ui,sans-serif; --mono:ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#1a1613; --surface:#241f1a; --surface-2:#2b251f; --ink:#ece6da; --muted:#a99d8a;
+  --line:#37302798; --line-2:#4a4034; --ember:#e0704e; --gold:#d6a63f; --blood:#cf6150;
+  --review:#5cb8b0; --ok:#84ba6f; --shadow:rgba(0,0,0,.4);
+}}
+:root[data-theme="dark"]{
+  --ground:#1a1613; --surface:#241f1a; --surface-2:#2b251f; --ink:#ece6da; --muted:#a99d8a;
+  --line:#37302798; --line-2:#4a4034; --ember:#e0704e; --gold:#d6a63f; --blood:#cf6150;
+  --review:#5cb8b0; --ok:#84ba6f; --shadow:rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--serif);margin:0;line-height:1.55}
+h1,h2,h3{font-family:var(--disp);margin:0;text-wrap:balance;font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(.9rem,3vw,2rem)}
+
+/* Header */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--ground) 92%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+.top-in{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.7rem 0}
+.brand{display:flex;flex-direction:column;gap:.05rem;margin-right:auto}
+.brand .k{font-family:var(--ui);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.brand h1{font-size:1.28rem;font-weight:600;letter-spacing:-.01em}
+.tools{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;font-family:var(--ui)}
+select,button{font-family:var(--ui);color:var(--ink)}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:7px;padding:.42rem .7rem;
+  font-size:.8rem;font-weight:600;cursor:pointer;display:inline-flex;gap:.35rem;align-items:center;transition:.12s}
+.btn:hover{border-color:var(--ember);color:var(--ember)}
+.btn.pri{background:var(--ember);border-color:var(--ember);color:#fff8f2}
+.btn.pri:hover{filter:brightness(1.06);color:#fff8f2}
+select{border:1px solid var(--line-2);background:var(--surface);border-radius:7px;padding:.42rem .5rem;font-size:.8rem;font-weight:600;cursor:pointer}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+
+/* Intro strip */
+.note{font-family:var(--ui);font-size:.82rem;color:var(--muted);background:var(--surface-2);
+  border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:6px;padding:.6rem .85rem;margin:1rem 0 .2rem}
+.note b{color:var(--ink)}
+.chapnav{display:flex;gap:.4rem;flex-wrap:wrap;font-family:var(--ui);font-size:.78rem;margin:.9rem 0 .2rem}
+.chapnav a{color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:20px;padding:.25rem .7rem;font-weight:600}
+.chapnav a:hover{border-color:var(--ember);color:var(--ember)}
+
+/* Chapter */
+.chap{margin:2.4rem 0 1rem;scroll-margin-top:5rem}
+.chap-h{display:flex;align-items:baseline;gap:.7rem;border-bottom:2px solid var(--line-2);padding-bottom:.5rem;flex-wrap:wrap}
+.chap-n{font-family:var(--mono);font-size:.85rem;color:var(--ember);font-weight:700;letter-spacing:.05em}
+.chap-h h2{font-size:1.5rem;letter-spacing:-.015em}
+.chap-h .sub{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:.98rem}
+
+/* Cards grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-top:1.1rem;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.85rem .9rem .7rem;
+  box-shadow:0 1px 2px var(--shadow);display:flex;flex-direction:column;gap:.55rem;position:relative;
+  border-top:3px solid var(--tipo,var(--line-2))}
+.card[data-tipo="partido"]{--tipo:var(--ember)}
+.card[data-tipo="escena"]{--tipo:var(--line-2)}
+.card[data-tipo="transicion"]{--tipo:var(--muted)}
+.card[data-tipo="entreacto"]{--tipo:var(--gold)}
+.card[data-tipo="muerte"]{--tipo:var(--blood)}
+.card.mk-cortar{opacity:.62}
+.c-top{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.chip{font-family:var(--ui);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  padding:.18rem .45rem;border-radius:5px;border:1px solid var(--tipo);color:var(--tipo);white-space:nowrap}
+.chip.fill{background:var(--tipo);color:#fff8f2;border-color:var(--tipo)}
+.c-id{font-family:var(--mono);font-size:.64rem;color:var(--muted);margin-left:auto}
+.c-title{font-family:var(--disp);font-size:1.08rem;font-weight:600;line-height:1.2}
+.c-meta{font-family:var(--ui);font-size:.72rem;color:var(--muted);display:flex;gap:.6rem;flex-wrap:wrap}
+.c-meta b{color:var(--ember);font-weight:700}
+.prose{font-size:.9rem;line-height:1.5;color:var(--ink)}
+.prose.clip{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.more{font-family:var(--ui);font-size:.72rem;font-weight:700;color:var(--ember);background:none;border:none;
+  cursor:pointer;padding:.1rem 0;align-self:flex-start}
+.ops{list-style:none;margin:.1rem 0 0;padding:.55rem 0 0;border-top:1px dashed var(--line-2);display:flex;flex-direction:column;gap:.4rem}
+.ops li{font-size:.83rem;line-height:1.4;padding-left:1rem;position:relative}
+.ops li::before{content:"›";position:absolute;left:0;color:var(--ember);font-weight:700}
+.ops .tag{font-family:var(--mono);font-size:.64rem;color:var(--muted)}
+.ops details{margin-top:.15rem}
+.ops summary{font-family:var(--ui);font-size:.7rem;color:var(--muted);cursor:pointer;font-weight:600}
+.ops .res{font-size:.8rem;color:var(--muted);margin:.2rem 0 0;padding-left:.6rem;border-left:2px solid var(--line-2)}
+.ops .res b{color:var(--ink)}
+
+/* Card footer: status + notes + move */
+.c-foot{margin-top:auto;padding-top:.55rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.45rem}
+.marks{display:flex;gap:.3rem;flex-wrap:wrap;font-family:var(--ui)}
+.mark{font-size:.66rem;font-weight:700;border:1px solid var(--line-2);background:var(--surface-2);color:var(--muted);
+  border-radius:20px;padding:.2rem .55rem;cursor:pointer;letter-spacing:.02em}
+.mark[aria-pressed="true"][data-m="ok"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.mark[aria-pressed="true"][data-m="revisar"]{background:var(--review);border-color:var(--review);color:#fff}
+.mark[aria-pressed="true"][data-m="reescribir"]{background:var(--gold);border-color:var(--gold);color:#20180a}
+.mark[aria-pressed="true"][data-m="cortar"]{background:var(--blood);border-color:var(--blood);color:#fff}
+.notes{width:100%;font-family:var(--serif);font-size:.85rem;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line-2);border-radius:7px;padding:.45rem .55rem;resize:vertical;min-height:2.1rem;line-height:1.4}
+.notes::placeholder{color:var(--muted);font-style:italic}
+.moverow{display:flex;gap:.3rem;align-items:center}
+.mv{font-family:var(--ui);font-size:.7rem;font-weight:700;border:1px solid var(--line-2);background:var(--surface-2);
+  color:var(--muted);border-radius:6px;padding:.2rem .5rem;cursor:pointer}
+.mv:hover{border-color:var(--ember);color:var(--ember)}
+.mv:disabled{opacity:.35;cursor:default}
+.moverow .hint{font-family:var(--ui);font-size:.66rem;color:var(--muted);margin-left:auto}
+
+footer.foot{margin:3rem 0 4rem;font-family:var(--ui);font-size:.78rem;color:var(--muted);
+  border-top:1px solid var(--line);padding-top:1rem;text-align:center}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:1.4rem;transform:translateX(-50%) translateY(2rem);opacity:0;
+  background:var(--ink);color:var(--ground);font-family:var(--ui);font-size:.82rem;font-weight:600;
+  padding:.6rem 1rem;border-radius:8px;transition:.25s;pointer-events:none;z-index:50;box-shadow:0 6px 20px var(--shadow)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <span class="k">Barro y Ceniza · Guion de la rama</span>
+      <h1>Los Comepasteles</h1>
+    </div>
+    <div class="tools">
+      <select id="filtro" aria-label="Filtrar tarjetas">
+        <option value="todo">Ver todo</option>
+        <option value="partido">Solo partidos</option>
+        <option value="escena">Solo escenas</option>
+        <option value="nota">Con nota o marca</option>
+      </select>
+      <button class="btn" id="expandir">Desplegar textos</button>
+      <button class="btn pri" id="copiar">Copiar cambios para Claude</button>
+      <button class="btn" id="reset" title="Borrar tus notas y orden guardados">Reiniciar</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="note" id="cabecera"></p>
+  <nav class="chapnav" id="chapnav" aria-label="Ir al capítulo"></nav>
+  <div id="board"></div>
+  <footer class="foot" id="pie"></footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = __DATA__;
+const KEY = "byc-storyboard-halfling-v1";
+const cap1 = (s)=> s ? s.charAt(0).toUpperCase()+s.slice(1) : s;
+const clean = (s)=> (s||"").replace(/\{marcador\}/g,"[marcador]").trim();
+
+let ST = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch{ return {}; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(ST)); }catch{} }
+ST.order = ST.order||{}; ST.notes = ST.notes||{}; ST.marks = ST.marks||{}; ST.open = ST.open||{};
+
+const TIPO_LABEL = { partido:"Partido", escena:"Escena", transicion:"Paso del tiempo", entreacto:"Tardes libres", muerte:"Muerte" };
+
+// Build a flat model: chapters (each with ordered card list) + a deaths pseudo-chapter.
+const CHAPS = DATA.capitulos.map(c=>({ id:"cap"+c.id, num:c.id, titulo:c.titulo, sub:c.sub,
+  cards:c.cards.map((x,i)=>({ ...x, key:"cap"+c.id+"::"+(x.id||("i"+i)) })) }));
+CHAPS.push({ id:"muertes", num:"†", titulo:"Las tres muertes", sub:"Los relatos con los que Roblerto, el Chef o Pipo te devuelven a la vida",
+  cards:DATA.muertes.map((m,i)=>({ tipo:"muerte", id:"muerte"+(i+1), titulo:m.titulo, texto:m.texto, opciones:[], key:"muertes::muerte"+(i+1) })) });
+
+function orderedCards(ch){
+  const ord = ST.order[ch.id];
+  if(!ord) return ch.cards;
+  const byKey = Object.fromEntries(ch.cards.map(c=>[c.key,c]));
+  const out = ord.map(k=>byKey[k]).filter(Boolean);
+  ch.cards.forEach(c=>{ if(!ord.includes(c.key)) out.push(c); });
+  return out;
+}
+function setOrder(ch, cards){ ST.order[ch.id]=cards.map(c=>c.key); save(); }
+
+function render(){
+  document.getElementById("cabecera").innerHTML =
+    `<b>Borrador para revisar.</b> Toda esta rama la escribió Claude imitando tu voz — está entera pendiente de tu repaso. `+
+    `Lee cada tarjeta, márcala (OK / revisar / reescribir / cortar), deja notas y reordénalas dentro de su capítulo con ▲▼. `+
+    `Cuando acabes, pulsa <b>Copiar cambios para Claude</b> y me lo pegas: yo lo aplico al juego. Se guarda solo en este navegador.`;
+  const nav = document.getElementById("chapnav");
+  nav.innerHTML = CHAPS.map(c=>`<a href="#${c.id}">${c.num==="†"?"†":c.num}· ${c.titulo}</a>`).join("");
+
+  const filtro = document.getElementById("filtro").value;
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  for(const ch of CHAPS){
+    const sec = document.createElement("section");
+    sec.className="chap"; sec.id=ch.id;
+    sec.innerHTML = `<div class="chap-h"><span class="chap-n">${ch.num==="†"?"†":"Capítulo "+ch.num}</span>`+
+      `<h2>${ch.titulo}</h2><span class="sub">${ch.sub||""}</span></div>`;
+    const grid = document.createElement("div"); grid.className="grid";
+    const cards = orderedCards(ch);
+    let shown=0;
+    cards.forEach((card,idx)=>{
+      if(!passFilter(card,filtro)) return;
+      grid.appendChild(cardEl(ch,card,idx,cards.length));
+      shown++;
+    });
+    if(shown===0){ const e=document.createElement("p"); e.className="note"; e.textContent="Nada que mostrar con este filtro."; sec.appendChild(e); }
+    else sec.appendChild(grid);
+    board.appendChild(sec);
+  }
+  document.getElementById("pie").innerHTML =
+    `${DATA.nombre} — "${DATA.lema}" · ${CHAPS.length-1} capítulos · ${countTipo("partido")} partidos · ${countTipo("escena")} escenas · 3 muertes`;
+}
+function countTipo(t){ return CHAPS.reduce((a,c)=>a+c.cards.filter(x=>x.tipo===t).length,0); }
+function passFilter(card,f){
+  if(f==="todo") return true;
+  if(f==="partido") return card.tipo==="partido";
+  if(f==="escena") return card.tipo==="escena";
+  if(f==="nota") return (ST.notes[card.key]&&ST.notes[card.key].trim()) || ST.marks[card.key];
+  return true;
+}
+
+function cardEl(ch,card,idx,total){
+  const el = document.createElement("article");
+  el.className="card"; el.dataset.tipo=card.tipo; el.dataset.key=card.key;
+  const mark = ST.marks[card.key]||"";
+  if(mark==="cortar") el.classList.add("mk-cortar");
+
+  const chips = [`<span class="chip fill">${TIPO_LABEL[card.tipo]||card.tipo}</span>`];
+  if(card.partido){ chips.push(`<span class="chip">Fuerza ${card.partido.fuerza}</span>`); }
+  if(card.condicion){ chips.push(`<span class="chip">Condicional</span>`); }
+  const idTxt = card.id?`<span class="c-id">${card.id}</span>`:"";
+
+  let meta="";
+  if(card.partido){ meta = `<div class="c-meta"><span>vs <b>${card.partido.rival}</b></span>`+
+    (card.partido.torneo?`<span>${card.partido.torneo}</span>`:"")+`</div>`; }
+
+  const isOpen = ST.open[card.key];
+  const prose = card.texto ? `<div class="prose ${isOpen?"":"clip"}" data-role="prose">${escapeHtml(clean(card.texto))}</div>`+
+      (clean(card.texto).length>230?`<button class="more" data-role="more">${isOpen?"Menos":"Leer todo"}</button>`:"") : "";
+
+  let ops="";
+  if(card.opciones&&card.opciones.length){
+    ops = `<ul class="ops">`+card.opciones.map(o=>{
+      const STAT={ST:"Fuerza",AG:"Agilidad",MA:"Velocidad"};
+      const t = o.tira?`<span class="tag">se juega con ${STAT[o.stat]||o.stat||""}</span>`:"";
+      const rq = o.req?`<span class="tag">pide ${o.req}${o.forzable?" · forzable":""}</span>`:"";
+      let det="";
+      if(o.ok||o.ko||o.msg){
+        det = `<details><summary>ver desenlace</summary>`+
+          (o.ok?`<p class="res"><b>Éxito.</b> ${escapeHtml(clean(o.ok))}</p>`:"")+
+          (o.ko?`<p class="res"><b>Fallo.</b> ${escapeHtml(clean(o.ko))}</p>`:"")+
+          (o.msg&&!o.ok?`<p class="res">${escapeHtml(clean(o.msg))}</p>`:"")+`</details>`;
+      }
+      return `<li>${escapeHtml(o.txt)} ${t} ${rq}${det}</li>`;
+    }).join("")+`</ul>`;
+  }
+
+  const marks = ["ok","revisar","reescribir","cortar"].map(m=>{
+    const on = mark===m;
+    const label = {ok:"OK",revisar:"Revisar",reescribir:"Reescribir",cortar:"Cortar"}[m];
+    return `<button class="mark" data-m="${m}" aria-pressed="${on}">${label}</button>`;
+  }).join("");
+
+  el.innerHTML =
+    `<div class="c-top">${chips.join("")}${idTxt}</div>`+
+    `<div class="c-title">${escapeHtml(card.titulo||"(sin título)")}</div>`+
+    meta+prose+ops+
+    `<div class="c-foot">`+
+      `<div class="marks">${marks}</div>`+
+      `<textarea class="notes" placeholder="Tu nota: qué cambiar, qué chiste sobra, qué reescribir…">${escapeHtml(ST.notes[card.key]||"")}</textarea>`+
+      `<div class="moverow"><button class="mv" data-mv="up" ${idx===0?"disabled":""}>▲ subir</button>`+
+        `<button class="mv" data-mv="down" ${idx===total-1?"disabled":""}>▼ bajar</button>`+
+        `<span class="hint">reordenar dentro del capítulo</span></div>`+
+    `</div>`;
+
+  // events
+  const moreBtn = el.querySelector('[data-role="more"]');
+  if(moreBtn) moreBtn.onclick=()=>{ ST.open[card.key]=!ST.open[card.key]; save();
+    const p=el.querySelector('[data-role="prose"]'); p.classList.toggle("clip"); moreBtn.textContent=p.classList.contains("clip")?"Leer todo":"Menos"; };
+  el.querySelectorAll(".mark").forEach(b=>b.onclick=()=>{
+    const m=b.dataset.m; ST.marks[card.key]= (ST.marks[card.key]===m)?"":m; save(); render(); });
+  el.querySelector(".notes").addEventListener("input",e=>{ ST.notes[card.key]=e.target.value; save(); });
+  el.querySelectorAll(".mv").forEach(b=>b.onclick=()=>move(ch,card.key,b.dataset.mv));
+  return el;
+}
+
+function move(ch,key,dir){
+  const cards = orderedCards(ch).slice();
+  const i = cards.findIndex(c=>c.key===key);
+  const j = dir==="up"?i-1:i+1;
+  if(j<0||j>=cards.length) return;
+  [cards[i],cards[j]]=[cards[j],cards[i]];
+  setOrder(ch,cards); render();
+  requestAnimationFrame(()=>{ const e=document.querySelector(`[data-key="${CSS.escape(key)}"]`); if(e) e.scrollIntoView({block:"center",behavior:"smooth"}); });
+}
+
+function escapeHtml(s){ return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+// Header controls
+let allOpen=false;
+document.getElementById("expandir").onclick=(e)=>{
+  allOpen=!allOpen;
+  CHAPS.forEach(ch=>ch.cards.forEach(c=>{ if(c.texto) ST.open[c.key]=allOpen; }));
+  save(); render(); e.target.textContent=allOpen?"Plegar textos":"Desplegar textos";
+};
+document.getElementById("filtro").onchange=render;
+document.getElementById("reset").onclick=()=>{
+  if(confirm("¿Borrar todas tus notas, marcas y el orden que has cambiado? El texto del guion no se toca.")){
+    ST={order:{},notes:{},marks:{},open:{}}; save(); render(); toast("Notas y orden reiniciados");
+  }
+};
+document.getElementById("copiar").onclick=copiar;
+
+function copiar(){
+  const lines=["CAMBIOS DEL GUION — LOS COMEPASTELES (halfling)",""];
+  let algo=false;
+  for(const ch of CHAPS){
+    const cards=orderedCards(ch);
+    const changedOrder = ST.order[ch.id] && ST.order[ch.id].length &&
+      ch.cards.map(c=>c.key).join("|")!==cards.map(c=>c.key).join("|");
+    const notas = cards.filter(c=>(ST.notes[c.key]&&ST.notes[c.key].trim())||ST.marks[c.key]);
+    if(!changedOrder && notas.length===0) continue;
+    algo=true;
+    lines.push(`### ${ch.num==="†"?"Las muertes":"Cap "+ch.num+" · "+ch.titulo}`);
+    if(changedOrder){ lines.push("  Nuevo orden: "+cards.map(c=>c.id||c.titulo).join(" → ")); }
+    notas.forEach(c=>{
+      const m=ST.marks[c.key]?`[${ST.marks[c.key].toUpperCase()}]`:"";
+      const n=ST.notes[c.key]?` — ${ST.notes[c.key].trim()}`:"";
+      lines.push(`  • ${c.id||""} "${c.titulo}" ${m}${n}`);
+    });
+    lines.push("");
+  }
+  if(!algo){ toast("Aún no has marcado ni anotado nada"); return; }
+  const txt=lines.join("\n");
+  navigator.clipboard?.writeText(txt).then(()=>toast("Copiado. Pégamelo en el chat."),()=>fallbackCopy(txt));
+}
+function fallbackCopy(txt){ const t=document.createElement("textarea"); t.value=txt; document.body.appendChild(t); t.select();
+  try{document.execCommand("copy");toast("Copiado. Pégamelo en el chat.");}catch{toast("No pude copiar; selecciona a mano");} t.remove(); }
+
+let toastT;
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("on");
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("on"),2200); }
+
+render();
+</script>
