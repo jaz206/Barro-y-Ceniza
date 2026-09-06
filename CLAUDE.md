@@ -22,6 +22,23 @@
 >   observables ("se ve así", "probé X y pasó Y"), nunca pedirle que revise
 >   código o diffs.
 
+## ⚖️ NORMATIVA: la biblia de sistema manda (decisión 2026-09-06)
+
+**`docs/biblia-sistema.md` (v1.19) es el documento normativo del proyecto.**
+Cualquier historia, raza o capítulo se rige por lo que dice. El libro del
+halfling desarrollado por el cliente vive en `docs/halfling/` (7 capítulos + el
+duelo de la abuela, prosa patrón oro). Si una escena necesita saltarse una
+regla, primero se cambia la biblia y luego se escribe la escena.
+
+**Migración a 1D6 en curso** (`docs/MIGRACION-1D6.md`). El motor de partido pasa
+del `2d6 + característica` actual al **1D6 contra número objetivo** de la biblia.
+Se hace por fases, ramificando por raza para no romper el juego: **el halfling es
+el piloto** (Fase 1); las otras cuatro razas siguen en 2d6 hasta que les toque.
+Mientras la migración no termine, conviven los dos motores. Todo lo escrito
+abajo describe el motor 2d6 y la build actual: es correcto hasta que cada fase
+lo sustituya. **Consulta `docs/MIGRACION-1D6.md` antes de tocar tiradas, fichas
+o el motor de partido.**
+
 ## ✅ Estado del repo: el fuente ya está, y los arreglos reaplicados
 
 **El proyecto fuente ya está en el repo** (`src/App.jsx`, `src/main.jsx`,
