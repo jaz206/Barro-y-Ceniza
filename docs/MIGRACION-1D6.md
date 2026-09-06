@@ -53,6 +53,36 @@ juego, verificar de verdad (build + navegador) antes de dar nada por hecho.**
   (§20, los nombres internos deben coincidir con el texto); revisar los ~14 flags
   que se leen y no se crean en la ruta halfling (condiciones muertas).
 
+## Calibración de Fase 1 (simulada, 200k tiradas)
+
+- **Letalidad por fallo de riesgo (halfling pro, AR efectiva 6 con Escurridizo):
+  1,56 %.** Clava el 1,5 % de la biblia §3.5. La cadena de daño actual
+  (`tirarHerida`: 2d6 armadura / 2d6 heridas / D16) ya es compatible; solo hay
+  que aplicar Escurridizo (−1 a la armadura del halfling).
+- **Umbral de gol del rival = 7** (el rival marca si `d6 + FU_rival ≥ 7`) da la
+  curva "difícil pero posible":
+  - crío en debut vs FU3 (liga): V 52 % · E 35 % · D 14 % (suda cada partido).
+  - pro vs FU3 (liga): V 64 % · E 30 % · D 6 % (gana casi siempre, pero sudando).
+  - pro vs FU4 (final): V 56 % · E 33 % · D 10 % (una final de verdad).
+  Es el equivalente 1D6 del "ganar con sudor" que ya buscábamos.
+
+## AVISO de implementación: la AG cambia de sentido
+
+En el motor actual (2d6) la AG guardada es "más alto, mejor" (el modificador es
+`AG − 3`). En S3/1D6 la AG es un **número objetivo**: "más bajo, mejor" (3+ es
+mejor que 4+). Al migrar el halfling hay que:
+
+- guardar la AG como objetivo S3 (pro 3, debut 4) y **mostrarla como `AG+`**, no
+  con la conversión `7 − AG` de hoy;
+- revisar la lógica de "la subida sube, nunca baja" en `aplicar`: con la AG al
+  revés, pasar de debut (4) a pro (3) es **bajar el número**, que esa lógica
+  hoy rechazaría. La ficha de debut→pro del halfling necesita tratar la AG (y
+  PS) como objetivos, no como valores brutos.
+
+Esto es la causa de que la migración no sea "cambiar el dado y ya": el número de
+la ficha significa lo contrario. Se resuelve en el motor 1D6 del halfling, sin
+tocar a las otras cuatro razas (que siguen en 2d6 hasta la Fase 2).
+
 ## Decisiones de la biblia pendientes de cerrar (§24) que tocan Fase 1
 
 1. **Armadura: ¿se rompe con "mayor" o "mayor o igual" que AR?** La tabla de
