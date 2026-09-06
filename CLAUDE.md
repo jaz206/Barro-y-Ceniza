@@ -249,7 +249,10 @@ Para que el cliente **vea y organice** la historia y los partidos como fichas
   neutro), así el tablero **no se escribe a mano y no se desincroniza** del
   juego. `tools/storyboard/template.html` es la web (una sola página, vanilla
   JS, sin backend). Salida: `halfling-storyboard.html` en la raíz (ignorada por
-  git; se regenera con `node tools/storyboard/build.mjs`).
+  git; se regenera con `node tools/storyboard/build.mjs`). El mismo comando
+  emite además **`halfling-guion.md`**: la rama entera en Markdown descargable
+  (el visor de Artifacts no deja descargar, así que el .md se genera y se envía
+  como archivo). Ambas salidas están ignoradas por git.
 - Es una **web aparte**, publicada como Artifact privado del cliente. Muestra
   los 7 capítulos del halfling en orden con escenas, partidos (rival/fuerza),
   transiciones, tardes libres y las 3 muertes. El cliente puede leer, **marcar**

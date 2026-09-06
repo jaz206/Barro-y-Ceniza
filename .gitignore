@@ -7,3 +7,5 @@ dist/
 # Tablero de tarjetas (storyboard) generado
 halfling-storyboard.html
 tools/storyboard/.tmp/
+
+halfling-guion.md

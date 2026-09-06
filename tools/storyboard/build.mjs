@@ -76,6 +76,45 @@ const data = {
 
 const tpl = fs.readFileSync(path.join(HERE, "template.html"), "utf8");
 fs.writeFileSync(path.join(ROOT, "halfling-storyboard.html"), tpl.replace("__DATA__", JSON.stringify(data)));
+
+// --- Markdown descargable: la historia entera, legible en cualquier sitio ---
+const clean = (s) => (s || "").replace(/\{marcador\}/g, "[marcador]").trim();
+const TIPO = { partido: "Partido", escena: "Escena", transicion: "Paso del tiempo", entreacto: "Tardes libres", muerte: "Muerte" };
+const md = [];
+md.push(`# Los Comepasteles — Guion (rama halfling de *Barro y Ceniza*)`, "");
+md.push(`> *"${data.lema}"* · ${data.puesto} · ${data.equipo}  `);
+md.push(`> Ficha: MA ${data.base.MA} · ST ${data.base.ST} · AG ${data.base.AG} · AV ${data.base.AV} · ${(data.base.hab || []).join(", ")}  `);
+md.push(`> **Borrador pendiente de revisión** — toda esta rama la escribió Claude imitando la voz del cliente. Los textos salen en su versión por defecto (sin decisiones tomadas).`, "");
+md.push(`## Portada`, "", clean(data.portada), "");
+const opBlock = (ops) => {
+  if (!ops || !ops.length) return;
+  md.push("", "**Opciones:**");
+  for (const o of ops) {
+    const meta = [o.tira ? `se juega con ${({ ST: "Fuerza", AG: "Agilidad", MA: "Velocidad" })[o.stat] || o.stat}` : "", o.req ? `pide ${o.req}${o.forzable ? ", forzable" : ""}` : ""].filter(Boolean).join("; ");
+    md.push(`- **${o.txt}**${meta ? ` _(${meta})_` : ""}`);
+    if (o.ok) md.push(`  - *Éxito:* ${clean(o.ok)}`);
+    if (o.ko) md.push(`  - *Fallo:* ${clean(o.ko)}`);
+    if (o.msg && !o.ok) md.push(`  - ${clean(o.msg)}`);
+  }
+};
+for (const c of data.capitulos) {
+  md.push("", "---", "", `## Capítulo ${c.id} · ${c.titulo}`, `*${c.sub || ""}*`, "");
+  for (const card of c.cards) {
+    let head = `### [${TIPO[card.tipo] || card.tipo}] ${card.titulo}`;
+    if (card.partido) head += ` — vs ${card.partido.rival} (fuerza ${card.partido.fuerza}${card.partido.torneo ? `, ${card.partido.torneo}` : ""})`;
+    if (card.condicion) head += ` _(escena condicional)_`;
+    md.push(head, "");
+    if (card.texto) md.push(clean(card.texto));
+    if (card.tipo === "entreacto") { md.push("", "**Actividades:**"); for (const o of card.opciones) md.push(`- **${o.txt}** — ${clean(o.msg)}`); }
+    else opBlock(card.opciones);
+    md.push("");
+  }
+}
+md.push("---", "", `## Las tres muertes`, "");
+data.muertes.forEach((m, i) => md.push(`### Muerte ${i + 1} · ${m.titulo}`, "", clean(m.texto), ""));
+md.push("---", "", `## Epílogo`, "", clean(data.epilogo), "");
+fs.writeFileSync(path.join(ROOT, "halfling-guion.md"), md.join("\n"));
+
 fs.rmSync(TMP, { recursive: true, force: true });
 const nEsc = capitulos.reduce((a, c) => a + c.cards.filter((x) => x.tipo === "escena").length, 0);
 const nPar = capitulos.reduce((a, c) => a + c.cards.filter((x) => x.tipo === "partido").length, 0);
