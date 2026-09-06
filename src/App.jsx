@@ -1926,7 +1926,7 @@ const HALFLING = {
       texto: (pj) => `Un hombre con sombrero caro y cara de no haber comido nunca por gusto se sienta en vuestra grada de tablones. Es ojeador de los Cuervos de Mortaigne —los de verdad, no los rotos—, un club de Tercera con dinero y sin escrúpulos. ${pj.flags.circoDePipo ? "Ha visto vuestro número de circo y ha visto las entradas que vendéis. 'Un halfling que llena estadios', dice. 'Eso lo quiero yo, para reírme de camino al banco'." : "Ha visto algo en ti que nadie ve: que corres cuando debes y caes cuando toca. 'Sirves', dice, que en su boca es un poema."} Te ofrece un contrato de Tercera: más dinero, mejor equipo, y una condición: dejar de ser un chiste.`,
       opciones: [
         { txt: "Escuchar. El dinero de Tercera es dinero de verdad.", fx: { Ambición: 1, flag: "escuchasteAlOjeador" }, msg: "Le escuchas. Habla de sueldos que en Villapastel comprarían el pueblo entero con horno incluido. Por un momento te ves con la camiseta de los grandes. Solo por un momento. Pero el momento se queda contigo, molestando." },
-        { txt: "Preguntarle si tu equipo, Roblerto y Bortrand incluidos, viene contigo.", fx: { Honor: 2, rel: { equipo: 2 }, flag: "preguntastePorLosTuyos" }, msg: "El ojeador se ríe sin ganas. 'No compro leña ni cocineros. Te compro a ti'. Le dices que lo pensarás. Los dos sabéis que preguntar eso ya es media respuesta. En el vestuario, cuando lo cuentas, Bortrand te sirve doble ración sin decir nada." },
+        { txt: (pj) => `Preguntarle si tu equipo, ${pj.flags.ramonVendido ? "Bortrand incluido" : "Roblerto y Bortrand incluidos"}, viene contigo.`, fx: { Honor: 2, rel: { equipo: 2 }, flag: "preguntastePorLosTuyos" }, msg: (pj) => `El ojeador se ríe sin ganas. '${pj.flags.ramonVendido ? "No compro cocineros" : "No compro leña ni cocineros"}. Te compro a ti'. Le dices que lo pensarás. Los dos sabéis que preguntar eso ya es media respuesta. En el vestuario, cuando lo cuentas, Bortrand te sirve doble ración sin decir nada.` },
         { txt: "Escupirle la respuesta. Con un trozo de tarta.", req: { Ferocidad: 4 }, forzable: true, fx: { Ferocidad: 1, fama: 5, rel: { equipo: 3, aficion: 2 }, flag: "escupisteAlOjeador" }, msg: "Le lanzas un trozo de tarta a ese sombrero que cuesta más que tu casa. 'Los Comepasteles no se venden por piezas'. La grada de tablones, cuatro borrachos y tu abuela, ruge como un estadio. El ojeador se va con nata en el ala. Es el mejor día de la temporada." },
       ],
     },
@@ -1996,7 +1996,7 @@ const HALFLING = {
       texto: (pj) => `La final de la Copa de los Pringados. Enfrente, los Segadores de Kleinfeld, campesinos grandes con guadañas de mentira y ganas de verdad, que llevan tres años perdiendo esta copa y no piensan perder la cuarta contra unos pasteles. El trofeo, de latón abollado, brilla en el centro del campo como si fuera de oro, porque para vosotros lo es. ${pj.flags.bebisteAntesDeLaFinal ? "Jugáis con una resaca de campeonato: veis dos balones y placáis al que no toca." : pj.flags.cortasteLaFiesta ? "Jugáis frescos y de mal humor, que resulta ser una combinación temible." : ""} ${pj.rel.aficion >= 3 ? "Vuestra afición ha crecido: hay hasta gente que no es de Villapastel animándoos, porque todo el mundo quiere que gane el pringado una vez." : ""} {marcador}. Una copa. Podríais ganar una copa.`,
       opciones: [
         { txt: "La jugada de la piña, a lo grande, con todo el equipo.", req: { flag: "jugadaPiña" }, forzable: true, tirada: { stat: "AG", obj: 8, riesgo: true,
-          ok: { txt: "Los once os hacéis albóndiga y rodáis hacia la línea con el balón dentro y a Roblerto empujando por detrás como una apisonadora vegetal. Los Segadores siegan el aire. La piña cruza. Habéis ganado la Copa de los Pringados. El latón nunca ha brillado tanto.", fx: { fama: 15, Ambición: 1, gol: 1, rel: { equipo: 3, aficion: 3 }, flag: "campeon", flags: ["ganasteLaCopa"] } },
+          ok: { txt: (pj) => `Los once os hacéis albóndiga y rodáis hacia la línea con el balón dentro${pj.flags.ramonVendido ? ", empujándoos unos a otros porque ya no hay árbol que empuje" : " y a Roblerto empujando por detrás como una apisonadora vegetal"}. Los Segadores siegan el aire. La piña cruza. Habéis ganado la Copa de los Pringados. El latón nunca ha brillado tanto.`, fx: { fama: 15, Ambición: 1, gol: 1, rel: { equipo: 3, aficion: 3 }, flag: "campeon", flags: ["ganasteLaCopa"] } },
           ko: { txt: "La piña rueda perfecta hasta que la resaca colectiva os manda a todos en direcciones distintas. Os deshacéis a tres pasos de la línea. Los Segadores recogen el balón y la copa.", fx: { golRival: 1 } } } },
         { txt: "Colarte tú solo con todo lo aprendido esta temporada.", tirada: { stat: "AG", obj: 9, riesgo: true,
           ok: { txt: "Todo lo que has aprendido —esquivar, esperar, leer el hueco desde abajo— cabe en esta jugada. Te cuelas entre guadañas, esperas el bote, y cruzas solo, en silencio, con la copa a la vista. Campeones de los pringados. Tu abuela suelta la labor. Es la primera vez.", fx: { fama: 15, AG: 0, gol: 1, rel: { abuela: 2, aficion: 3 }, flag: "campeon", flags: ["ganasteLaCopa"] } },
@@ -2032,7 +2032,7 @@ const HALFLING = {
           ok: { txt: "Como el primer día, pero al revés: te cuelas entre sus piernas y esta vez no sales por la bota, sales por delante, con el balón, y cruzas la línea de la final de verdad mientras sesenta mil personas se ponen de pie. El carnicero se queda mirando el hueco por donde te fuiste. La Comarca del Nabo entra en erupción. Habéis ganado. Un equipo de pasteles ha ganado una final de verdad.", fx: { fama: 25, Ambición: 1, gol: 1, rel: { equipo: 3, aficion: 3, abuela: 2 }, flag: "campeon", flags: ["ganasteLaFinal", "ganasteEnGrande"] } },
           ko: { txt: "Te cuelas entre sus piernas y esta vez las cierra a tiempo. Te atrapa, te levanta a la altura de su cara, y por un segundo os miráis los dos, el grande y el pequeño, entendiéndolo todo. Luego te deja en el barro, casi con cariño. Perdéis. Pero sesenta mil personas han visto a un halfling intentarlo, y eso no se olvida.", fx: { fama: 12, Voluntad: 2, golRival: 1, rel: { aficion: 2 }, flag: "perdisteConHonor" } } } },
         { txt: "La piña, todo el equipo, a por la gloria o a por la enfermería.", req: { flag: "jugadaPiña" }, forzable: true, tirada: { stat: "ST", obj: 9, riesgo: true,
-          ok: { txt: "Los once, más Roblerto empujando, os hacéis una albóndiga imparable que rueda entre carniceros que no saben a quién pegar. La piña cruza la línea en la final de verdad, y estalla en doce halflings celebrando encima del balón. Campeones. De verdad. Sin comillas.", fx: { fama: 25, gol: 1, rel: { equipo: 3, aficion: 3 }, flag: "campeon", flags: ["ganasteLaFinal", "ganasteEnGrande"] } },
+          ok: { txt: (pj) => `Los once${pj.flags.ramonVendido ? " solos, sin árbol, apretados como nunca" : ", más Roblerto empujando"}, os hacéis una albóndiga imparable que rueda entre carniceros que no saben a quién pegar. La piña cruza la línea en la final de verdad, y estalla en doce halflings celebrando encima del balón. Campeones. De verdad. Sin comillas.`, fx: { fama: 25, gol: 1, rel: { equipo: 3, aficion: 3 }, flag: "campeon", flags: ["ganasteLaFinal", "ganasteEnGrande"] } },
           ko: { txt: "La piña rueda hasta que los Carniceros, que sí saben lo que es una albóndiga, la parten por la mitad de una patada coordinada. Os esparcís por la final entera. Recogéis a los heridos y la dignidad, en ese orden.", fx: { golRival: 1, Voluntad: 1, flag: "perdisteConHonor" } } } },
         { txt: "Devolverle al carnicero la palmada 'de buen rollo'. Con todo.", req: { Ferocidad: 4 }, forzable: true, tirada: { stat: "ST", obj: 10, riesgo: true,
           ok: { txt: "Coges carrerilla desde la otra punta y le saltas encima como un proyectil de mantequilla, y le das la palmada 'de buen rollo' que él te dio hace toda una vida, solo que la tuya lo sienta a él en el barro delante de sesenta mil personas. En el silencio, coges el balón y cruzas. La venganza más pequeña y más grande del Mundo Viejo.", fx: { fama: 22, Ferocidad: 2, gol: 1, rel: { aficion: 3 }, flag: "campeon", flags: ["ganasteLaFinal", "vengasteLaPalmada"] } },
@@ -2105,7 +2105,7 @@ const HALFLING_TRANSICIONES = {
 const HALFLING_ENTREACTOS = [
   { id: "cocinaAbuela", caps: [2, 3, 4, 5, 6, 7], txt: "Tardes en la cocina con tu abuela, amasando.", fx: { stat: { ST: 1 }, rel: { abuela: 1 } }, msg: "Amasas pan hasta que los brazos no responden. Tu abuela dice que un buen puño de masa y un buen puño de placaje son la misma cosa. No sabes si bromea." },
   { id: "correrNabos", caps: [2, 3, 4, 5, 6, 7], txt: "Correr entre los nabos al amanecer, antes de que aprieten.", fx: { stat: { MA: 1 } }, msg: "Corres por el campo de nabos hasta que sale el sol. Un halfling que corre es una rareza; que corra rápido, un milagro. Tú andas por lo primero." },
-  { id: "esquivarRamon", caps: [2, 3, 4], txt: "Entrenar esquivas dejando que Roblerto intente lanzarte.", req: { rel: ["arbol", 1] }, fx: { stat: { AG: 1 }, rel: { arbol: 1 } }, msg: "Roblerto te confunde con el balón y te lanza. Aprendes a caer rodando y a oler cuándo va a agacharse. Es el entrenamiento de agilidad más peligroso de la Comarca." },
+  { id: "esquivarRamon", caps: [2, 3, 4], txt: "Entrenar esquivas dejando que Roblerto intente lanzarte.", req: { rel: ["arbol", 1], noflag: "ramonVendido" }, fx: { stat: { AG: 1 }, rel: { arbol: 1 } }, msg: "Roblerto te confunde con el balón y te lanza. Aprendes a caer rodando y a oler cuándo va a agacharse. Es el entrenamiento de agilidad más peligroso de la Comarca." },
   { id: "robarCerveza", caps: [3, 4, 5, 6], txt: "Ayudar a Bortrand a 'redistribuir' la cerveza del rival.", req: { rel: ["chef", 1] }, fx: { Astucia: 1, rel: { chef: 2 } }, msg: "Bortrand te enseña a vaciar un barril ajeno sin que nadie lo note. No es fuerza ni agilidad: es arte. Los rivales juegan sedientos y de mal humor, que es peor." },
   { id: "comerConEquipo", caps: [2, 3, 4, 5, 6, 7], txt: "Un banquete con el equipo, que une más que ganar.", fx: { rel: { equipo: 2 }, Voluntad: 1 }, msg: "Coméis hasta que no cabe una miga más. Un equipo halfling que come junto es un equipo que muere junto, con la tripa llena, que es como hay que morir." },
   { id: "aguantarGolpes", caps: [4, 5, 6, 7], txt: "Dejar que te placen los grandotes del pueblo, para acostumbrarte.", fx: { stat: { AV: 1 } }, msg: "Los mozos más brutos de Villapastel te usan de saco. Aprendes a encajar y a levantarte, que en un pastel es toda la técnica que hay." },
@@ -3365,6 +3365,10 @@ export default function App() {
     setMt(m);
   };
 
+  // El texto de una opción puede ser dinámico (función del pj), para no clavar
+  // en la prosa estados que el motor puede desmentir (p. ej. nombrar a Roblerto
+  // después de venderlo). Se resuelve aquí, en el render y en la crónica.
+  const txtDe = (op, p = pj) => (typeof op.txt === "function" ? op.txt(p) : op.txt);
   const elegir = (op, forzada) => {
     let base = pj;
     if (forzada) base = { ...pj, pv: Math.max(0, pj.pv - 2) };
@@ -3372,7 +3376,7 @@ export default function App() {
     const { q, chips } = aplicar(base, op.fx);
     if (forzada) chips.unshift("−2 Voluntad (forzado)");
     setPj(q);
-    setCronica((c) => [...c, `${escena.titulo}: ${op.txt}`]);
+    setCronica((c) => [...c, `${escena.titulo}: ${txtDe(op, q)}`]);
     setPanel({ texto: typeof op.msg === "function" ? op.msg(q) : op.msg, chips });
   };
 
@@ -3408,7 +3412,7 @@ export default function App() {
     return `${marc[0]}-${marc[1]} contra ${rival}. Un empate que nadie recuerda igual.`;
   };
   const resolverTirada = (op, base, forzada) => {
-    const opTxt = op.txt;
+    const opTxt = txtDe(op, base);
     const t = op.tirada;
     // Misma escala centrada que las jugadas clave: el modificador es tu ventaja
     // sobre el estándar (característica − 3; velocidad ≈ −2) y el objetivo se
@@ -3514,7 +3518,7 @@ export default function App() {
       setCronica((c) => [...c, frase]);
     }
     setPj(q);
-    setCronica((c) => [...c, `${escena.titulo}: ${op.txt} (${exito ? "éxito" : "fallo"})`]);
+    setCronica((c) => [...c, `${escena.titulo}: ${opTxt} (${exito ? "éxito" : "fallo"})`]);
     const expulsionReal = rama.fx.expulsion && chips.includes("Expulsado");
     texto = conMarcadorMsg(texto);
     setPanel({ texto, chips, tirada: { dados, mod, total, obj, exito, repetida, habsUsadas, uno }, muerte, expulsion: expulsionReal });
@@ -3890,7 +3894,7 @@ export default function App() {
             return (
               <div key={i} className={`opcion ${!ok && !forzable ? "bloq" : ""}`}>
                 <button disabled={!ok && !forzable} onClick={() => elegir(op, !ok)}>
-                  <b>{op.txt}</b>
+                  <b>{txtDe(op)}</b>
                   {op.req && <span className={`req ${ok ? "ok" : ""}`}>{ok ? "Cumples: " : "Requiere: "}{textoReq(op.req, RELACIONES)}{!ok && forzable ? " · forzar por 2 Voluntad" : ""}</span>}
                   {op.tirada && <span className="mini">{es1d6(pj) ? `1D6 · ${ATRIB_PARTIDO[op.tirada.stat] || op.tirada.stat} ${op.tirada.stat === "ST" ? "4+ (según fuerza rival)" : (7 - pj.AG) + "+"}` : `Tirada de ${op.tirada.stat} contra ${op.tirada.obj}`}{op.tirada.riesgo ? " · si fallas, lesión" : ""}{op.tirada.falta ? " · falta" : ""}</span>}
                 </button>
