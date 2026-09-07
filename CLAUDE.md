@@ -207,6 +207,18 @@ navegador cap 1→7 (9 partidos) hasta el epílogo, sin errores.
   6 La final imposible · 7 El ocaso del pastel. 9 partidos, con su tentación
   central ("Ganar como los grandes": vender a Roblerto, fichar por Mortaigne o
   envenenar la final) que el epílogo juzga.
+- **Rama Mortaigne real (cap 5 B), añadida 2026-09-07.** Firmar por Mortaigne en el
+  cap 4 (`fichastePorMortaigne`) ya no es solo cambio de frases: te lleva a un
+  **cap 5 alternativo** de cuatro escenas —`mortaigneLlegada` (la camiseta negra;
+  Serrault, Drache, Kessler), `mortaigneTercera` (partido de Tercera, aprender a
+  hacer daño), `laOlla` (el veneno, decisión de tres salidas) y `mortaigneVuelta`
+  (volver a casa)— gateadas con `condicion: fichastePorMortaigne`; las cuatro
+  escenas de la Copa se gatean con `!fichastePorMortaigne`. **Reconverge en el cap 6**
+  (`visperas`, ampliada a tres vías: Copa / Mortaigne / nada). Sin castigo moral
+  (biblia §18.2): desde Mortaigne se puede ganar la final. Las decisiones vuelven
+  en `recuerdos`. Prosa de Claude (comedia negra más oscura), marcada para revisión.
+  Pendiente fino: los partidos de Mortaigne usan el pool cómico del halfling; la
+  jugada decisiva sí va en tono oscuro.
 - Vive en `HALFLING`, `HALFLING_ALIADOS`, `HALFLING_TRANSICIONES`,
   `HALFLING_ENTREACTOS`, `HALFLING_TIEMPO`. Registrada en `HISTORIAS`, `ALIADOS`,
   `ACCESO`, `razaDefaultTipo`, `TRANSICIONES`, `ENTREACTOS`, `TIEMPO`, `TENTACION`,

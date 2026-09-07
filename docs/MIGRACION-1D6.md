@@ -61,14 +61,24 @@ juego, verificar de verdad (build + navegador) antes de dar nada por hecho.**
   tres lecturas de Pipo; las tres de equipo (incluida la repetición de equipo);
   y el **duelo de la abuela** (`escena-duelo-abuela.md`, ya escrito) metido en el
   juego tras `laAbuela`.
-- [ ] **Fase 4 — Rama Mortaigne completa (cap 4 cruce → cap 5 rama B).** Serrault,
-  Drache, Kessler; "la olla" y "la cena"; la camiseta negra (objeto); reconverge
-  en la final. Sin castigo moral (§18.2): desde Mortaigne se puede ganar.
+- [x] **Fase 4 — Rama Mortaigne (cap 5 rama B), HECHO, pendiente de revisar prosa.**
+  Firmar por Mortaigne (cap 4, `fichastePorMortaigne`) ya no es solo cambio de
+  frases: lleva a un **cap 5 alternativo real** de cuatro escenas —la camiseta
+  negra (Serrault, Drache, Kessler), un partido de Tercera donde aprendes a hacer
+  daño, **"la olla"** (el veneno como decisión de tres salidas: cogerlo / devolverlo
+  / delatarlo) y la vuelta a casa— que **reconverge en el cap 6** (`visperas`, ya
+  ampliada a tres vías). Ramificado con `condicion` (las cuatro escenas de la Copa
+  se gatean con `!fichastePorMortaigne`). Sin castigo moral (§18.2): desde Mortaigne
+  se puede ganar la final. Las decisiones vuelven en el Libro del destino y el
+  epílogo (nuevos `recuerdos`). Prosa de Claude, comedia negra más oscura, MARCADA
+  PARA REVISIÓN. *Pendiente fino:* los partidos de Mortaigne usan el pool cómico del
+  halfling (las jugadas clave suenan a pastel); la jugada decisiva sí lleva el tono
+  oscuro. Se afina en la revisión.
 - [ ] **Fase 5 — Objetos, economía, némesis, limpieza.** Objetos sin ventaja
   (§5: la copa, el dedo); economía (§8: sueldo humillante, deuda con Pipo,
-  recomprar a Roblerto); némesis formal (§17.9); **renombrar `ramon*` → `roblerto*`**
-  (§20, los nombres internos deben coincidir con el texto); revisar los ~14 flags
-  que se leen y no se crean en la ruta halfling (condiciones muertas).
+  recomprar a Roblerto); némesis formal (§17.9); ~~**renombrar `ramon*` →
+  `roblerto*`**~~ (§20) **HECHO** (2026-09-07); revisar los ~14 flags que se leen
+  y no se crean en la ruta halfling (condiciones muertas).
 
 ## Calibración de Fase 1 (simulada, 200k tiradas)
 
