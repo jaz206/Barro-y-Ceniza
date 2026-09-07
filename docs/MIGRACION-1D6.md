@@ -43,6 +43,15 @@ juego, verificar de verdad (build + navegador) antes de dar nada por hecho.**
   alto, mejor) y la tirada convierte a objetivo S3 con `7 − AG` (la misma
   fórmula que ya usaba el display), así que ni `aplicar` ni la ficha de
   debut→pro necesitaron tocarse.
+- [x] **Muerte definitiva del halfling (piloto, 2026-09-07).** Fuera el resucitar:
+  la primera muerte es la última (`tope 0` en los dos manejadores). A cambio, la
+  muerte solo cae con un **16 natural** en la tabla D16 (el 15 pasa a lesión
+  permanente); config B, simulada ~2,6 % por carrera normal. La pantalla
+  `MuerteFinal` muestra el **epitafio de la etapa** (`MUERTE_ETAPA[halfling]`).
+  Ramificado por raza; las otras cuatro conservan `MAX_MUERTES` hasta migrar.
+  **Toca la biblia §3.5** (letalidad 1,5 % por fallo de riesgo sigue valiendo; lo
+  que cambia es que ya no hay segundas oportunidades y la banda mortal se estrecha
+  a 16): conviene reflejarlo en la biblia cuando se cierre §24.
 - [ ] **Fase 2 — Extender 1D6 a las otras cuatro razas**, una a una, con sus
   fichas S3 (§6) y su ficha de debut donde corresponda. Al terminar, se retira el
   motor 2d6 y el ramal por raza.

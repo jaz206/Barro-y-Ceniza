@@ -385,9 +385,19 @@ números en los informes enlazados abajo.
    el tope de `aplicar` (las subidas de crío no pasan de `base`). Verificado:
    el enano (profesional desde el principio) recibe "forma"; el humano de crío
    recibe "+1 ST/AG" capado.
-4. **Las tres muertes.** Solo ocurren en el **0,6 %** de las partidas (medido
-   simulando la propia fórmula del juego 200.000 veces). O se fuerzan, o se
-   quitan de la portada.
+4. ~~**Las tres muertes.**~~ **DECIDIDO para el halfling (2026-09-07), piloto.**
+   Se quita el resucitar: **si mueres, mueres** (muerte definitiva, sin colchón).
+   A cambio, la mayoría de los golpes graves van a **lesión** (la banda alta de la
+   tabla D16 se ensancha) y la **muerte solo cae con un 16 natural** (config B,
+   simulada: muere ~2,6 % de las carreras de un jugador normal, ~4 % temerario;
+   el resto salen con cicatrices o enteros). La muerte definitiva muestra el
+   **epitafio de la etapa** (`MUERTE_ETAPA[halfling]`, ya escrito) en la pantalla
+   `MuerteFinal`. Ramificado por raza (`raza === "halfling"`): las otras cuatro
+   siguen con las tres vidas (`MAX_MUERTES`) hasta que la migración les llegue.
+   Vive en `tirarHerida` (banda 13-15 permanente / 16 muerte para el halfling) y
+   en los dos manejadores de muerte (`jugarJugada`, `continuar`), con `tope 0`.
+   Pendiente al migrar el resto: decidir si se hace global y qué se dice en la
+   portada (que aún promete "tres muertes").
 5. **Cuánto reglamento meter en el partido**: turnover y dados de bloqueo lo
    acercan al tablero y lo alejan del librojuego. Es decisión de producto.
 6. **Renombrar "Voluntad"**, que hoy significa dos cosas distintas: la reserva

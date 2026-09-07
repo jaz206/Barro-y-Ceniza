@@ -3416,7 +3416,7 @@ export default function App() {
         if (les <= 8) { chips.push("Lesión: magullado"); texto = " " + pick1(HERIDA_PROSA.magullado()); }
         else if (les <= 10) { chips.push("Lesión: apaleado (próximo partido a medias)"); q.flags.apaleado = true; texto = " " + pick1(HERIDA_PROSA.apaleado(rival)); }
         else if (les <= 12) { chips.push("Lesión grave: herida persistente"); q.flags.apaleado = true; q.lesiones = (q.lesiones || 0) + 1; texto = " " + pick1(HERIDA_PROSA.persistente()); }
-        else if (les <= 14) { const d = d6(); const st = d <= 2 ? "MA" : d <= 4 ? "AV" : d === 5 ? "AG" : "ST"; q[st] = Math.max(1, q[st] - 1); chips.push(`Herida permanente: −1 ${st}`); texto = ` Herida permanente. ${HERIDA_PROSA.permanente[st]}`; }
+        else if (les <= (q.raza === "halfling" ? 15 : 14)) { const d = d6(); const st = d <= 2 ? "MA" : d <= 4 ? "AV" : d === 5 ? "AG" : "ST"; q[st] = Math.max(1, q[st] - 1); chips.push(`Herida permanente: −1 ${st}`); texto = ` Herida permanente. ${HERIDA_PROSA.permanente[st]}`; }
         else { muerte = true; texto = " " + pick1(HERIDA_PROSA.muerte(rival)); }
       }
     }
@@ -3452,7 +3452,15 @@ export default function App() {
       const n = q.muertes + 1;
       const comoCayo = extra.trim();
       setCronica((c) => [...c, `Cayó en el campo contra ${escena.partido.rival} (${m.marcador[0]}-${m.marcador[1]}). ${comoCayo}`]);
-      if (n > MAX_MUERTES) { setPj({ ...q, muertes: n }); setMt(null); setFase("muerteFinal"); guardarVida(`${pj.nombre} murió en el barro y nadie vino.`, true); return; }
+      // El halfling no resucita: si cae, cae. La primera muerte es la definitiva,
+      // con el epitafio de su etapa. Las demás razas conservan el colchón (MAX_MUERTES).
+      const tope = q.raza === "halfling" ? 0 : MAX_MUERTES;
+      if (n > tope) {
+        const etapa = etapaMuerte(q.raza, ORDEN[idx].cap);
+        setPj({ ...q, muertes: n }); setMt(null);
+        setMuerteInfo({ final: true, titulo: "No te levantas", texto: [comoCayo, etapa].filter(Boolean).join(" ") });
+        setFase("muerteFinal"); guardarVida(`${pj.nombre} cayó en el barro y no se levantó.`, true); return;
+      }
       const md = MUERTES[n - 1];
       const etapa = etapaMuerte(q.raza, ORDEN[idx].cap);
       const { q: q2, chips } = aplicar({ ...q, muertes: n }, md.fx);
@@ -3660,7 +3668,15 @@ export default function App() {
   const continuar = () => {
     if (panel?.muerte) {
       const n = pj.muertes + 1;
-      if (n > MAX_MUERTES) { setPj((p) => ({ ...p, muertes: n })); setPanel(null); setFase("muerteFinal"); guardarVida(`${pj.nombre} murió por tercera vez y nadie vino.`, true); return; }
+      const tope = pj.raza === "halfling" ? 0 : MAX_MUERTES;
+      if (n > tope) {
+        const etapa = etapaMuerte(pj.raza, ORDEN[idx].cap);
+        setPj((p) => ({ ...p, muertes: n }));
+        setMuerteInfo(pj.raza === "halfling" ? { final: true, titulo: "No te levantas", texto: etapa } : null);
+        setPanel(null); setFase("muerteFinal");
+        setCronica((c) => [...c, `Cayó en el campo y no se levantó.`]);
+        guardarVida(`${pj.nombre} cayó en el barro y no se levantó.`, true); return;
+      }
       const m = MUERTES[n - 1];
       const etapa = etapaMuerte(pj.raza, ORDEN[idx].cap);
       const { q, chips } = aplicar({ ...pj, muertes: n }, m.fx);
@@ -3754,7 +3770,7 @@ export default function App() {
           <p className="mini">{pj.pro ? (H.emergente ? `En formación · apuntas a ${puestoEmergente(pj).nombre}` : H.puesto) : "En formación · aún sin fichar"}{pj.pro && (H.reglas || []).length ? ` · ${H.reglas.join(", ")}` : ""}</p>
           <p className="mini">{NIVELES[Math.min(pj.nivel - 1, NIVELES.length - 1)]} · {pj.spp} PE · siguiente a {UMBRALES.find((u) => u > pj.spp) || "—"} PE{pj.lesiones ? ` · ${pj.lesiones} herida${pj.lesiones > 1 ? "s" : ""} persistente${pj.lesiones > 1 ? "s" : ""}` : ""}</p>
           {pj.hab.length ? pj.hab.map((h) => <p key={h} className="mini"><b>{h}</b>{HABILIDADES[h] ? ` — ${HABILIDADES[h].desc}` : ""}</p>) : <p className="mini">Sin habilidades aún</p>}
-          <p className="mini">Muertes: {pj.muertes} de {MAX_MUERTES}</p>
+          <p className="mini">{pj.raza === "halfling" ? "Sin resucitar: si caes, se acabó" : `Muertes: ${pj.muertes} de ${MAX_MUERTES}`}</p>
           <p className="mini">Carrera: {(pj.palmares || []).length} partidos · {(pj.car || {}).td || 0} touchdowns · {(pj.car || {}).baja || 0} bajas · {(pj.car || {}).pase || 0} pases · {(pj.car || {}).mvp || 0} veces jugador del partido</p>
           {(pj.racha || (pj.records && (pj.records.mejorVictoria || pj.records.rachaMax))) ? <p className="mini">{pj.racha >= 2 ? `En racha: ${pj.racha} victorias seguidas. ` : pj.racha <= -2 ? `Mala racha: ${-pj.racha} derrotas seguidas. ` : ""}{pj.records?.mejorVictoria ? `Mayor victoria: ${pj.records.mejorVictoria}. ` : ""}{pj.records?.rachaMax >= 2 ? `Mejor racha: ${pj.records.rachaMax} seguidas.` : ""}</p> : null}
         </div>
@@ -4134,8 +4150,8 @@ export default function App() {
 
   const MuerteFinal = () => (
     <div className="pag centro">
-      <h1 className="titulo">La tercera no cuenta</h1>
-      <p className="lead">Nadie viene. Ni el apotecario, ni Ludo, ni el hombre de negro. El público aplaude un rato y luego mira el marcador. En la grada de los pobres, un niño pregunta quién eras.</p>
+      <h1 className="titulo">{muerteInfo?.final ? muerteInfo.titulo : "La tercera no cuenta"}</h1>
+      <p className="lead">{muerteInfo?.final ? muerteInfo.texto : "Nadie viene. Ni el apotecario, ni Ludo, ni el hombre de negro. El público aplaude un rato y luego mira el marcador. En la grada de los pobres, un niño pregunta quién eras."}</p>
       <p className="etq">Crónica</p>
       <ol className="cronica">{cronica.map((c, i) => <li key={i}>{c}</li>)}</ol>
       <button className="btn" onClick={reiniciar}>Otra vida</button>
