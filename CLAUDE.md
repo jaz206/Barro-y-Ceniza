@@ -257,6 +257,20 @@ que decidir hasta dónde llega (ver decisiones pendientes).
     condiciones reales sobre la marca `wazzokEnLaBanda`, que ya existía. Aquí no
     hizo falta inventar prosa: solo partir la frase.
 
+## Momentos del partido (pantallas intermedias, idea del cliente)
+
+Entre tus jugadas clave aparece a veces un **"momento del partido"**: una
+pantalla intermedia con botón *Seguir* que cuenta lo que pasa fuera de tu
+jugada. **El gol del rival ya no se pega a tu jugada: sale en su propia
+pantalla** ("Mientras tanto… Carniceros marca. 0-1"), con el marcador ya movido
+y un chip. Además hay momentos de color sin gol (la grada, un tiro rival
+fallado, un compañero que cae y se lo lleva el boticario — este sí banca a un
+aliado, alimentando `lesionadosFrase`). Fires: el gol del rival → siempre su
+momento; si no hay gol, ~50 % un momento de color; si no, se pasa directo a la
+siguiente jugada. Vive en `MOMENTO_GOL_RIVAL`/`MOMENTO_FLAVOR`, la fase
+`"momento"` del partido, `jugarJugada` y `seguirMomento`. Afecta a las cinco
+razas (motor de partido compartido). Prosa de Claude, marcada para revisión.
+
 ## Las finales de torneo se deciden de verdad (no empatas y ganas)
 
 En una **final de torneo** (`escena.partido.torneo`), la jugada decisiva decide

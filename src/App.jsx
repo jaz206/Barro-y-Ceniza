@@ -2915,6 +2915,24 @@ const RIVAL_MARCA = (r) => pick1([
   `${r} castiga el error: mientras te levantas, ya han cruzado. Gol suyo.`,
 ]);
 
+/* ===== MOMENTOS DEL PARTIDO (pantallas intermedias entre tus jugadas) =====
+   Sacan el gol del rival a su propia pantalla (con el marcador ya movido) y
+   añaden color: la grada, un tiro fallado, un compañero que cae. Dan ritmo de
+   partido narrado. Prosa de Claude, marcada para revisión. */
+const MOMENTO_GOL_RIVAL = (r, marc) => ({ texto: `${RIVAL_MARCA(r)} ${marc[0]}-${marc[1]}.`, chips: [`${r} marca`] });
+const MOMENTO_FLAVOR = (m) => {
+  const r = m.rivalCorto;
+  const sanos = (m.aliados || []).filter((a) => !a.herido);
+  const pool = [
+    { texto: `${r} lo intenta desde lejos y la manda a la grada, que se la devuelve de una patada. Todo sigue igual, pero el corazón se para un segundo.` },
+    { texto: `${r} tiene el gol en la bota y falla solo delante de la línea. Su banda se lleva las manos a la cabeza; la vuestra se ríe con ganas.` },
+    { texto: `La grada —cuatro gatos, unos cuantos borrachos y tu gente— empuja tan fuerte que a ${r} se le olvida por un momento a qué venía.` },
+    { texto: `Parón: el árbitro ha perdido el silbato en el barro. Mientras lo busca, tomáis aire; ${r} aprovecha para maldecir en voz baja.` },
+  ];
+  if (sanos.length) { const v = pick1(sanos); pool.push({ texto: `${v.nombre} se lleva un golpe feo y sale cojeando del barro: se lo lleva el boticario. Os quedáis con uno menos y el hueco se nota.`, bench: v.nombre }); }
+  return pick1(pool);
+};
+
 /* Relato de la muerte según la etapa: no es lo mismo morir de crío que en el
    ocaso. Se intercala entre cómo caíste y cómo vuelves (el apotecario, Ludo…).
    PENDIENTE DE REVISIÓN: lo escribió Claude imitando la voz del cliente. */
@@ -3330,21 +3348,8 @@ export default function App() {
       const h = tirarHerida(qq, m);
       if (h.texto || h.muerte) { extra = h.texto; herChips = h.chips; muerte = h.muerte; herido = true; q = qq; }
     }
-    // El rival también ataca en cada jugada: intenta marcar por su cuenta,
-    // resistido por tu ficha (ST/AG) y por tener tú la bola, y escalado por su
-    // fuerza. Es lo que hace que el rival marque y que ganar cueste sudor.
-    if (!res.golRival && !muerte) {
-      // 1D6 (halfling, biblia): el rival marca si d6 + su fuerza ≥ 7 (umbral
-      // calibrado para "difícil pero posible"; §MIGRACION-1D6). 2d6 el resto.
-      const marcaRival = es1d6(pj)
-        ? (d6() + (m.fuerza || 2) >= 7)
-        : (d6() + d6() + (m.fuerza || 2) >= 10 + (Math.floor((pj.ST + pj.AG) / 2) - 3 + (m.posesion === "propia" ? 2 : 0)));
-      if (marcaRival) {
-        m.marcador[1]++;
-        m.posesion = "propia"; // tras marcar ellos, sacas tú
-        extra += " " + RIVAL_MARCA(m.rivalCorto);
-      }
-    }
+    // Tu jugada, a la bitácora (el gol del rival ya NO se pega aquí: va a su
+    // propia pantalla intermedia, el "momento del partido").
     m.log.push({ turno: m.jIdx + 1, texto: res.txt + extra, tecnico: r.tecnico, chips: herChips.length ? herChips : undefined });
     m.jIdx++;
     if (muerte) {
@@ -3361,7 +3366,32 @@ export default function App() {
       return;
     }
     if (herido) setPj(q);
-    if (m.jIdx >= m.plays.length) m.fase = "clave";
+    // MOMENTO DEL PARTIDO: pantalla intermedia entre tus jugadas. El rival ataca
+    // por su cuenta (y si marca, el marcador se mueve aquí, en su propia
+    // pantalla), o pasa algo de color (grada, tiro fallado, un compañero que
+    // cae). Escalado por la fuerza del rival, calibrado "difícil pero posible".
+    let mom = null;
+    if (!res.golRival) {
+      const marcaRival = es1d6(pj)
+        ? (d6() + (m.fuerza || 2) >= 7)
+        : (d6() + d6() + (m.fuerza || 2) >= 10 + (Math.floor((pj.ST + pj.AG) / 2) - 3 + (m.posesion === "propia" ? 2 : 0)));
+      if (marcaRival) { m.marcador[1]++; m.posesion = "propia"; mom = MOMENTO_GOL_RIVAL(m.rivalCorto, m.marcador); }
+    }
+    if (!mom && Math.random() < 0.5) {
+      const f = MOMENTO_FLAVOR(m);
+      if (f.bench) { const a = m.aliados.find((x) => x.nombre === f.bench); if (a) a.herido = true; }
+      mom = { texto: f.texto, chips: f.bench ? [`${f.bench} · al banquillo`] : undefined };
+    }
+    if (mom) m.momento = mom;
+    m.fase = mom ? "momento" : (m.jIdx >= m.plays.length ? "clave" : "turnos");
+    setMt(m);
+  };
+  // Pasar del "momento del partido" a la siguiente jugada (o a la decisiva).
+  const seguirMomento = () => {
+    const m = { ...mt, log: [...mt.log] };
+    if (mt.momento) m.log.push({ turno: m.jIdx, texto: mt.momento.texto, chips: mt.momento.chips });
+    m.momento = null;
+    m.fase = m.jIdx >= m.plays.length ? "clave" : "turnos";
     setMt(m);
   };
 
@@ -3799,9 +3829,9 @@ export default function App() {
     return (
       <div className="pag partido">
         {/* MARCADOR */}
-        <div className="pm-marcador" role="status" aria-live="polite" aria-label={`Marcador: ${propio} ${mt.marcador[0]}, ${rivalCorto} ${mt.marcador[1]}. ${mt.fase === "turnos" ? (enJugadas ? `Jugada ${mt.jIdx + 1} de ${mt.plays.length}` : `Turno ${Math.min(mt.turno, mt.max)} de ${mt.max}`) : "Jugada final"}.`}>
+        <div className="pm-marcador" role="status" aria-live="polite" aria-label={`Marcador: ${propio} ${mt.marcador[0]}, ${rivalCorto} ${mt.marcador[1]}. ${mt.fase === "momento" ? "El partido" : mt.fase === "turnos" ? (enJugadas ? `Jugada ${mt.jIdx + 1} de ${mt.plays.length}` : `Turno ${Math.min(mt.turno, mt.max)} de ${mt.max}`) : "Jugada final"}.`}>
           <div className="pm-eq" aria-hidden="true"><span className="pm-nom">{propio}</span><span className="pm-gol">{mt.marcador[0]}</span></div>
-          <div className="pm-mid" aria-hidden="true">{mt.fase === "turnos" ? (enJugadas ? `jugada ${mt.jIdx + 1}/${mt.plays.length}` : `turno ${Math.min(mt.turno, mt.max)}/${mt.max}`) : "final"}{miPuesto ? ` · ${miPuesto.nombre}` : ""}</div>
+          <div className="pm-mid" aria-hidden="true">{mt.fase === "momento" ? "el partido" : mt.fase === "turnos" ? (enJugadas ? `jugada ${Math.min(mt.jIdx + 1, mt.plays.length)}/${mt.plays.length}` : `turno ${Math.min(mt.turno, mt.max)}/${mt.max}`) : "final"}{miPuesto ? ` · ${miPuesto.nombre}` : ""}</div>
           <div className="pm-eq" aria-hidden="true"><span className="pm-gol">{mt.marcador[1]}</span><span className="pm-nom">{rivalCorto}</span></div>
         </div>
 
@@ -3850,10 +3880,17 @@ export default function App() {
           {mt.fase === "turnos" && (enJugadas
             ? <><p className="pm-acc-key">{jplay.h}</p><p className="pm-acc-main">{jplay.situ}</p></>
             : <p className="pm-acc-main">{introTurno(mt)}</p>)}
+          {mt.fase === "momento" && mt.momento && <>
+            <p className="pm-acc-key">Mientras tanto…</p>
+            <p className="pm-acc-main">{mt.momento.texto}</p>
+            {mt.momento.chips && <div className="pm-herida">{mt.momento.chips.map((c, i) => <span key={i} className="pm-herida-chip">{c}</span>)}</div>}
+          </>}
         </div>
 
         {/* BOTONES */}
-        {mt.fase === "turnos" ? (
+        {mt.fase === "momento" ? (
+          <button className="btn" onClick={seguirMomento}>Seguir</button>
+        ) : mt.fase === "turnos" ? (
           enJugadas ? (
             <div className="lista">{jplay.ops.map((o, i) => <KJ key={i} o={o} />)}</div>
           ) : (
