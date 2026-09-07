@@ -39,6 +39,16 @@ abajo describe el motor 2d6 y la build actual: es correcto hasta que cada fase
 lo sustituya. **Consulta `docs/MIGRACION-1D6.md` antes de tocar tiradas, fichas
 o el motor de partido.**
 
+**Catálogo de acciones de partido normativo** (`docs/acciones-partido.md`).
+Hermano de la biblia: **manda sobre las acciones del minijuego de partido** (las
+3-4 opciones de cada jugada clave). Documenta los siete tipos de jugada, el
+repertorio por tono (serio `PLAY_POOL` / comedia `PLAY_POOL_HALF`), la ficha de
+cada acción y el patrón del aliado (Roblerto y sus variantes "sin árbol"). Idea
+del cliente: reutilizarlo entre razas e historias futuras y ampliarlo con el
+tiempo (~20 textos por tipo). **Para una acción nueva o un cambio de tono: primero
+se afina aquí, luego se traslada al código.** Decisión futura no tomada: que el
+juego lea el documento directamente (fuente única), en vez del traslado a mano.
+
 ## ✅ Estado del repo: el fuente ya está, y los arreglos reaplicados
 
 **El proyecto fuente ya está en el repo** (`src/App.jsx`, `src/main.jsx`,
