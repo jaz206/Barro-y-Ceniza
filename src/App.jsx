@@ -3480,6 +3480,15 @@ export default function App() {
       const nv = nivelDe(q.spp);
       if (nv > (q.nivel || 1)) { q.mejorasPend = (q.mejorasPend || 0) + (nv - (q.nivel || 1)); q.nivel = nv; chips.push(`Subes a nivel ${nv}`); }
       const marc = [m.marcador[0] + (rama.fx.gol ? 1 : 0), m.marcador[1] + (rama.fx.golRival ? 1 : 0)];
+      // En una FINAL de torneo, la jugada decisiva decide de verdad: un empate no
+      // es campeón. Si clavas la jugada ganadora (gol), el marcador queda a tu
+      // favor; si la fallas (golRival), quedas subcampeón. Así el título, el
+      // trofeo, el texto ("Habéis ganado"/"Perdéis") y el marcador van juntos.
+      // (Solo torneos; en liga un empate es un empate legítimo.)
+      if (escena.partido.torneo) {
+        if (exito && rama.fx.gol && marc[0] <= marc[1]) marc[0] = marc[1] + 1;
+        else if (!exito && rama.fx.golRival && marc[1] <= marc[0]) marc[1] = marc[0] + 1;
+      }
       const res = marc[0] > marc[1] ? "Victoria" : marc[0] < marc[1] ? "Derrota" : "Empate";
       q.palmares = [...q.palmares, { rival: escena.partido.rival, res, marcador: `${marc[0]}-${marc[1]}`, cap: ORDEN[idx].cap }];
       chips.push(`${res} ${marc[0]}-${marc[1]} contra ${escena.partido.rival}`);

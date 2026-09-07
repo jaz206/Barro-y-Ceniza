@@ -257,6 +257,18 @@ que decidir hasta dónde llega (ver decisiones pendientes).
     condiciones reales sobre la marca `wazzokEnLaBanda`, que ya existía. Aquí no
     hizo falta inventar prosa: solo partir la frase.
 
+## Las finales de torneo se deciden de verdad (no empatas y ganas)
+
+En una **final de torneo** (`escena.partido.torneo`), la jugada decisiva decide
+el título: si la clavas (gol), el marcador queda a tu favor (subcampeón imposible
+por empate); si la fallas (golRival), quedas subcampeón. Antes el título salía de
+la **marca** del guion (`campeon`/`ganasteLaCopa`) al acertar la jugada, aunque el
+marcador quedara en tablas — así podías "empatar 3-3 y ser campeón sin trofeo"
+(el trofeo sí exigía ganar). Ahora el marcador, el título, el trofeo y el texto
+("Habéis ganado"/"Perdéis") van juntos. Vive en `resolverTirada` (una guarda
+sobre `marc` antes de calcular `res`). **En liga un empate sigue siendo un empate
+legítimo** (la guarda solo aplica a torneos).
+
 ## Liguilla / contexto de campeonato (Fase 3)
 
 Hay una **tabla de liga** accesible desde la cabecera ("La tabla"), solo en
