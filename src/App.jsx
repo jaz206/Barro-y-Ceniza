@@ -2706,7 +2706,7 @@ const cronicaH = (pj, m, kind) => (kind === "ataque" && m.posesion !== "propia")
 const PLAY_POOL = {
   saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en tierra de nadie", "El saque, al aire", "Primer balón, primer barro", "A por la vejiga"], m, 1),
     situ: `${varia([`El saque cae corto y la vejiga bota en el barro, en el centro, de nadie.`, `La bola sube, gira contra el cielo gris y baja a un palmo de las dos líneas.`, `Silbato. La vejiga rueda muerta en mitad del campo y todos la miran a la vez.`], m, 2)} ${varia([`Hay que llegar antes que ${m.rivalCorto}.`, flavRival(m), `El que la coja manda el primer minuto.`], m, 3)}`,
-    ops: [
+    ops: pickN([
       { txt: "Ir al choque y arrancársela a quien llegue", det: "El hombro por delante.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
         ok: { txt: "Llegas primero y con todo. Uno de ellos rueda; la bola es vuestra.", posesion: "propia" },
         ko: { txt: "Chocas y rebotas: son más grandes de lo que parecían. Para ellos.", posesion: "rival" } },
@@ -2716,10 +2716,16 @@ const PLAY_POOL = {
       { txt: "Leer el bote y ponerte donde va a caer", det: "La cabeza antes que las piernas.", stat: "AG", obj: 8, hab: "Manos seguras",
         ok: { txt: "Apareces solo en el hueco que habías visto. Es vuestra.", posesion: "propia" },
         ko: { txt: "Nadie estaba donde tú creías. Para ellos.", posesion: "rival" } },
-    ] }),
+      { txt: "Cabecearla de primeras a un compañero", det: "Ni la tocas con el pie.", stat: "AG", obj: 9, hab: "Pasar",
+        ok: { txt: "Saltas y la peinas de cabeza hacia un tuyo que ya corría. Antes de que reaccionen, es vuestra y avanzada.", posesion: "propia", pase: true },
+        ko: { txt: "Le pegas con la coronilla y sale hacia cualquier parte menos hacia los tuyos. La cazan ellos.", posesion: "rival" } },
+      { txt: "Plantarte sobre la bola y no dejar que nadie llegue", det: "Territorio, antes que balón.", stat: "ST", obj: 8, hab: "Mantenerse firme",
+        ok: { txt: "Clavas los pies encima de la vejiga y aguantas el primer empujón, y el segundo. Cuando llegan los tuyos, la bola sigue ahí, vuestra.", posesion: "propia" },
+        ko: { txt: "Te apartan de un hombro y recogen la bola por debajo de tus pies. Para ellos.", posesion: "rival" } },
+    ], m) }),
   ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: varia(["Tienes la bola", "La bola es tuya", "Toca atacar", "El hueco espera"], m, 1),
     situ: `${varia([`Avanzáis. La caja de ${m.rivalCorto} se cierra a cuatro pasos de su línea; el hueco se abre y se cierra.`, `Tenéis la bola y campo por delante. ${m.rivalCorto} recula, ordena su muro y espera el error.`, `La bola cosida al pie, la línea de gol a la vista y ${m.rivalCorto} entre medias. Ahora o nunca.`], m, 2)} ${varia([``, flavRival(m)], m, 4)}`.trim(),
-    ops: [
+    ops: pickN([
       { txt: "Pase raso a un compañero que está solo", det: "Ver el hueco antes de que exista.", stat: "AG", obj: 9, hab: "Pasar",
         ok: { txt: "Sueltas un pase raso que cruza el barro y cae en botas amigas. ¡Cruza! Touchdown.", gol: true, pase: true },
         ko: { txt: "El pase se va largo y lo cortan. Contraataque.", posesion: "rival" } },
@@ -2729,9 +2735,15 @@ const PLAY_POOL = {
       { txt: "Esprintar por fuera de la caja", det: "La banda es tuya.", stat: "MA", obj: 9, hab: "Esprintar",
         ok: { txt: "Tiras de velocidad por la banda, dejas a la caja mirando, y cruzas. ¡Touchdown!", gol: true },
         ko: { txt: "Te cierran la banda contra la cal. Saque para ellos.", posesion: "rival" } },
-    ] }) : ({ etq: "Defensa", h: varia([`${m.rivalCorto} sube`, `Te la han quitado`, `A defender`, `Ellos con la bola`], m, 1),
+      { txt: "Fintar el pase y arrancar tú solo", det: "Que miren la mano, no el pie.", stat: "AG", obj: 9, riesgo: true, hab: "Esquivar",
+        ok: { txt: "Amagas el pase, la caja entera se abre a taparlo, y tú sales por el hueco que han dejado, solo hasta la línea. ¡Touchdown!", gol: true },
+        ko: { txt: "Nadie se cree la finta. Te esperan con la bola aún en el pie y te la quitan. Contraataque.", posesion: "rival" } },
+      { txt: "Cargar de hombro y empujar la bola al fondo", det: "A lo bruto, si hace falta.", stat: "ST", obj: 10, riesgo: true, hab: "Romper defensas",
+        ok: { txt: "Metes el hombro en el último que queda, lo apartas dos pasos y empujas la bola por encima de la línea con él encima. Feo, pero cuenta. ¡Touchdown!", gol: true },
+        ko: { txt: "El muro no cede y rebotas de espaldas. La bola se queda de su lado y ellos salen.", posesion: "rival" } },
+    ], m) }) : ({ etq: "Defensa", h: varia([`${m.rivalCorto} sube`, `Te la han quitado`, `A defender`, `Ellos con la bola`], m, 1),
     situ: `${varia([`${m.rivalCorto} sube con la bola, en bloque, buscando su línea.`, `Perdisteis la bola y ahora ${m.rivalCorto} la mueve hacia vuestro lado.`, `${m.rivalCorto} avanza con la vejiga y vosotros retrocediendo.`], m, 2)} ${varia([`Hay que pararlos antes de que crucen.`, flavRival(m), `Si cruzan aquí, encajáis.`], m, 3)}`,
-    ops: [
+    ops: pickN([
       { txt: "Entrarle de frente al que lleva la bola", det: "Con todo. A ver quién cae.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
         ok: { txt: "Le entras en seco. Suelta la bola y se queda en el barro. Vuestra.", posesion: "propia", baja: true },
         ko: { txt: "Sigue de pie y avanzan.", posesion: "rival" } },
@@ -2741,11 +2753,17 @@ const PLAY_POOL = {
       { txt: "Anticipar el pase y salir a cortarlo", det: "Adivinar dónde va la bola.", stat: "AG", obj: 10, hab: "Manos seguras",
         ok: { txt: "Sabías dónde iba antes que él. Cortas el pase y sales con la bola.", posesion: "propia", pase: true },
         ko: { txt: "Te la juegan al hueco que dejaste. Touchdown suyo.", golRival: true } },
-    ] }),
+      { txt: "Placar por detrás antes de que arranque", det: "Que no llegue ni a coger carrerilla.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Lo cazas por la espalda justo cuando iba a salir y lo mandas de bruces al barro. Suelta la bola y la recogéis vosotros.", posesion: "propia", baja: true },
+        ko: { txt: "Llegas tarde y solo le rozas la camiseta. Se va, y con él la bola. Siguen subiendo.", posesion: "rival" } },
+      { txt: "Cerrar filas y esperarlos en bloque", det: "No salir: que vengan ellos.", stat: "ST", obj: 8, hab: "Mantenerse firme",
+        ok: { txt: "Os juntáis hombro con hombro y les cerráis el paso. Empujan, empujan, y la jugada muere contra vuestro muro. No cruzan.", posesion: "rival" },
+        ko: { txt: "El bloque se abre por un lado y se cuelan por ahí. Touchdown suyo.", golRival: true } },
+    ], m) }),
   // Guerra en el centro: fuerza pura, sin balón. El que gana el choque manda el resto.
   choque: (pj, m) => ({ etq: "Choque", h: varia(["Guerra en el centro", "Las líneas se buscan", "Primero, el barro", "Choque de hombros"], m, 1),
     situ: `${varia([`Antes de que la bola importe, las dos líneas se buscan. ${m.rivalCorto} pega primero.`, `Aquí no hay bola que valga todavía: hay dos muros de carne midiéndose. ${m.rivalCorto} aprieta.`, `El balón puede esperar. Primero se ve quién aguanta de pie, y ${m.rivalCorto} viene con todo.`], m, 2)} ${varia([`Aquí se decide quién manda el barro el resto del partido.`, `El que gane este choque, gana el partido antes de empezarlo.`], m, 3)}`,
-    ops: [
+    ops: pickN([
       { txt: "Ir a por el más grande de todos", det: "Si cae el grande, caen todos.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
         ok: { txt: "Lo levantas del suelo y lo devuelves a él. Su línea se abre y la vuestra pisa. La bola cae de vuestro lado.", posesion: "propia", baja: true },
         ko: { txt: "Era más grande de lo que parecía. Rebotas y te pisan. Ellos mandan.", posesion: "rival" } },
@@ -2755,11 +2773,17 @@ const PLAY_POOL = {
       { txt: "Plantarte y que se estrellen contra ti", det: "Aguantar, no avanzar.", stat: "ST", obj: 7, hab: "Mantenerse firme",
         ok: { txt: "Clavas los pies y su empuje se rompe contra ti. Nadie manda todavía, pero tampoco ceden.", posesion: "neutral" },
         ko: { txt: "Te llevan por delante. Ganan metros.", posesion: "rival" } },
-    ] }),
+      { txt: "Buscar al que dirige su línea y tumbarlo", det: "Cae la cabeza, cae el cuerpo.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Ignoras a los peones y vas a por el que grita las órdenes. Lo tumbas, y su línea, de pronto sin voz, se deshace sola. El barro es vuestro.", posesion: "propia", baja: true },
+        ko: { txt: "El que manda sabía que ibas a por él y te recibe con dos. Acabas debajo del montón. Ellos mandan.", posesion: "rival" } },
+      { txt: "Empujar todos a una, como un solo cuerpo", det: "Once espaldas, un empujón.", stat: "ST", obj: 8, hab: "Abrirse paso",
+        ok: { txt: "A la de tres empujáis los once a la vez, como una sola bestia, y su línea recula un metro entero. Cuando cae la bola, cae de vuestro lado.", posesion: "propia" },
+        ko: { txt: "Empujáis descoordinados, cada uno a su ritmo, y ellos aguantan y devuelven. Ganan metros.", posesion: "rival" } },
+    ], m) }),
   // El baile: agilidad pura, pasar entre ellos sin chocar. Sabor élfico.
   regate: (pj, m) => ({ etq: "Baile", h: varia(["Pasar sin chocar", "El baile", "Piernas, no hombro", "Entre líneas"], m, 1),
     situ: `${varia([`No hay que placar a nadie: hay que pasar entre ellos.`, `Aquí no se gana pegando, se gana bailando: entrar y salir sin que te toquen.`, `El choque es de tontos hoy. Se trata de pasar entre ellos como el agua entre los dedos.`], m, 2)} ${varia([`${m.rivalCorto} espera el choque que no vas a darle. La bola pide piernas y muñeca, no hombro.`, `${m.rivalCorto} planta los pies esperando un golpe que no llega.`], m, 3)}`,
-    ops: [
+    ops: pickN([
       { txt: "Esquivar entre dos y salir por el hueco", det: "Donde ellos no están.", stat: "AG", obj: 8, riesgo: false, hab: "Esquivar",
         ok: { txt: "Pasas entre los dos como si no estuvieran y sales con la bola cosida al pie. Vuestra.", posesion: "propia" },
         ko: { txt: "Uno estira la mano donde no debía y te la quita. Para ellos.", posesion: "rival" } },
@@ -2769,11 +2793,17 @@ const PLAY_POOL = {
       { txt: "Pase largo por encima de la caja", det: "La bola vuela donde tú no llegas.", stat: "AG", obj: 9, hab: "Pasar",
         ok: { txt: "La cuelgas por encima de todos y cae en botas amigas al otro lado. Vuestra, y avanzada.", posesion: "propia", pase: true },
         ko: { txt: "El pase se queda corto y lo bajan ellos. Para ellos.", posesion: "rival" } },
-    ] }),
+      { txt: "Amagar a un lado y salir por el otro", det: "El cuerpo miente, los pies no.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Cargas el peso a la derecha, el defensa se lo traga entero, y sales por la izquierda con la bola cosida al pie. Se queda mirando tu sombra. Vuestra.", posesion: "propia" },
+        ko: { txt: "Amagas demasiado y te enredas tú solo los pies. La bola se va, y ellos detrás.", posesion: "rival" } },
+      { txt: "Sombrero al primero y a correr", det: "Humillante, y rapidísimo.", stat: "AG", obj: 9, riesgo: true, hab: "Saltar",
+        ok: { txt: "Le pasas la bola por encima de la cabeza al que viene, la recoges al otro lado sin frenar y sales corriendo mientras la grada ruge. Vuestra, y con estilo.", posesion: "propia" },
+        ko: { txt: "El sombrero se queda corto y el defensa la caza en el aire, encantado de la vida. Para ellos.", posesion: "rival" } },
+    ], m) }),
   // A las puertas: la jugada de gol. Éxito = touchdown; fallo = se lo llevan.
   remate: (pj, m) => ({ etq: "Remate", h: varia(["A las puertas", "El último paso", "A un palmo del gol", "La jugada de gol"], m, 1),
     situ: `${varia([`La línea de ${m.rivalCorto} está a un paso.`, `Todo el partido cabe en el metro que te separa de la línea de ${m.rivalCorto}.`, `La línea de gol, ahí delante, y el último muro de ${m.rivalCorto} entre medias.`], m, 2)} ${varia([`Un movimiento más y cruzáis; si fallas, os quedáis con las manos vacías y ellos con la bola.`, `Aciertas y es touchdown; fallas y te quedas mirándolo desde el barro.`], m, 3)}`,
-    ops: [
+    ops: pickN([
       { txt: "Pase a la esquina, donde no llega nadie", det: "La jugada de cabeza.", stat: "AG", obj: 9, hab: "Pasar",
         ok: { txt: "La dejas muerta en la esquina y un tuyo la cruza sin que nadie le toque. ¡Touchdown!", gol: true, pase: true },
         ko: { txt: "La lees mal y la esquina estaba cubierta. La cortan y salen jugando.", posesion: "rival" } },
@@ -2783,11 +2813,17 @@ const PLAY_POOL = {
       { txt: "Esprintar por fuera antes de que cierren", det: "La banda, otra vez la banda.", stat: "MA", obj: 9, hab: "Esprintar",
         ok: { txt: "Tiras de piernas por fuera y cruzas antes de que la banda se cierre. ¡Touchdown!", gol: true },
         ko: { txt: "Te cierran contra la cal en el último paso. Saque para ellos.", posesion: "rival" } },
-    ] }),
+      { txt: "Amagar el remate y colártela por dentro", det: "Que salten a taparte fuera.", stat: "AG", obj: 9, riesgo: true, hab: "Esquivar",
+        ok: { txt: "Enseñas que vas por fuera, todos saltan hacia la banda, y tú te cuelas por el agujero del centro y cruzas andando. ¡Touchdown de puro descaro!", gol: true },
+        ko: { txt: "Se quedan quietos, no pican, y te encuentras el centro tan cerrado como el resto. Te la quitan a un paso.", posesion: "rival" } },
+      { txt: "Cargar el último muro y empujar la bola dentro", det: "Ya no hay finura que valga.", stat: "ST", obj: 10, riesgo: true, hab: "Romper defensas",
+        ok: { txt: "Bajas la cabeza, metes a dos por delante y empujas el amasijo entero por encima de la línea, con bola y todo. No es bonito. Es un touchdown. ¡Gol!", gol: true },
+        ko: { txt: "El muro aguanta el envite y te escupe de vuelta al barro. La bola, de su lado.", posesion: "rival" } },
+    ], m) }),
   // Muralla: ellos tienen la bola y suben a por el gol. Fallar es encajar.
   defensa: (pj, m) => ({ etq: "Muralla", h: varia([`${m.rivalCorto} va a por el gol`, `Aguantar la ventaja`, `El último muro`, `No pueden cruzar`], m, 1),
     situ: `${varia([`${m.rivalCorto} sube con la bola y la línea a la vista.`, `Vais por delante y ${m.rivalCorto} lo sabe: vienen a por el empate con todo.`, `${m.rivalCorto} empuja hacia vuestra línea, oliendo el gol que os deja sin premio.`], m, 2)} ${varia([`Si no los paras aquí, cruzan. No hay más red detrás de ti.`, `Eres la última línea. Detrás de ti solo está el gol suyo.`], m, 3)}`,
-    ops: [
+    ops: pickN([
       { txt: "Entrar en seco al que la lleva", det: "Tumbarlo y que la suelte.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
         ok: { txt: "Le entras de frente, suelta la bola y se queda en el barro. La recuperáis vosotros.", posesion: "propia", baja: true },
         ko: { txt: "Te esquiva con el hombro y cruza la línea. Touchdown suyo.", golRival: true } },
@@ -2797,7 +2833,13 @@ const PLAY_POOL = {
       { txt: "Anticipar el pase y cortarlo", det: "Adivinar dónde va la bola.", stat: "AG", obj: 10, hab: "Manos seguras",
         ok: { txt: "Sabías dónde iba antes que él. La cortas en el aire y sales corriendo con ella. Vuestra.", posesion: "propia", pase: true },
         ko: { txt: "Te la juegan al hueco que dejaste al saltar. Touchdown suyo.", golRival: true } },
-    ] }),
+      { txt: "Ponerte en su camino y no moverte", det: "Que te pase por encima o que pare.", stat: "ST", obj: 8, hab: "Mantenerse firme",
+        ok: { txt: "Te plantas en la única línea que le queda a la portería y aguantas el choque de pie. Para en seco, no encuentra por dónde, y la jugada se apaga. No cruzan.", posesion: "rival" },
+        ko: { txt: "Te pasa por encima como quien no ve un bache y sigue hasta la línea. Touchdown suyo.", golRival: true } },
+      { txt: "Salir a por la bola aunque te pasen por encima", det: "Todo o nada en el último metro.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Te lanzas a los pies del portador sin pensar en lo que viene después. Le enganchas la bola, la sacas, y aunque acabas pisoteado, es vuestra. Habéis salvado el gol.", posesion: "propia", baja: true },
+        ko: { txt: "Te lanzas, fallas, y desde el suelo ves cómo cruza la línea sin despeinarse. Touchdown suyo.", golRival: true } },
+    ], m) }),
 };
 
 /* ===== POOL DEL HALFLING: MISMO MOTOR, OTRAS ACCIONES (comedia negra) =====
