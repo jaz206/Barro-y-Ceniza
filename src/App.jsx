@@ -2647,7 +2647,12 @@ const rollKey = (pj, m, o) => {
    Fuerza: objetivo 4, con +1 por punto de FU de ventaja sobre el rival y −1 por
    desventaja (sin tope). Modificadores de situación con tope ±2 (§2.3). Las
    otras cuatro razas siguen en 2d6 hasta que les toque la migración. */
-const es1d6 = (pj) => pj && pj.raza === "halfling";
+// Migración a 1D6 por fases (docs/MIGRACION-1D6.md): el halfling fue el piloto;
+// el orco es la Fase 2 (solo dados, de momento). Las otras dos razas siguen en 2d6.
+const es1d6 = (pj) => pj && (pj.raza === "halfling" || pj.raza === "orco");
+// La 2ª oportunidad de equipo (biblia §2.4) lee el vínculo del vestuario, que
+// cada raza nombra a su manera (el orco no tiene "equipo": tiene "banda").
+const relEquipo = (pj) => pj.raza === "orco" ? (pj.rel.banda || 0) : (pj.rel.equipo || 0);
 const objS3 = (pj) => 7 - pj.AG; // objetivo de agilidad (AG 4 → 3+)
 const rollKey1d6 = (pj, m, o) => {
   const has = (h) => pj.hab.includes(h);
@@ -3303,7 +3308,7 @@ export default function App() {
     const log = [];
     let clima = d6() + d6();
     const CLIMAS = { 2: ["Calor asfixiante", "un compañero se queda en el banquillo por el calor"], 3: ["Muy soleado", "−1 a los pases"], 11: ["Lluvioso", "−1 a recoger y recibir"], 12: ["Ventisca", "−1 a las carreras; solo pases cortos"] };
-    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: (es1d6(pj) ? (pj.rel.equipo >= 3 ? 2 : 1) : 2), apotecarioUsado: false, posesion: "neutral", log, intro, torneo: p.torneo, raza: pj.raza, racha: pj.racha || 0 };
+    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: (es1d6(pj) ? (relEquipo(pj) >= 3 ? 2 : 1) : 2), apotecarioUsado: false, posesion: "neutral", log, intro, torneo: p.torneo, raza: pj.raza, racha: pj.racha || 0 };
     const aplicarClima = () => { m.clima = CLIMAS[clima] ? CLIMAS[clima][0] : "Clima perfecto"; if (CLIMAS[clima]) intro.push(`Clima: ${CLIMAS[clima][0]} (${CLIMAS[clima][1]}).`); if (clima === 2 && m.aliados.length) { const v = pick1(m.aliados); v.herido = true; intro.push(`${v.nombre} se queda en el banquillo con la lengua fuera.`); } };
     aplicarClima();
     const ev = d6() + d6();

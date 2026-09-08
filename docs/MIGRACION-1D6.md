@@ -52,7 +52,17 @@ juego, verificar de verdad (build + navegador) antes de dar nada por hecho.**
   **Toca la biblia §3.5** (letalidad 1,5 % por fallo de riesgo sigue valiendo; lo
   que cambia es que ya no hay segundas oportunidades y la banda mortal se estrecha
   a 16): conviene reflejarlo en la biblia cuando se cierre §24.
-- [ ] **Fase 2 — Extender 1D6 a las otras cuatro razas**, una a una, con sus
+- [~] **Fase 2 — Extender 1D6 a las otras cuatro razas (EN CURSO).**
+  **Orco migrado a 1D6 (solo dados, 2026-09-07):** `es1d6` incluye ya `"orco"`; su
+  ficha S3 sale de `base` (MA6 ST3 AG3 AV10 → AG 4+) y `fichaInicial` de cría
+  (AG2 AV9 → AG 5+). La 2ª oportunidad de equipo lee su vínculo real (`rel.banda`,
+  no `rel.equipo`) vía el helper `relEquipo`. Conserva sus **tres vidas** y su
+  **pool serio** (muerte definitiva y variedad siguen siendo halfling-only). Sin
+  Escurridizo (AV10 intacta). Calibración simulada con el umbral de rival 7 ya
+  existente: V73% en Sexta, V52% en Cuarta, V29% en una final dura (FU4), la cría
+  sufre (V37%); letalidad 0,35% por fallo (tanque). Curva sana, sin tocar dificultad.
+  Verificado: build limpio, orco 3/3 al epílogo, humano (2d6) y halfling intactos,
+  0 errores. **Pendientes de Fase 2:** humano y elfa; luego retirar el motor 2d6. una a una, con sus
   fichas S3 (§6) y su ficha de debut donde corresponda. Al terminar, se retira el
   motor 2d6 y el ramal por raza.
 - [ ] **Fase 3 — Memoria del halfling (biblia §23, auditoría).** Conectar las
