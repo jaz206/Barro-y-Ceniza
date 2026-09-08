@@ -183,9 +183,11 @@ Cuatro ramas completas y distintas, no una historia con la piel cambiada:
 | Elfo silvano | Bailarina guerrera | campeona de Primera con 300 años | **cae** hasta Sexta |
 
 Volumen: 7 capítulos por rama, **141 escenas**, ~680 opciones, 106 tiradas,
-38 partidos, ~40.000 palabras. Puedes morir tres veces; la cuarta no cuenta.
+38 partidos, ~40.000 palabras. Puedes morir tres veces; la cuarta no cuenta
+**(salvo el halfling, ya migrado: muerte definitiva a la primera — ver decisión 4).**
 
-Mecánica principal: **2d6 + característica + atributo/3 + habilidades** contra un
+Mecánica principal (motor 2d6, las cuatro razas aún sin migrar): **2d6 +
+característica + atributo/3 + habilidades** contra un
 objetivo (7 a 11). Si fallas una tirada con riesgo: armadura 2d6 ≥ AV, heridas
 2d6 (aturdido / KO / baja) y bajas en un D16 con la muerte en 15-16. Apotecario
 una vez por partido. Además hay un minijuego de partido por turnos con clima,
