@@ -405,12 +405,14 @@ números en los informes enlazados abajo.
    tabla D16 se ensancha) y la **muerte solo cae con un 16 natural** (config B,
    simulada: muere ~2,6 % de las carreras de un jugador normal, ~4 % temerario;
    el resto salen con cicatrices o enteros). La muerte definitiva muestra el
-   **epitafio de la etapa** (`MUERTE_ETAPA[halfling]`, ya escrito) en la pantalla
-   `MuerteFinal`. Ramificado por raza (`raza === "halfling"`): las otras cuatro
-   siguen con las tres vidas (`MAX_MUERTES`) hasta que la migración les llegue.
-   Vive en `tirarHerida` (banda 13-15 permanente / 16 muerte para el halfling) y
-   en los dos manejadores de muerte (`jugarJugada`, `continuar`), con `tope 0`.
-   Pendiente al migrar el resto: decidir si se hace global y qué se dice en la
+   **epitafio de la etapa** (`MUERTE_ETAPA`, ya escrito para las cinco razas) en la
+   pantalla `MuerteFinal`. Controlado por el predicado `muerteDefinitiva(raza)`
+   (halfling + **orco desde 2026-09-07**): al migrar cada raza se añade ahí, una
+   sola línea; las no migradas siguen con las tres vidas (`MAX_MUERTES`). Vive en
+   `tirarHerida` (banda 13-15 permanente / 16 muerte) y en los dos manejadores de
+   muerte (`jugarJugada`, `continuar`), con `tope 0`. Nota: el orco es un tanque
+   (AV10), así que muere por dados muy poco; su peligro mortal de verdad son los
+   momentos con guion. Pendiente al migrar el resto: qué se dice en la
    portada (que aún promete "tres muertes").
 5. **Cuánto reglamento meter en el partido**: turnover y dados de bloqueo lo
    acercan al tablero y lo alejan del librojuego. Es decisión de producto.
