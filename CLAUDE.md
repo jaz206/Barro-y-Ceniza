@@ -24,10 +24,14 @@
 
 ## ⚖️ NORMATIVA: la biblia de sistema manda (decisión 2026-09-06)
 
-**`docs/biblia-sistema.md` (v1.19) es el documento normativo del proyecto.**
+**`docs/biblia-sistema.md` (v1.20) es el documento normativo del proyecto.**
 Cualquier historia, raza o capítulo se rige por lo que dice. El libro del
 halfling desarrollado por el cliente vive en `docs/halfling/` (7 capítulos + el
-duelo de la abuela, prosa patrón oro). Si una escena necesita saltarse una
+duelo de la abuela, prosa patrón oro). **El libro del orco vive en `docs/orco/`**
+(7 capítulos de prosa final + documento de raza, patrón oro del cliente,
+2026-09-08). **v1.20 (2026-09-08):** la sección 18 formaliza **dos modelos de
+rejugabilidad** — A (un cruce grande, el halfling) y B (acumulación sobre 3-4
+ejes, el orco). Cada raza elige el suyo; prohibido el castigo moral en ambos. Si una escena necesita saltarse una
 regla, primero se cambia la biblia y luego se escribe la escena.
 
 **Migración a 1D6 en curso** (`docs/MIGRACION-1D6.md`). El motor de partido pasa

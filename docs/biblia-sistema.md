@@ -1,6 +1,6 @@
 # Biblia del sistema — Barro y Ceniza
 
-**Versión 1.19** · Documento normativo
+**Versión 1.20** · Documento normativo
 
 Este documento define las reglas del sistema. Cualquier historia, raza o capítulo que se escriba para *Barro y Ceniza* debe regirse por lo que hay aquí. Si una escena necesita saltarse una regla, primero se cambia la regla en este documento y luego se escribe la escena.
 
@@ -16,6 +16,10 @@ Este documento **no** contiene historia, personajes ni texto literario. Solo est
 Esos documentos mandan sobre **cómo funciona** una regla. No mandan sobre **qué reglas usamos**. Ver la sección 0, principio 6.
 
 Si usamos una regla y la aplicamos distinto a como está en el Codex, este documento está mal. Si decidimos no usar una regla, no pasa nada.
+
+### Cambios respecto a la v1.19
+
+- Se reescribe la sección 18. Antes daba el cruce del capítulo 4 por obligatorio para toda raza; era un error. Ahora hay **dos modelos válidos**: A (un cruce grande, el halfling) y B (acumulación de muchas decisiones sobre 3-4 ejes, el orco). La raza elige el que encaja con su tema. Se añaden los requisitos del modelo B para evitar la falsa acumulación.
 
 ### Cambios respecto a la v1.18
 
@@ -1001,13 +1005,21 @@ Regla de coherencia: una estrella solo aparece en una liga que le corresponda (l
 
 ---
 
-## 18. Ramas
+## 18. Ramas y acumulación
 
-### 18.1 El cruce del capítulo 4
+Un libro-juego tiene que ser rejugable: dos partidas distintas deben llevar a experiencias y finales distintos. Hay **dos maneras** de conseguirlo, y las dos son válidas. Cada raza elige la suya según qué clase de historia es.
 
-Toda raza tiene una decisión grande en el capítulo 4. No pregunta qué jugada quieres hacer. Pregunta qué clase de personaje quieres ser.
+### 18.1 Los dos modelos
 
-Una rama de verdad necesita, como mínimo:
+**Modelo A — El cruce.** Una única decisión grande, normalmente en el capítulo 4, que parte el libro en dos experiencias claras. Sirve para historias que *tratan* de una elección única (el halfling: quedarte o irte). Limpio y muy rejugable.
+
+**Modelo B — La acumulación.** No hay un cruce único; hay muchas decisiones medianas a lo largo del libro que se acumulan sobre unos pocos ejes y llevan a finales muy distintos, sin que haya un momento único donde "todo cambió". Sirve para historias que *tratan* de construir algo pieza a pieza (el orco: se construye una banda). Más fiel a la vida, más difícil de ejecutar bien.
+
+**Ninguno es superior.** Forzar un cruce a una historia de acumulación (o al revés) la traiciona. La raza elige el modelo que encaja con su tema, y lo declara en su documento.
+
+### 18.2 Requisitos del modelo A (el cruce)
+
+Si la raza usa un cruce, la bifurcación necesita como mínimo:
 
 - **compañeros distintos**;
 - **un antagonista distinto**;
@@ -1017,11 +1029,22 @@ Una rama de verdad necesita, como mínimo:
 
 Si una rama solo cambia adjetivos, no es una rama. Es un adjetivo.
 
-### 18.2 Lo que no se hace
+### 18.3 Requisitos del modelo B (la acumulación)
 
-**Prohibido el castigo moral automático.** Una rama que consiste en irse con los malos, pasarlo mal tres capítulos y volver arrepentido está prohibida.
+Si la raza usa acumulación, necesita, para que las decisiones pequeñas de verdad importen:
 
-La rama alternativa puede ganar más partidos, dar más dinero, dar más fama y convertir al personaje en mejor jugador. Lo que descubra al final es cosa suya, no del autor.
+- **Entre 3 y 4 ejes** declarados: tensiones sobre las que casi todas las decisiones suman (p. ej., para el orco: Banda↔Charca, Jefe↔Igual, Deuda↔Libre, Banda entera↔Solo). No son barras sueltas: son las columnas del personaje.
+- **Cada decisión mediana mueve al menos un eje.** Una decisión que no mueve ningún eje ni deja recuerdo es relleno.
+- **Los finales leen los ejes.** El epílogo modular (sección 19) debe ramificar según dónde quedaron los ejes, no solo según el resultado del último partido. Dos jugadores con ejes opuestos deben llegar a finales opuestos.
+- **Sin un único punto de no retorno.** El jugador puede corregir el rumbo con decisiones posteriores. La acumulación premia la coherencia sostenida, no un botón único.
+
+El peligro del modelo B es la falsa acumulación: cincuenta decisiones que confluyen en el mismo epílogo genérico. Si al probar dos partidas muy distintas sale el mismo final, el sistema de ejes está mal y hay que arreglarlo antes de escribir más.
+
+### 18.4 Lo que no se hace (los dos modelos)
+
+**Prohibido el castigo moral automático.** Una rama —o una acumulación— que consiste en tomar las decisiones "malas", pasarlo mal, y volver arrepentido está prohibida.
+
+La vía alternativa puede ganar más partidos, dar más dinero, más poder, y convertir al personaje en mejor jugador. Lo que descubra al final es cosa suya, no del autor.
 
 ---
 
@@ -1089,7 +1112,7 @@ Todo documento de raza sigue este orden:
 4. **Las tres vueltas de la muerte** (sección 4, cumpliendo la 4.2).
 5. **La némesis** (una estrella de `STar_Players.md`, sección 17.9).
 6. **Mapa de capítulos** (los siete, con su etapa de vida y su función).
-7. **El cruce del capítulo 4** (las dos ramas, sección 18.1).
+7. **El cruce del capítulo 4** (las dos ramas, sección 18.2 —modelo A, el cruce—).
 8. **Actividades** (6-10, sección 15).
 9. **Objetos** (los uno o dos que puede haber, sección 5).
 10. **Economía de la raza** (sueldo, en qué gasta, sección 8).
@@ -1113,7 +1136,7 @@ Antes de dar por cerrado un documento de raza:
 - [ ] Las tres vueltas de la muerte escritas, cumpliendo la sección 4.2.
 - [ ] Némesis elegida de `STar_Players.md`, dentro de sus ligas.
 - [ ] Siete capítulos con etapa de vida y función.
-- [ ] El cruce del 4 con dos ramas que cumplen la sección 18.1.
+- [ ] El cruce del 4 con dos ramas que cumplen la sección 18.2 (modelo A).
 - [ ] Entre 6 y 10 actividades, filtradas por raza (sección 15).
 - [ ] Cada relación e ingreso con su gasto correspondiente (sección 8.1).
 
@@ -1191,7 +1214,7 @@ La escena del cruce ya está escrita en la build y es de lo mejor del libro; se 
 
 Las dos ramas **reconvergen en la final del capítulo 6**: mismo partido, pero Berto llega siendo otra persona. La final lee de qué rama vienes y cambia quién eres en el campo, no el rival.
 
-**Qué se siente (frío profesional).** En Mortaigne se gana y se acabó la risa y la comida. No es el camino malo, es el camino sin calor. Prohibido el castigo moral automático (sección 18.2): desde Mortaigne se puede ganar la final, incluso más fácil, porque llegas siendo mejor jugador. Lo que Berto descubre no es que eligió mal; es que ganó, y que no sabe a lo que creía. Eso lo decide el jugador en el epílogo, no el autor.
+**Qué se siente (frío profesional).** En Mortaigne se gana y se acabó la risa y la comida. No es el camino malo, es el camino sin calor. Prohibido el castigo moral automático (sección 18.4): desde Mortaigne se puede ganar la final, incluso más fácil, porque llegas siendo mejor jugador. Lo que Berto descubre no es que eligió mal; es que ganó, y que no sabe a lo que creía. Eso lo decide el jugador en el epílogo, no el autor.
 
 #### Personajes de Mortaigne (3 + objeto)
 
@@ -1338,7 +1361,7 @@ A diferencia de la abuela, Roblerto **no necesita arreglo**: `ramonVendido`, `am
 5. **Segundas oportunidades de equipo.** Decidido para el halfling: la repetición de equipo depende de la relación `equipo` (ver la memoria de equipo en la sección 23, y la sección 2.4). Falta calibrar el umbral y decidir si además se pueden comprar. Para las otras razas, la relación equivalente gobierna sus repeticiones.
 6. **Relaciones sobrantes.** Hay que pasar la regla 9.3 a las relaciones existentes de cada raza y eliminar o fusionar las que no lleguen al mínimo.
 7. **Némesis por raza.** Falta definir la némesis de cada raza restante: un rival recurrente de su propia liga, no una estrella (sección 17.9). El halfling ya la tiene (los Carniceros de Bögenhafen).
-8. **Ramas del capítulo 4.** Ninguna raza cumple todavía los requisitos de la sección 18.1.
+8. **Ramas o acumulación.** Cada raza elige su modelo (sección 18.1). El halfling usa cruce (modelo A, cumplido). El orco usa acumulación (modelo B). Las demás, por decidir.
 
 ---
 
