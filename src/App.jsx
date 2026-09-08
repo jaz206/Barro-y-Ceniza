@@ -817,15 +817,15 @@ const ORCO = {
       texto: () => `Tienes tres días y un cesto. La charca de Gorgomor te ha tirado al río porque eres el más pequeño de veinte, y las charcas no crían pequeños: los tiran. El cesto se engancha en una raíz. Desde la orilla, cinco goblins con cascos robados te miran como se mira la comida. Uno, con un casco humano que le tapa los ojos, dice: 'Muerde'. Muerdes al primero que se acerca. Es Snotlig. Se ríe con la mano sangrando.`,
       opciones: [
         { txt: "Seguir mordiendo hasta que te suelten.", fx: { Ferocidad: 2, rel: { snotlig: 1, banda: 1 } }, msg: "Muerdes a tres. Snotlig decide que un orco que muerde a tres goblins a los tres días vale más que un guiso. Te llevan al cesto de los cascos. Eres el sexto." },
-        { txt: "Dejar de morder y mirar. Contar cuántos son.", fx: { Astucia: 2, rel: { snotlig: 2 } }, msg: "Cuentas cinco. Snotlig te ve contar. 'Este cuenta', dice. Es la primera vez que un goblin dice algo bueno de un orco. Te llevan al cesto de los cascos como se lleva un tesoro." },
+        { txt: "Dejar de morder y mirar. Contar cuántos son.", fx: { Astucia: 2, rel: { snotlig: 2 }, eje: { bandaCharca: 1 }, flag: "contasteDesdeElCesto" }, msg: "Cuentas cinco. Snotlig te ve contar. 'Este cuenta', dice. Es la primera vez que un goblin dice algo bueno de un orco. Te llevan al cesto de los cascos como se lleva un tesoro." },
         { txt: "Comerte el casco humano del que te tapa los ojos.", fx: { Ferocidad: 1, Ambición: 1, rel: { snotlig: 1 }, flag: "cascoComido" }, msg: "Te comes medio casco. Snotlig se lo apunta: un orco que come metal a los tres días. 'Va a crecer', dice. Aciertas. Aciertan." },
       ] },
     snotlig: { titulo: "El jefe de los goblins",
       texto: (pj) => `Snotlig es el jefe de los cinco goblins y lleva doce cascos robados colgados del cinturón, uno por cada equipo de Sexta al que ha desvalijado. Viven bajo un puente, de robar equipamiento y venderlo a Ma Gorka, la ogra de la taberna. Te cría con lo que sobra. Creces igual: los orcos crecen con lo que hay. A los cinco años ya eres más grande que él, y Snotlig lo nota antes que tú. ${pj.flags.cascoComido ? "'Come cascos', dice de ti a los demás, con orgullo y con miedo." : ""}`,
       opciones: [
-        { txt: "Seguir obedeciendo a Snotlig. Es tu jefe.", fx: { Honor: 2, Voluntad: 1, rel: { snotlig: 3, banda: 2 }, flag: "obedecisteASnotlig" }, msg: "Obedeces. Snotlig te enseña a robar un casco sin que el dueño se despierte, a contar goblins y a no comerte a los tuyos. Es lo más parecido a un padre que tendrá un orco." },
-        { txt: "Hacerle saber que ya eres más grande. Sin pegarle.", req: { Ferocidad: 2 }, forzable: true, fx: { Ferocidad: 1, Ambición: 1, rel: { snotlig: -1, banda: 2 }, flag: "masGrandeQueSnotlig" }, msg: "Te pones de pie a su lado. Le sacas una cabeza. Snotlig lo ve y no dice nada. Los otros cuatro goblins lo ven también, y desde ese día te miran a ti antes de mirarle a él. Snotlig lo sabe. Empieza a dormir lejos." },
-        { txt: "Proponerle un trato: tú creces, él manda. Los dos comemos.", req: { Astucia: 2 }, forzable: true, fx: { Astucia: 2, rel: { snotlig: 2, banda: 1 }, flag: "tratoConSnotlig" }, msg: "Snotlig lo piensa. 'Trato', dice, y escupe. Es la primera negociación de tu vida y la haces con un goblin. Aprendes que un jefe que piensa dura más que uno que muerde." },
+        { txt: "Seguir obedeciendo a Snotlig. Es tu jefe.", fx: { Honor: 2, Voluntad: 1, rel: { snotlig: 3, banda: 2 }, eje: { jefeIgual: -1 }, flag: "obedecisteASnotlig" }, msg: "Obedeces. Snotlig te enseña a robar un casco sin que el dueño se despierte, a contar goblins y a no comerte a los tuyos. Es lo más parecido a un padre que tendrá un orco." },
+        { txt: "Hacerle saber que ya eres más grande. Sin pegarle.", req: { Ferocidad: 2 }, forzable: true, fx: { Ferocidad: 1, Ambición: 1, rel: { snotlig: -1, banda: 2 }, eje: { jefeIgual: 1 }, flag: "masGrandeQueSnotlig" }, msg: "Te pones de pie a su lado. Le sacas una cabeza. Snotlig lo ve y no dice nada. Los otros cuatro goblins lo ven también, y desde ese día te miran a ti antes de mirarle a él. Snotlig lo sabe. Empieza a dormir lejos." },
+        { txt: "Proponerle un trato: tú creces, él manda. Los dos comemos.", req: { Astucia: 2 }, forzable: true, fx: { Astucia: 2, rel: { snotlig: 2, banda: 1 }, eje: { jefeIgual: -1 }, flag: "tratoConSnotlig" }, msg: "Snotlig lo piensa. 'Trato', dice, y escupe. Es la primera negociación de tu vida y la haces con un goblin. Aprendes que un jefe que piensa dura más que uno que muerde." },
       ] },
     losCascos: { titulo: "Los cascos de los Charcos", partido: { rival: "Los Charcos de Grünburg", fuerza: 1 },
       texto: (pj) => `Los Charcos de Grünburg, humanos de Sexta, tienen once cascos nuevos y un granero sin cerrojo. Snotlig quiere robarlos. Tú quieres otra cosa: retarles. 'Si ganáis, os quedáis los cascos'. Los humanos se ríen: cinco goblins y un orco de siete años contra once campesinos. Aceptan por reírse. Es tu primer partido. No hay árbitro. Hay una vaca. ${pj.flags.obedecisteASnotlig ? "Snotlig dice que es una tontería y juega igual." : "Snotlig juega porque los otros cuatro ya están en el campo."}`,
@@ -843,8 +843,8 @@ const ORCO = {
         { txt: "Rugir. Con lo que hay.", tirada: { stat: "ST", obj: 7, riesgo: false,
           ok: { txt: "Ruges. Sale un ruido que no es de goblin ni de orco: es tuyo. En la charca, tres crías se agachan sin saber por qué. Snotlig se tapa los oídos y sonríe. 'Va a crecer'.", fx: { Ferocidad: 2, fama: 3, rel: { banda: 2, snotlig: 1 }, flag: "rugiste" } },
           ko: { txt: "Ruges. Sale un chillido. Desde el elefante, Rey Krug se gira y mira hacia la orilla, y no ve nada, y se ríe con la boca llena. Snotlig te saca de allí a rastras. 'Otro día'.", fx: { Voluntad: 1, rel: { snotlig: 1 } } } } },
-        { txt: "No rugir. Mirar cómo se agacha la charca y aprender por qué.", fx: { Astucia: 2, rel: { snotlig: 1 }, flag: "mirasteALaCharca" }, msg: "Miras. La charca se agacha porque Krug come primero y pega segundo, en ese orden. Lo apuntas donde apuntan los orcos: en el estómago. Snotlig te mira mirar. 'Este cuenta', repite." },
-        { txt: "Rugirle a Snotlig. A ver quién se agacha.", req: { flag: "masGrandeQueSnotlig" }, forzable: true, fx: { Ferocidad: 2, Ambición: 1, rel: { snotlig: -3, banda: 3 }, flag: "snotligSeAgacho" }, msg: "Le ruges a un goblin en la oscuridad. Se agacha. No por el ruido: por lo que viene después. Desde esa noche, la banda es tuya y Snotlig es tu segundo, y los dos sabéis que un día se lo cobrará." },
+        { txt: "No rugir. Mirar cómo se agacha la charca y aprender por qué.", fx: { Astucia: 2, rel: { snotlig: 1 }, eje: { bandaCharca: 1 }, flag: "mirasteAKrug" }, msg: "Miras. La charca se agacha porque Krug come primero y pega segundo, en ese orden. Lo apuntas donde apuntan los orcos: en el estómago. Snotlig te mira mirar. 'Este cuenta', repite." },
+        { txt: "Rugirle a Snotlig. A ver quién se agacha.", req: { flag: "masGrandeQueSnotlig" }, forzable: true, fx: { Ferocidad: 2, Ambición: 1, rel: { snotlig: -3, banda: 3 }, eje: { jefeIgual: 1 }, flag: "snotligSeAgacho" }, msg: "Le ruges a un goblin en la oscuridad. Se agacha. No por el ruido: por lo que viene después. Desde esa noche, la banda es tuya y Snotlig es tu segundo, y los dos sabéis que un día se lo cobrará." },
       ] },
 
     /* ---------- 2. EL CAMPO ---------- */
@@ -1120,7 +1120,7 @@ const ORCO = {
   },
   recuerdos: {
     cascoComido: "Medio casco a los tres días.", obedecisteASnotlig: "Snotlig te enseñó a no comerte a los tuyos.", masGrandeQueSnotlig: "Le sacaste una cabeza. Empezó a dormir lejos.", tratoConSnotlig: "'Trato'. Y un escupitajo.",
-    cascosGanados: "Los cascos de los Charcos, ganados, no robados.", cascosRobados: "Snotlig los robó igual.", rugiste: "Un ruido que era tuyo.", mirasteALaCharca: "Krug come primero y pega segundo.", snotligSeAgacho: "Se agachó. Un día se lo cobra.",
+    cascosGanados: "Los cascos de los Charcos, ganados, no robados.", cascosRobados: "Snotlig los robó igual.", rugiste: "Un ruido que era tuyo.", mirasteAKrug: "Krug come primero y pega segundo. Se lo apuntaste en el estómago.", contasteDesdeElCesto: "Contaste desde el cesto. 'Este cuenta', dijo Snotlig.", snotligSeAgacho: "Se agachó. Un día se lo cobra.",
     retasteHalflings: "Quien pierde se va.", campoRobado: "Los halflings lloraron comiendo.", deudaGorka: "Tu nombre en una pared, con una uña.", campoGanado: "El árbol se echó atrás.", sinDeuda: "La única banda que no está en la pared.", gorkaApuesta: "'Por el pequeño'. Cien coronas.",
     wazzokEnLaBanda: "Mientras Wazzok falle, no mueres.", wazzokEchado: "Se fue cojeando y prediciendo.", wazzokApuesta: "'Que llegas a Gorgomor'. Al doscientos.",
     arbitroParaGrimgutz: "Le llevaste un árbitro. Se lo comió entero.", esperasteAGrimgutz: "Dos días en el puente. Se sentó a tu lado.", grimgutzSeSienta: "La única jugada de su vida.", wazzokYGrimgutz: "Un chamán con un troll a cuerda.", pegasteAGrimgutz: "Le pegaste a un troll. Se rió.",
@@ -3185,7 +3185,7 @@ const nuevoPj = (nombre, raza) => {
   const f = H.fichaInicial || H.base; // los que empiezan de crío arrancan con menos
   return { nombre, raza, atr: { Voluntad: 1, Astucia: 1, Ferocidad: 1, Honor: 1, Ambición: 1 },
     MA: f.MA, ST: f.ST, AG: f.AG, AV: f.AV, hab: [...f.hab], pro: !H.fichaInicial,
-    rel: { ...H.relInicial }, oro: 0, fama: 0, pv: 2, muertes: 0, flags: {}, palmares: [], spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], lesiones: 0, formaPend: 0,
+    rel: { ...H.relInicial }, eje: {}, oro: 0, fama: 0, pv: 2, muertes: 0, flags: {}, palmares: [], spp: 0, nivel: 1, mejorasPend: 0, trofeos: [], noticias: [], lesiones: 0, formaPend: 0,
     racha: 0, records: {}, division: 6, equipo: H.equipoInicial };
 };
 
@@ -3225,6 +3225,10 @@ const aplicar = (pj, fx) => {
     else if (k === "rel") for (const [r, n] of Object.entries(v)) { if (n) { q.rel[r] = Math.max(-5, Math.min(5, q.rel[r] + n)); chips.push(`${RELACIONES[r]} ${n > 0 ? "+" : ""}${n}`); } }
     else if (k === "flag") { q.flags[v] = true; chips.push(`Recuerdo: ${v}`); }
     else if (k === "flags") { for (const f of v) q.flags[f] = true; }
+    // Ejes de acumulación (biblia §18.3, modelo B — el orco). Tensiones que casi
+    // toda decisión mediana mueve y que los finales leen. Invisibles al jugador
+    // (no generan chip): son las columnas del personaje, no una barra a la vista.
+    else if (k === "eje") { q.eje = { ...(q.eje || {}) }; for (const [e, n] of Object.entries(v)) if (n) q.eje[e] = (q.eje[e] || 0) + n; }
     else if (k === "stat") for (const [s, n] of Object.entries(v)) {
       // De crío las subidas no pasan de la ficha del reglamento (base): así, al
       // firmar, tu ficha es exactamente la estándar, ni por encima.
