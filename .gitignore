@@ -4,8 +4,7 @@ dist/
 .env*
 .DS_Store
 
-# Tablero de tarjetas (storyboard) generado
-halfling-storyboard.html
+# Tablero de tarjetas (storyboard) generado (cualquier raza)
+*-storyboard.html
+*-guion.md
 tools/storyboard/.tmp/
-
-halfling-guion.md
