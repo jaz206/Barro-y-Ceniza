@@ -2195,6 +2195,12 @@ const HALFLING_TIEMPO = {
 
 const HISTORIAS = { humano: HUMANO, enano: ENANO, orco: ORCO, elfo: ELFO, halfling: HALFLING };
 
+// Estado editorial de cada rama para la portada: las terminadas y listas para
+// jugar frente a las que aún están en revisión (motor viejo 2d6, sin migrar).
+// Decisión del cliente (2026-09-09): Orco y Halfling, terminadas; el resto, en
+// revisión. Al terminar una rama, se pone a true aquí (una sola línea).
+const HISTORIA_LISTA = { orco: true, halfling: true };
+
 // Tentación central de cada protagonista (hilo que el epílogo juzga)
 const TENTACION = {
   humano: { nombre: "Ser alguien", flag: "cedisteALaTentacion", test: (pj) => pj.flags.quedasteEnNorburgo || pj.flags.vitalicio || pj.rel.familia <= 0 },
@@ -4113,15 +4119,28 @@ export default function App() {
       <p className="etq">Una vida en el barro</p>
       <h1 className="titulo">Barro y Ceniza</h1>
       <p className="lead">La vida y el sufrimiento de un jugador del Barro.</p>
-      <div className="razas" role="group" aria-label="Elige tu raza">
-        {Object.entries(HISTORIAS).map(([id, h]) => (
+      {(() => {
+        const entradas = Object.entries(HISTORIAS);
+        const listas = entradas.filter(([id]) => HISTORIA_LISTA[id]);
+        const revision = entradas.filter(([id]) => !HISTORIA_LISTA[id]);
+        const tarjeta = ([id, h]) => (
           <button key={id} className={`raza ${raza === id ? "activa" : ""}`} aria-pressed={raza === id} onClick={() => setRaza(id)}>
             <b>{h.nombre}</b><small>{h.lema}</small>
             {(() => { const f = h.fichaInicial || h.base; return <span className="mini">{h.emergente ? "Posición: la forjas con tus decisiones" : h.puesto} · empiezas MA {f.MA} ST {f.ST} AG {7 - f.AG}+ AV {f.AV}+{h.fichaInicial ? " (de crío)" : ""}</span>; })()}
           </button>
-        ))}
-      </div>
-      <p className="lead">{H.portada} Puedes morir dos veces. La tercera no cuenta.</p>
+        );
+        return (<>
+          {listas.length > 0 && <>
+            <p className="etq">Terminadas · listas para jugar</p>
+            <div className="razas" role="group" aria-label="Historias terminadas, listas para jugar">{listas.map(tarjeta)}</div>
+          </>}
+          {revision.length > 0 && <>
+            <p className="etq">En revisión · se pueden jugar, pero aún las estamos afinando</p>
+            <div className="razas" role="group" aria-label="Historias en revisión">{revision.map(tarjeta)}</div>
+          </>}
+        </>);
+      })()}
+      <p className="lead">{H.portada} {muerteDefinitiva(raza) ? "Si mueres, mueres: una sola vida, sin segundas oportunidades." : "Puedes morir dos veces. La tercera no cuenta."}</p>
       {vidas.length > 0 && <p className="mini">Es el mismo mundo: {vidas[0].nombre} sigue ahí, en una grada, en una cabina o en una tumba, y esta vida se cruzará con la suya.</p>}
       <label className="campo"><span>Tu nombre</span><input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder={{ humano: "Josef hijo, Anselm, Ludo...", enano: "Balin, Thora, Brokk el joven...", orco: "El Pequeño, Zugrat, Morfang...", elfo: "Aelindra, Ithildae, Nimue..." }[raza]} /></label>
       <button className="btn" onClick={empezar}>Abrir el libro</button>

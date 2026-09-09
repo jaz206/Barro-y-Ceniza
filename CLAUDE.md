@@ -248,6 +248,20 @@ navegador cap 1→7 (9 partidos) hasta el epílogo, sin errores.
   las noticias del mundo. Equipo: los Comepasteles, con Roblerto (el árbol que te
   confunde con el balón) y Bortrand (el Chef que roba la cerveza rival).
 
+## Portada: historias terminadas vs. en revisión (decisión del cliente, 2026-09-09)
+
+La pantalla de selección divide las cinco ramas en dos grupos con cabecera:
+**"Terminadas · listas para jugar"** (Orco y Halfling, las dos llevadas al 100 %:
+1D6, ejes/tentación, muerte definitiva, pool y momentos propios) y **"En revisión
+· se pueden jugar, pero aún las estamos afinando"** (Humano, Enano, Elfo, todavía
+en el motor 2d6, sin migrar). Las dos secciones son jugables; solo cambia la
+etiqueta. El estado vive en `HISTORIA_LISTA` (`{ orco: true, halfling: true }`):
+al terminar una rama se pone a `true` ahí, una línea. La frase de muerte de la
+portada se adapta a la rama: las de muerte definitiva (`muerteDefinitiva(raza)`)
+dicen "Si mueres, mueres: una sola vida"; el resto sigue con "Puedes morir dos
+veces. La tercera no cuenta". Así se resuelve el pendiente de la decisión 4 (la
+portada ya no promete tres/dos muertes a quien juega con muerte definitiva).
+
 ## Números de serie limados — decisión de producto, mantenerla
 
 En todo el juego **no aparece "Blood Bowl" ni una vez**, y es a propósito:
