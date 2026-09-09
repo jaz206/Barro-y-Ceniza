@@ -303,8 +303,18 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
 - **Fase 1 HECHA (2026-09-09):** pool propio `PLAY_POOL_ENANO` ("la caja" + la
   opción de correr) y momentos `MOMENTO_FLAVOR_ENANO`/`RIVAL_MARCA_ENANO`.
   Aditivo, no rompe nada; verificado (build + recorrido enano cap1→7, errores=0).
-- **Pendiente:** Fase 2 eje Correr↔Caja + cruce cap 4; Fase 3 Faelas→rival;
-  Fase 4 Brokk/Dorin/Grimnir/Thorek + ramas A/B; Fase 5 migración 1D6 y ajuste.
+- **Fase 2 HECHA (2026-09-09):** el eje Correr↔Caja ya se cobra. `ejeEnano(pj)`
+  deriva el balance de las marcas que el juego ya pone (`ENANO_CORRER`/
+  `ENANO_CAJA`; `cajaQueSeAbre`/`subisteConTuCaja`/etc. → "sintesis", la caja que
+  corre). Se lee en el cruce (`laLlamada`, colorea el peso de volver/quedarse) y
+  en el `epilogo` (frase por perfil: correr / caja / sintesis / medio). Aditivo,
+  sin sembrar en cada opción; verificado por lógica (4 perfiles) y recorrido
+  (errores=0). Prosa de Claude, marcada para revisión.
+- **Pendiente:** Fase 3 Faelas→rival (cross-cutting: hoy es el elfo fichado en
+  el banquillo, hay que reconvertirlo a rival de las Espinas/Hojas — ojo,
+  aparece como compañero en laVenta, faelasLlega, elfos, capitania, final);
+  Fase 4 Brokk/Dorin (gatear `dorinMuerto`)/Grimnir/Thorek + ramas A/B;
+  Fase 5 migración 1D6 y ajuste fino.
 
 ## Números de serie limados — decisión de producto, mantenerla
 

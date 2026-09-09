@@ -374,6 +374,22 @@ const HUMANO = {
 /* ====================== ENANO ====================== */
 
 /* ====================== ENANO — "EL QUE CORRE" ====================== */
+// Eje Correr <-> Caja del enano (doc de raza secs. 7-8). El corazón del libro.
+// Hoy se movía en marcas sueltas y no lo leía nadie al final (auditoria del
+// cliente, monton 1). Se deriva de esas mismas marcas (no hace falta sembrar) y
+// se cobra en el cruce (laLlamada) y en el epilogo. "sintesis" = la caja que
+// corre (turno ocho): ni pura caja ni puro correr, la respuesta del libro.
+const ENANO_CORRER = ["corristeElPrimerDia", "corristeEnElDerbi", "corristeEnElDescenso", "abristeLaCaja", "cruceEnCythel", "cruceEnPizarra", "jugadaFaelas", "jovenesCorren", "corristeConHumanos", "traicionasteLaCaja", "quedasteEnNorburgo", "ganasteCorriendo", "campeonCorriendo", "borrasteLaCaja", "cajaConFinta"];
+const ENANO_CAJA = ["cajaAprendida", "aguantasteLaCaja", "cerrasteElMotin", "jovenesEnCaja", "salvasteLaCaja", "dirigisteLaCaja", "cazasteReceptora", "teDejasteCaer", "contraFaelas", "volviste", "ganasteEnLaCaja", "campeonEnCaja", "dijisteLaFrase", "finCajaDeSiempre", "cubrirasAGrimnir", "teSentasteEnLaCaja", "anotasteParaDorin"];
+const ejeEnano = (pj) => {
+  const f = pj.flags || {};
+  if (f.cajaQueSeAbre || f.finCajaQueSeAbre || f.subisteConTuCaja || f.ganasteConFaelas) return "sintesis";
+  const correr = ENANO_CORRER.reduce((n, k) => n + (f[k] ? 1 : 0), 0);
+  const caja = ENANO_CAJA.reduce((n, k) => n + (f[k] ? 1 : 0), 0);
+  if (correr - caja >= 2) return "correr";
+  if (caja - correr >= 2) return "caja";
+  return "medio";
+};
 const ENANO = {
   nombre: "Enano", lema: "Aquí no se corre. Aquí se entra en la caja.",
   puesto: "Corredor Enano", reglas: ["Brutos Brutales", "Sobornos y Corrupción"],
@@ -580,7 +596,7 @@ const ENANO = {
         { txt: "Dejarte tumbar en la primera jugada y ver el partido desde el suelo.", req: { Honor: 3 }, forzable: true, fx: { Honor: 1, fama: -5, golRival: 1, rel: { dorin: 3, durak: 3, aficion: 3, club: -3 }, flag: "teDejasteCaer" }, msg: "Te tumban en el turno uno y no te levantas hasta el dieciséis. Los Cascos ganan uno a cero. Vogt te sienta tres partidos. La grada de piedra, al salir, golpea el suelo con los pies. Sabes para quién." },
       ] },
     laLlamada: { titulo: "La llamada",
-      texto: (pj) => `${pj.flags.durakLucho || pj.flags.cartaADurak ? "Hargrim ejerce la cláusula de recompra que no sabía que tenía." : "Hargrim llama. Los Cascos van últimos y el oro de tu venta se ha ido en el apotecario de Dorin."} Quiere que vuelvas. Vogt te ofrece renovar por el doble: 'Aquí eres alguien. Allí eres el que corre'. Hay una carta de Brokk sin abrir sobre el catre. ${pj.flags.teDejasteCaer ? "La grada de Baraz-Ankor ha mandado una petición con cuatro mil nombres. Los has leído todos." : ""}`,
+      texto: (pj) => `${pj.flags.durakLucho || pj.flags.cartaADurak ? "Hargrim ejerce la cláusula de recompra que no sabía que tenía." : "Hargrim llama. Los Cascos van últimos y el oro de tu venta se ha ido en el apotecario de Dorin."} Quiere que vuelvas. Vogt te ofrece renovar por el doble: 'Aquí eres alguien. Allí eres el que corre'. Hay una carta de Brokk sin abrir sobre el catre. ${pj.flags.teDejasteCaer ? "La grada de Baraz-Ankor ha mandado una petición con cuatro mil nombres. Los has leído todos." : ""} ${(() => { const e = ejeEnano(pj); return e === "correr" ? "Llevas toda la carrera rompiendo la caja: quedarte a correr libre sería, por fin, dejar de disimular lo que eres." : e === "caja" ? "Llevas toda la carrera entrando en la caja aunque te picara correr: quedarte fuera, ahora, sería tirar por la borda lo que tanto te costó ser." : e === "sintesis" ? "Aprendiste a correr desde dentro de la caja, y esa jugada solo existe en Baraz-Ankor: fuera de la montaña no significa nada." : "No sabes todavía si eres el que corre o el que entra en la caja, y esta decisión, quizá, lo decide."; })()}`,
       opciones: [
         { txt: "Volver a los Cascos.", fx: { Honor: 2, rel: { club: 3, durak: 2, dorin: 2, aficion: 2 }, flag: "volviste" }, msg: "Vuelves. Baraz-Ankor huele a piedra mojada y a cerveza de Helgra. En el vestuario, tu sitio tiene una jarra. Nadie dice nada. Es la bienvenida." },
         { txt: "Volver, pero con condiciones: la tiza es tuya.", req: { Ambición: 3 }, forzable: true, fx: { Ambición: 2, Astucia: 1, rel: { club: 1, durak: -2, dorin: -2 }, flag: "volvisteConTiza" }, msg: "Hargrim acepta. Durak lo lee en la Cristalvisión antes que de tu boca. Cuando llegas, la tiza está en el borde de la pizarra y Durak no está en el cuarto. Vuelve al día siguiente. No habla de ello." },
@@ -715,7 +731,12 @@ const ENANO = {
       pj.flags.finCajaQueSeAbre ? "Entrenó a los Cascos treinta años con la caja que se abre en el turno ocho. Murió en la banda, gritando una casilla, y la grada golpeó el suelo tanto rato que hubo que parar el partido." :
       pj.flags.finMina ? "Murió en la galería de Baraz Kadrin, con el pico en la mano, al lado de Brokk, que siguió picando un rato antes de darse cuenta." :
       pj.flags.finMatatrolls ? "Murió como un matatrolls, contra algo grande, sin que nadie le cubriera. Le pusieron el hacha de Grimnir en el pecho." : "Nadie sabe cómo cerró su temporada.";
-    return `${pj.nombre} fue ${rasgo}, y el único enano que corrió. ${pj.flags.campeon ? "Ganó el Cáliz de Barro con los Cascos de Hierro, trescientos años después del último." : "Nunca ganó el Cáliz de Barro con los Cascos, y estuvo a una casilla."} ${pj.rel.dorin >= 4 ? "Dorin Yunquefirme, con ciento ochenta años, bajó la escalera para su entierro. Fue lo último que bajó." : pj.rel.dorin <= -2 ? "Dorin Yunquefirme no fue a su entierro. Mandó el brazalete." : ""} ${pj.rel.helgra >= 4 ? "Helgra sirvió la última tanda y cerró el banquillo." : ""} ${pj.rel.faelas >= 4 ? "Faelas, el elfo de los Cascos, se quedó en la montaña hasta que se le olvidó el bosque." : ""} ${pj.muertes > 0 ? `Murió ${pj.muertes + 1} veces; solo la última contó.` : ""} ${fin}`;
+    const eje = ejeEnano(pj);
+    const ejeFrase = eje === "sintesis" ? "Le enseñó a la caja a correr sin dejar de ser la caja: la primera caja nueva en trescientos años, y la dibujó el corredor que querían meter en ella." :
+      eje === "correr" ? "Corrió toda su vida, ganó y perdió corriendo, y fue el enano que se atrevió a ser un elfo. Libre y solo, siempre las dos cosas." :
+      eje === "caja" ? "El corredor más rápido de la montaña acabó renunciando a correr para ser de los suyos del todo, y ganó la pertenencia, que es lo más difícil de ganar." :
+      "Corrió y entró en la caja a partes iguales, y se retiró sin resolver del todo cuál de los dos era. A lo mejor era los dos.";
+    return `${pj.nombre} fue ${rasgo}, y el único enano que corrió. ${pj.flags.campeon ? "Ganó el Cáliz de Barro con los Cascos de Hierro, trescientos años después del último." : "Nunca ganó el Cáliz de Barro con los Cascos, y estuvo a una casilla."} ${ejeFrase} ${pj.rel.dorin >= 4 ? "Dorin Yunquefirme, con ciento ochenta años, bajó la escalera para su entierro. Fue lo último que bajó." : pj.rel.dorin <= -2 ? "Dorin Yunquefirme no fue a su entierro. Mandó el brazalete." : ""} ${pj.rel.helgra >= 4 ? "Helgra sirvió la última tanda y cerró el banquillo." : ""} ${pj.rel.faelas >= 4 ? "Faelas, el elfo de los Cascos, se quedó en la montaña hasta que se le olvidó el bosque." : ""} ${pj.muertes > 0 ? `Murió ${pj.muertes + 1} veces; solo la última contó.` : ""} ${fin}`;
   },
   recuerdos: {
     cajaAprendida: "Sabes dónde va cada bota antes que ellos.", insolencia: "Le dijiste a Dorin que la caja te sobraba.", helgraMaestra: "Helgra te enseñó con jarras. Juraste no echarla.",
