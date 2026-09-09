@@ -262,6 +262,37 @@ dicen "Si mueres, mueres: una sola vida"; el resto sigue con "Puedes morir dos
 veces. La tercera no cuenta". Así se resuelve el pendiente de la decisión 4 (la
 portada ya no promete tres/dos muertes a quien juega con muerte definitiva).
 
+## Enano — en cola (docs del cliente en `docs/enano/`, 2026-09-09)
+
+El cliente está revisando el enano y manda su patrón oro por partes. Ya en el
+repo: **documento de raza + capítulos 1-4** (`docs/enano/`). **Faltan caps 5, 6,
+7 y la posible biblia nueva.** Decisión del cliente: **esperar a tenerlo todo y
+montar el enano de una pasada coherente, capítulo a capítulo** (el eje se cobra
+en el cap 4 y en el 7; no empezar hasta tener el 7).
+
+**Decisiones tomadas (2026-09-09):**
+- **El enano conserva las TRES muertes** (resucitar), NO pasa a muerte
+  definitiva. Su tema es *durar*, no morir (doc de raza §2). Es la excepción
+  frente a orco/halfling: **no** se añade a `muerteDefinitiva`. Sus tres vueltas
+  (apotecario −1 AV, runa de Helgra −1 car, ancestros −1) son patrón oro.
+
+**Trabajo que pedirá el doc cuando toque (más allá de pegar prosa):**
+1. **Faelas: de compañero ilegal a rival.** Hoy es un elfo fichado por el club
+   enano que nunca se alinea — ilegal en Blood Bowl. Reconvertir a corredor
+   estrella del equipo élfico rival (las Espinas de Cythel / las Hojas).
+   Reescribir `faelasLlega` y `elfos`.
+2. **Eje Correr↔Caja + cruce del cap 4** (modelo híbrido, doc §7-8): un solo eje
+   que se acumula caps 1-3 y se cobra en el cruce (`laLlamada`, venta a los
+   Grifos: rama A volver / rama B quedarse) y en el epílogo. Mismo tipo de
+   sistema que los ejes del orco, con un eje y un cruce.
+3. **Brokk (hermano) huérfano** → tres lecturas (carta del cap 4, final,
+   epílogo). Auditoría del cliente: 36/87 marcas perdidas, el eje sin cobrar.
+4. **Dorin muere en el cap 2** → `dorinMuerto` y gatear apariciones con `noflag`
+   (mismo patrón que Roblerto/Grimgutz).
+5. **Migración a 1D6**: los capítulos vienen escritos en tiradas de un dado
+   ("AG 4+", "FU 5+"), así que codificarlo = migrarlo a 1D6 como orco/halfling.
+   Y su pool/momentos propios (la caja: empujar en bloque) cuando toque.
+
 ## Números de serie limados — decisión de producto, mantenerla
 
 En todo el juego **no aparece "Blood Bowl" ni una vez**, y es a propósito:
