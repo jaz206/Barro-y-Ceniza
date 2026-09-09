@@ -325,8 +325,21 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
   (inofensivas). Verificado: build, lógica de roster (Faelas no alineable fuera
   de la final-cruce), y 4 recorridos cap1→7 errores=0. Prosa de Claude+cliente,
   marcada para revisión.
-- **Pendiente:** Fase 4 Brokk (3 lecturas) / Dorin (ya muere en la build; revisar
-  gateo) / Grimnir / Thorek + pulir ramas A/B; Fase 5 migración 1D6 y ajuste.
+- **Fase 4 HECHA en parte (2026-09-09):** Brokk (huérfano de la auditoría) ya
+  tiene sus tres lecturas: la carta del cap 4 (el texto cambia según `rel.brokk`),
+  el último partido del cap 7 (ya leía `rel.brokk`) y el epílogo (línea nueva por
+  relación). Verificado además que Dorin y Grimnir NO se alinean tras morir/
+  retirarse (el aviso de la auditoría no aplica a la build actual). Aditivo,
+  errores=0.
+- **Divergencias estructurales pendientes de decisión del cliente** (build vs.
+  docs; no bloquean, se juega bien): **Brokk** es en la build el hermano en el
+  equipo RIVAL (Yunques), en los docs es tu COMPAÑERO en la caja — se dejó como
+  está (arco bueno) con las lecturas reforzadas; reconvertirlo a compañero sería
+  otra pasada grande. **Dorin** muere/se retira en el cap 5 (`dorinSeVa`, "El
+  turno doce"), coincide con el doc cap5 A2; su estado vida/muerte en el epílogo
+  lo afina el cliente.
+- **Pendiente:** Grimnir/Thorek (montón 2, opcional) y **Fase 5: migración a 1D6
+  y ajuste fino** (la grande que queda).
 
 ## Números de serie limados — decisión de producto, mantenerla
 
