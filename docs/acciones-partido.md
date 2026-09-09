@@ -38,6 +38,46 @@ El repertorio se divide por **tono**:
 Una historia futura elige el tono que le pegue (o mezcla), y puede añadir tipos o
 acciones nuevas a este catálogo.
 
+## 1.bis Vocabulario: esto es Blood Bowl, NO fútbol (regla dura)
+
+El deporte es un **fútbol americano/rugby brutal con melón ovoide**, no fútbol
+(soccer). La bola **se recoge del suelo con las manos, se lleva en los brazos o
+pegada al pecho, se lanza (pase) o se entrega (hand-off)**. Nunca se juega con el
+pie ni con la cabeza. Prohibido en la prosa de las acciones:
+
+- ❌ **cabecear / remate de cabeza / peinar de cabeza** → ✅ recoger, lanzar, saltar a por ella.
+- ❌ **sombrero, caño, regate, gambeta, driblar** → ✅ esquivar, quiebro, saltar por encima.
+- ❌ **pase raso / al ras / que cruza el barro** (pase por el suelo) → ✅ pase que cruza el aire, pase largo, pase tenso.
+- ❌ **la bola cosida/pegada al pie, con el pie, del pie** → ✅ pegada al pecho, en las manos, en los brazos.
+- ❌ **cae en botas amigas** (recibir con el pie) → ✅ cae en manos amigas.
+- ❌ **disparo, chutar, tiro a puerta, córner, área** → ✅ cruzar la línea, la zona de anotación, el touchdown.
+
+Verbos y sustantivos que SÍ son de este deporte: **recoger, llevar, lanzar/pasar,
+entregar, correr/esprintar, esquivar (dodge), placar/bloquear, blitz, saltar,
+empujar, tumbar, la caja (cage), la línea de anotación, el touchdown, la vejiga/el
+melón, la banda (línea de banda), la grada**. (Modismos con "cabeza"/"pie" que NO
+son la jugada —"ir de cabeza" = de frente, "al pie de la letra", "sin
+despeinarse"— sí valen.)
+
+## 1.ter Adaptar las acciones a cada raza (pendiente, en construcción)
+
+Hoy hay **dos** repertorios: el serio (`PLAY_POOL`, compartido por humano, enano,
+orco y elfa) y el cómico (`PLAY_POOL_HALF`, halfling). El objetivo del cliente es
+que **cada raza tenga su propio sabor** en las acciones y en los momentos
+intermedios, coherente con su ficha y su forma de jugar (biblia §5.2, dos razas =
+dos formas de jugar):
+
+- **Enano** — la **caja**: fuerza y aguante, poco correr. Placar, mantenerse
+  firme, avanzar en bloque paso a paso. Nada de fintas ni saltos.
+- **Orco** — la **bandada**: fuerza bruta y goblins. Ir a por el más grande, la
+  pata de atrás, empujar todos a una, soltar al fanático.
+- **Elfa** — el **baile**: agilidad y pase. Esquivar, saltar, pases largos y
+  precisos. Casi nunca placar de frente.
+- **Humano** — equilibrado: un poco de todo, el "manual" del deporte.
+
+Mientras no estén sus pools propios, las cuatro comparten el serio. La migración
+irá raza a raza, como la de 1D6 y la de la muerte.
+
 ---
 
 ## 2. La "ficha" de una acción (esquema)
