@@ -463,10 +463,18 @@ números en los informes enlazados abajo.
 - **Buscar `si está` y `si vive` en el texto**: donde el juego tiene que decir
   eso, es que la escena no sabe si el personaje sigue ahí. Había siete casos.
   Los cinco con una marca detrás ya están arreglados (uno de Grimgutz, cuatro de
-  Wazzok). **Quedan dos "si vive" —Snotlig y Skabnik— y son de otra clase:
-  hedgean sobre una muerte que el juego no permite.** Ninguno de los dos tiene
-  marca de muerte en ninguna parte, así que o se escribe la escena en la que
-  pueden morir, o se quita el "si vive". Es decisión del cliente.
+  Wazzok). Quedaban dos "si vive" —Snotlig y Skabnik— de otra clase: hedgeaban
+  sobre una muerte que el juego no permitía. **Los dos resueltos (2026-09-09).**
+  Skabnik: coletilla "si sigue" ligada a su estado. **Snotlig: el cliente pidió
+  escribir la escena donde puede morir.** Ahora, en el último partido del orco
+  (`ultimoPartido`), si Snotlig aún juega (no le has dado el cinturón), puedes
+  pasarle la bola "un domingo más": es su elección, una buena muerte de orco (a
+  pulso, sin castigo moral, biblia §18). Tirada AG: si sale, corre y sobrevive
+  (`snotligUnDomingoMas`); si falla, cae en el barro y no se levanta, marca de
+  estado `snotligMuerto`. Esa marca la leen `retiro` (ya sin "si vive"), el
+  epílogo, `elCesto` (ya sin "si queda") y la lista de aliados (no puede alinearse
+  muerto). Verificado por lógica de escena y recorrido completo (errores=0).
+  Prosa de Claude, marcada para revisión.
 - **El juego está solo en español.** Si algún día se publica en itch, el inglés
   es donde está el público de Blood Bowl.
 - **No inventar prosa del juego sin avisar.** La voz es del cliente; si hace
