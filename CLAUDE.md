@@ -310,11 +310,23 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
   en el `epilogo` (frase por perfil: correr / caja / sintesis / medio). Aditivo,
   sin sembrar en cada opción; verificado por lógica (4 perfiles) y recorrido
   (errores=0). Prosa de Claude, marcada para revisión.
-- **Pendiente:** Fase 3 Faelas→rival (cross-cutting: hoy es el elfo fichado en
-  el banquillo, hay que reconvertirlo a rival de las Espinas/Hojas — ojo,
-  aparece como compañero en laVenta, faelasLlega, elfos, capitania, final);
-  Fase 4 Brokk/Dorin (gatear `dorinMuerto`)/Grimnir/Thorek + ramas A/B;
-  Fase 5 migración 1D6 y ajuste fino.
+- **Fase 3 HECHA (2026-09-09):** Faelas reconvertido de fichaje ilegal (elfo en
+  equipo enano, alineable en tus partidos) a **rival puro** (decisión del
+  cliente). Ya NO está en `ENANO_ALIADOS` salvo en la final del cap 6 si cruza
+  (`faelasSeQueda`/`faelasVotado`). Reescritas: `invierno` (te aborda como rival
+  de Cythel con las dos jarras), `faelasLlega` ("El corredor del otro banquillo",
+  te dibuja el cruce del enemigo), `elfos` (juega enfrente; la opción de romper
+  la caja es correr TÚ su cruce), `descenso` (el pase que salva va a un liniero,
+  no a Faelas), `capitania` (el brazalete va a Nain, no a Faelas), `ascenso`
+  (Faelas enfrente con Cythel; el pase va a Nain), `elfoOEnano` (doc cap6: la
+  corte le llama; se une para la final o se va), `final` (reconvergencia intacta,
+  gateada), y transición/epílogo. Marcas ilegales (`faelasSalvador`,
+  `faelasAscenso`, `capitanFaelas`) ya no se ponen; sus lecturas quedan muertas
+  (inofensivas). Verificado: build, lógica de roster (Faelas no alineable fuera
+  de la final-cruce), y 4 recorridos cap1→7 errores=0. Prosa de Claude+cliente,
+  marcada para revisión.
+- **Pendiente:** Fase 4 Brokk (3 lecturas) / Dorin (ya muere en la build; revisar
+  gateo) / Grimnir / Thorek + pulir ramas A/B; Fase 5 migración 1D6 y ajuste.
 
 ## Números de serie limados — decisión de producto, mantenerla
 
