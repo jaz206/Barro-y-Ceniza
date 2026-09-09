@@ -3023,8 +3023,123 @@ const PLAY_POOL_HALF = {
             ko: { txt: "Roblerto elige ese instante para ir a por una mariposa y deja la portería abierta de par en par. El rival cruza por el hueco del árbol. Touchdown suyo.", golRival: true } },
     ], m) }),
 };
-// El halfling juega con su propio repertorio; las demás razas, con el pool serio.
-const poolDe = (pj) => pj.raza === "halfling" ? PLAY_POOL_HALF : PLAY_POOL;
+
+/* ===== POOL DEL ORCO: LA BANDADA (fuerza y goblins) =====
+   Mismo motor, sabor propio (biblia §5.2: dos razas, dos formas de jugar). El
+   orco no baila ni finta: va de frente, en la pata de atrás, empuja en bloque, y
+   los goblins muerden tobillos para que el grande mire abajo. Vocabulario Blood
+   Bowl (docs/acciones-partido.md §1.bis): recoger, lanzar, placar, empujar, la
+   caja, la pata de atrás. Prosa de Claude en la voz staccato del orco, MARCADA
+   PARA REVISIÓN. */
+const PLAY_POOL_ORCO = {
+  saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en el barro", "Balón suelto", "A por la vejiga"], m, 1),
+    situ: `${varia([`El saque cae corto y la vejiga rueda muerta en el centro, de nadie.`, `La bola bota en el barro entre las dos líneas. Todos la miran.`, `Balón suelto. ${m.rivalCorto} viene a por él, grande y sin prisa.`], m, 2)} El que la coja manda el barro.`,
+    ops: pickN([
+      { txt: "Ir de frente y arrancársela al que llegue", det: "El hombro por delante.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+        ok: { txt: "Llegas primero y con todo. Uno de ellos rueda por el barro; la bola es vuestra.", posesion: "propia", baja: true },
+        ko: { txt: "Chocas y rebotas: pesaba más de lo que parecía. Para ellos.", posesion: "rival" } },
+      { txt: "Que los goblins la muerdan y tú la recoges", det: "Ellos abajo, tú la levantas.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "Cinco goblins se tiran a por la bola y a por los tobillos de quien se acerque. En el lío, la recoges del barro y sales. Vuestra.", posesion: "propia" },
+        ko: { txt: "Los goblins muerden mucho y agarran poco. La bola se pierde en el enjambre y sale de su lado.", posesion: "rival" } },
+      { txt: "Plantarte encima de la bola y aguantar", det: "Territorio antes que balón.", stat: "ST", obj: 8, hab: "Mantenerse firme",
+        ok: { txt: "Clavas los pies sobre la vejiga y aguantas el primer empujón, y el segundo. Cuando llegan los tuyos, sigue ahí. Vuestra.", posesion: "propia" },
+        ko: { txt: "Te apartan de un empujón y recogen la bola de debajo de ti. Para ellos.", posesion: "rival" } },
+      { txt: "Ir a por el más grande antes que a por la bola", det: "Si cae el grande, la bola cae sola.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Pasas de la bola y vas a por su grandote: en la pata de atrás, como a los jabalíes. Cae. Su línea se descoloca y la vejiga queda a vuestros pies.", posesion: "propia", baja: true },
+        ko: { txt: "El grande te ve venir y te recibe con todo. Acabas en el barro y la bola es suya.", posesion: "rival" } },
+    ], m) }),
+  ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: varia(["Tienes la bola", "Toca cruzar", "El hueco espera"], m, 1),
+    situ: `${varia([`Tienes la bola y campo por delante. La caja de ${m.rivalCorto} se cierra a cuatro pasos de su línea.`, `La bola en los brazos, la línea a la vista, y ${m.rivalCorto} entre medias. De frente o por el lado.`], m, 2)}`,
+    ops: pickN([
+      { txt: "Bajar el hombro y reventar la caja", det: "A lo bruto, hasta el fondo.", stat: "ST", obj: 10, riesgo: true, hab: "Romper defensas",
+        ok: { txt: "Metes el hombro en el muro y no paras. La caja cruje y cruzas la línea con dos colgados de la espalda. ¡Touchdown!", gol: true },
+        ko: { txt: "La caja aguanta y te tira de espaldas al barro. La bola se queda de su lado.", posesion: "rival" } },
+      { txt: "En la pata de atrás al último que guarda la línea", det: "Todo cae si le das ahí.", stat: "ST", obj: 10, riesgo: true, hab: "Placar",
+        ok: { txt: "Vas al último grandote y le das donde te enseñó un goblin: en la pata de atrás. Cae. Cruzas por encima con la bola. ¡Touchdown!", gol: true },
+        ko: { txt: "Falla el golpe y él no: te sienta en el barro y la jugada muere. Para ellos.", posesion: "rival" } },
+      { txt: "Que los goblins abran hueco mordiendo, y tú cruzas", det: "Ellos muerden, tú corres.", stat: "MA", obj: 9, hab: "Esprintar",
+        ok: { txt: "Los goblins se tiran a los tobillos de la caja y abren un pasillo de gritos. Metes la cabeza y corres por él hasta la línea. ¡Touchdown!", gol: true },
+        ko: { txt: "La caja no se rompe por los tobillos esta vez. Te cierran el hueco y te quedas corto.", posesion: "rival" } },
+      { txt: "Lanzarla larga a un goblin que corre solo", det: "La bola vuela mejor de lo que corres.", stat: "AG", obj: 9, hab: "Pasar",
+        ok: { txt: "La lanzas por encima de la caja y cae en manos de un goblin que ya cruzaba. Anota antes de que nadie llegue. ¡Touchdown!", gol: true, pase: true },
+        ko: { txt: "El lanzamiento se va alto y torcido —no eres lanzador— y lo baja un rival. Contraataque.", posesion: "rival" } },
+    ], m) }) : ({ etq: "Defensa", h: varia([`${m.rivalCorto} sube`, "Te la han quitado", "A parar el carro"], m, 1),
+    situ: `${varia([`${m.rivalCorto} sube con la bola, en bloque, hacia vuestra línea.`, `Perdisteis la bola y ahora vienen los grandotes, en fila.`], m, 2)} Hay que pararlos antes de que crucen.`,
+    ops: pickN([
+      { txt: "Entrarle de frente al que la lleva", det: "A ver quién cae.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Le entras en seco, hombro contra hombro. Suelta la bola y se queda en el barro. Vuestra.", posesion: "propia", baja: true },
+        ko: { txt: "Sigue de pie y te lleva por delante. Avanzan.", posesion: "rival" } },
+      { txt: "Que los goblins le muerdan los tobillos y tú entras", det: "Que mire abajo. Ahí entras tú.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Los goblins le muerden los tobillos, el grande mira abajo, y en ese instante le entras arriba. Cae. Recuperáis la bola.", posesion: "propia", baja: true },
+        ko: { txt: "No mira abajo: te ve venir y te aparta de un manotazo. Siguen subiendo.", posesion: "rival" } },
+      { txt: "Cerrar el paso en bloque, hombro con hombro", det: "Un muro de orco y goblins.", stat: "ST", obj: 8, hab: "Mantenerse firme",
+        ok: { txt: "Os juntáis en la línea, hombro con hombro, y el que lleva la bola choca y rebota. La jugada muere contra vosotros. No cruzan.", posesion: "rival" },
+        ko: { txt: "El bloque se abre por un lado y se cuelan por ahí. Touchdown suyo.", golRival: true } },
+    ], m) }),
+  choque: (pj, m) => ({ etq: "Choque", h: varia(["Guerra en el centro", "Las líneas se buscan", "Primero, el barro"], m, 1),
+    situ: `${varia([`Antes de que la bola importe, las dos líneas se buscan. ${m.rivalCorto} pega primero.`, `Dos muros de carne midiéndose en el barro. ${m.rivalCorto} aprieta.`], m, 2)} El que gane el choque manda el resto del partido.`,
+    ops: pickN([
+      { txt: "Ir a por el más grande. En la pata de atrás.", det: "Si cae el grande, caen todos.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Vas al más grande y le das donde se da a los jabalíes: en la pata de atrás. Cae una tonelada de músculo. Su línea se abre y la vuestra pisa.", posesion: "propia", baja: true },
+        ko: { txt: "Era más grande de lo que parecía. Rebotas y te pisan. Ellos mandan.", posesion: "rival" } },
+      { txt: "Abrir un pasillo a empujones para los tuyos", det: "No tumbar: apartar.", stat: "ST", obj: 8, hab: "Romper defensas",
+        ok: { txt: "Empujas dos casillas de muro y los goblins entran por el hueco como ratas. El barro es vuestro.", posesion: "propia" },
+        ko: { txt: "No se mueven. La línea se traga a los tuyos.", posesion: "rival" } },
+      { txt: "Plantarte y que se estrellen contra ti", det: "Aguantar, no avanzar.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Clavas los pies y su empuje se rompe contra tu armadura. Nadie manda todavía, pero tampoco ceden.", posesion: "neutral" },
+        ko: { txt: "Te llevan por delante. Ganan metros de barro.", posesion: "rival" } },
+      { txt: "Soltar a los goblins a morder rodillas", det: "Muchos dientes pequeños.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Los goblins se meten entre las piernas del muro rival y muerden lo que pillan. La línea de ${m.rivalCorto} se descompone a saltos y maldiciones. El barro es vuestro.", posesion: "propia" },
+        ko: { txt: "Los grandotes pisan a los goblins como quien pisa charcos y siguen. Mandan ellos.", posesion: "rival" } },
+    ], m) }),
+  regate: (pj, m) => ({ etq: "A la carrera", h: varia(["Buscar el hueco", "Correr, no chocar", "Por el lado"], m, 1),
+    situ: `${varia([`No todo es chocar: a veces hay un hueco, y un orco que corre es un escándalo que funciona.`, `${m.rivalCorto} espera el choque. Hoy toca colarse por donde no miran.`], m, 2)}`,
+    ops: pickN([
+      { txt: "Colarte por el hueco que abren los goblins", det: "Ellos lían, tú pasas.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Los goblins montan el lío de siempre y tú te cuelas por el hueco con la bola pegada al pecho. Al otro lado, campo libre. Vuestra.", posesion: "propia" },
+        ko: { txt: "El hueco se cierra antes de que pases y un grandote te para con una mano. Para ellos.", posesion: "rival" } },
+      { txt: "Recogerla en carrera y no soltarla", det: "La cabeza antes que las piernas.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "La levantas del barro sin bajar el ritmo y sigues corriendo, torpe pero imparable. La bola contigo.", posesion: "propia" },
+        ko: { txt: "Se te escapa de las manos en un rebote malo. La cazan ellos.", posesion: "rival" } },
+      { txt: "Ir por fuera a la carrera, pesado pero directo", det: "La banda es tuya.", stat: "MA", obj: 9, hab: "Esprintar",
+        ok: { txt: "Tiras por la banda con esas piernas de orco que corren poco pero aplastan. Los dejas atrás y avanzas. Vuestra.", posesion: "propia" },
+        ko: { txt: "Te cierran contra la cal y sales del campo con la bola. Saque para ellos.", posesion: "rival" } },
+      { txt: "Lanzarla larga por encima de la caja", det: "Torpe, pero a veces entra.", stat: "AG", obj: 9, hab: "Pasar",
+        ok: { txt: "La cuelgas por encima de todos —feo, alto, con suerte— y cae en manos de un tuyo al otro lado. Vuestra y avanzada.", posesion: "propia", pase: true },
+        ko: { txt: "El lanzamiento se queda corto y lo bajan ellos. Para ellos.", posesion: "rival" } },
+    ], m) }),
+  remate: (pj, m) => ({ etq: "Remate", h: varia(["A las puertas", "El último paso", "A un palmo"], m, 1),
+    situ: `${varia([`La línea de ${m.rivalCorto} a un paso, y el último muro entre ella y tú.`, `Todo el partido cabe en el metro que te separa de la línea.`], m, 2)} Cruzas, o se lo llevan.`,
+    ops: pickN([
+      { txt: "En la pata de atrás al que guarda la línea", det: "Como a Krug. Como a todo.", stat: "ST", obj: 10, riesgo: true, hab: "Placar",
+        ok: { txt: "Al último grandote le das en la pata de atrás. Cae. Cruzas por encima de él con la bola en los brazos. ¡Touchdown!", gol: true },
+        ko: { txt: "El golpe no llega y él te frena a un paso de la línea. La bola se queda de su lado.", posesion: "rival" } },
+      { txt: "Empujar el amasijo entero por encima de la línea", det: "Ya no hay finura que valga.", stat: "ST", obj: 10, riesgo: true, hab: "Romper defensas",
+        ok: { txt: "Bajas la cabeza, metes a dos por delante y empujas el montón entero por encima de la línea, con bola y todo. Feo. Cuenta. ¡Touchdown!", gol: true },
+        ko: { txt: "El muro aguanta el envite y te escupe de vuelta al barro. La bola, de su lado.", posesion: "rival" } },
+      { txt: "Que un goblin cruce mientras tú abres el hueco", det: "Tú el muro, él la rata.", stat: "AG", obj: 9, hab: "Pasar",
+        ok: { txt: "Te plantas de muro, aguantas a los grandotes, y le abres el hueco al goblin más pequeño, que cruza la línea entre las piernas de todos. ¡Touchdown de la banda!", gol: true, pase: true },
+        ko: { txt: "El goblin no llega al hueco a tiempo y lo pisan. La bola se queda corta.", posesion: "rival" } },
+    ], m) }),
+  defensa: (pj, m) => ({ etq: "Muralla", h: varia([`${m.rivalCorto} va a por el gol`, "Aguantad", "El último muro"], m, 1),
+    situ: `${varia([`Vais por delante y ${m.rivalCorto} viene a por el empate con todo.`, `${m.rivalCorto} empuja hacia vuestra línea. Sois lo único entre ellos y el gol.`], m, 2)} Si no los paráis aquí, cruzan.`,
+    ops: pickN([
+      { txt: "Entrar en seco al que la lleva", det: "Tumbarlo y que la suelte.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Le entras de frente y lo mandas al barro. Suelta la bola y la recuperáis vosotros. No cruzan.", posesion: "propia", baja: true },
+        ko: { txt: "Te esquiva con el hombro y cruza la línea. Touchdown suyo.", golRival: true } },
+      { txt: "Muro de la banda en la línea, hombro con hombro", det: "Orco y goblins, apretados.", stat: "ST", obj: 8, hab: "Mantenerse firme",
+        ok: { txt: "Os plantáis los once en la línea, hombro con hombro y rodilla ajena. El que lleva la bola choca contra el muro y no encuentra por dónde. No cruzan.", posesion: "rival" },
+        ko: { txt: "El grandote os aparta a dos de un manotazo y cruza por el hueco. Touchdown suyo.", golRival: true } },
+      { txt: "Ir a por el más grande y tumbarlo antes de la línea", det: "Cae la cabeza, para el carro.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Vas al que empuja el ataque y le das en la pata de atrás. Cae, y el resto se para a mirarlo. La jugada muere. No cruzan.", posesion: "propia", baja: true },
+        ko: { txt: "Fallas el golpe y él sigue, y detrás de él cruzan todos. Touchdown suyo.", golRival: true } },
+      { txt: "Que los goblins le enreden los pies en la línea", det: "Muchos tobillos que morder.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Los goblins se le enredan en los pies justo en la línea y el portador se va al barro de bruces, a un palmo de cruzar. No cruzan.", posesion: "rival" },
+        ko: { txt: "Los pisa, maldice, y cruza igual con un goblin colgando de cada bota. Touchdown suyo.", golRival: true } },
+    ], m) }),
+};
+// Cada raza con su repertorio: halfling comedia, orco la bandada, el resto el serio.
+const poolDe = (pj) => pj.raza === "halfling" ? PLAY_POOL_HALF : pj.raza === "orco" ? PLAY_POOL_ORCO : PLAY_POOL;
 /* ===== TIPOS DE PARTIDO (Fase 2) =====
    Cada partido elige un tipo; el tipo decide el arco (cuántas jugadas clave,
    de qué clase) y cómo empiezas (marcador, quién saca). La jugada decisiva
@@ -3090,13 +3205,57 @@ const RIVAL_MARCA = (r) => pick1([
   `La zurda de ${r} manda un pase largo que ni ves pasar. Cae al fondo, en botas suyas. Marcan.`,
   `${r} os arrolla en bloque, como quien siega. Cuando el polvo baja, ya han cruzado.`,
 ]);
+// El rival marca contra la bandada orca. Otro tono: aquí no hay pasteles, hay
+// barro y sangre. PENDIENTE DE REVISIÓN (prosa de Claude, voz del cliente).
+const RIVAL_MARCA_ORCO = (r) => pick1([
+  `${r} recupera la bola en un montón de brazos y cruza vuestra línea antes de que le metas mano. Touchdown suyo, y tú con cara de tonto.`,
+  `Se te escapa la bola de las zarpas, ${r} la agarra y corre. Cuando reaccionas, ya han cruzado. Marcan ellos.`,
+  `${r} pasa por el flanco que dejaste solo mientras repartías leña en el centro. La grada ruge; el marcador se mueve.`,
+  `Un pase largo de ${r} cae en manos limpias al fondo. Touchdown. La bandada gruñe y busca a quién culpar.`,
+  `${r} castiga el error: mientras te levantas escupiendo barro, ya han cruzado. Gol suyo.`,
+  `Uno grande de ${r} se pone la bola bajo el brazo y camina hasta el fondo apartando orcos como quien aparta matojos. Gol.`,
+  `${r} os arrolla en bloque, con más mala idea que vosotros por una vez. Cuando el polvo baja, ya han marcado.`,
+  `Los vuestros persiguen la pelea y ${r} persigue el balón. Adivina quién cruza la línea. Touchdown suyo.`,
+]);
+const rivalMarca = (r, raza) => (raza === "orco" ? RIVAL_MARCA_ORCO(r) : RIVAL_MARCA(r));
 
 /* ===== MOMENTOS DEL PARTIDO (pantallas intermedias entre tus jugadas) =====
    Sacan el gol del rival a su propia pantalla (con el marcador ya movido) y
    añaden color: la grada, un tiro fallado, un compañero que cae. Dan ritmo de
    partido narrado. Prosa de Claude, marcada para revisión. */
-const MOMENTO_GOL_RIVAL = (r, marc) => ({ texto: `${RIVAL_MARCA(r)} ${marc[0]}-${marc[1]}.`, chips: [`${r} marca`] });
+const MOMENTO_GOL_RIVAL = (r, marc, raza) => ({ texto: `${rivalMarca(r, raza)} ${marc[0]}-${marc[1]}.`, chips: [`${r} marca`] });
+// Color de "momento" propio de la bandada orca (nada de pasteles ni abuela):
+// barro, cuernos, goblins, jabalíes y el troll. PENDIENTE DE REVISIÓN.
+const MOMENTO_FLAVOR_ORCO = (m) => {
+  const r = m.rivalCorto;
+  const sanos = (m.aliados || []).filter((a) => !a.herido);
+  const pool = [
+    // El rival la falla / se atasca (sin gol)
+    { texto: `${r} lo intenta desde lejos, la bola se hunde en el barro y nadie la encuentra. Todo sigue igual, pero por un segundo se paran hasta los cuernos.` },
+    { texto: `${r} tiene el touchdown hecho y se le cae la bola solo delante de la línea. Su banda calla; la vuestra ruge de gusto.` },
+    { texto: `Dos de ${r} van a por la misma presa, chocan de frente y caen como troncos. Nadie de los vuestros los tocó. Mejor así: menos trabajo.` },
+    { texto: `El más grande de ${r} llega solo al fondo, ruge para celebrar… y descubre que se dejó la bola atrás. La recuperáis entre gruñidos de burla.` },
+    // La grada / el ambiente
+    { texto: `La grada de la bandada —gruñidos, cuernos golpeando escudos y algún goblin colgado de la valla— hace tanto ruido que a ${r} le tiemblan las botas.` },
+    { texto: `Empieza a caer una lluvia sucia. El campo se convierte en una charca y a vosotros, criados en el barro, os viene de perlas.` },
+    { texto: `Un jabalí de los que merodean la banda se cuela en el campo y ${r} se dispersa entre chillidos. Minuto perdido, moral ganada.` },
+    { texto: `Un goblin de los vuestros muerde a un rival en el tobillo y sale corriendo antes de que lo pillen. El árbitro no vio nada; nunca ve nada.` },
+    // El árbitro
+    { texto: `El árbitro mira una falta vuestra, mira el tamaño de los vuestros y decide que no ha visto nada. Justicia de la buena.` },
+    { texto: `El árbitro pita algo, un goblin le enseña los dientes desde el banquillo, y el árbitro se lo repiensa. Seguimos.` },
+    // Los tuyos hacen algo (bueno)
+    { texto: `Los vuestros se juntan un momento, deciden un plan que consiste básicamente en pegar más fuerte, y salen con una cara que descoloca a ${r}.` },
+    { texto: `Un placaje de los vuestros manda a uno de ${r} tres metros hacia atrás. No cambia el marcador, pero cambia las ganas del rival de acercarse.` },
+  ];
+  if (sanos.length) {
+    const v = pick1(sanos);
+    pool.push({ texto: `${v.nombre} se lleva un golpe feo y sale del barro cojeando: se lo lleva el boticario. Os quedáis con uno menos y el hueco se nota.`, bench: v.nombre });
+    pool.push({ texto: `Un placaje sucio de ${r} deja a ${v.nombre} viendo estrellas. El boticario lo sienta y le echa un cubo de agua encima.`, bench: v.nombre });
+  }
+  return pick1(pool);
+};
 const MOMENTO_FLAVOR = (m) => {
+  if (m.raza === "orco") return MOMENTO_FLAVOR_ORCO(m);
   const r = m.rivalCorto;
   const sanos = (m.aliados || []).filter((a) => !a.herido);
   const pool = [
@@ -3587,7 +3746,7 @@ export default function App() {
       const marcaRival = es1d6(pj)
         ? (d6() + (m.fuerza || 2) >= 7)
         : (d6() + d6() + (m.fuerza || 2) >= 10 + (Math.floor((pj.ST + pj.AG) / 2) - 3 + (m.posesion === "propia" ? 2 : 0)));
-      if (marcaRival) { m.marcador[1]++; m.posesion = "propia"; mom = MOMENTO_GOL_RIVAL(m.rivalCorto, m.marcador); }
+      if (marcaRival) { m.marcador[1]++; m.posesion = "propia"; mom = MOMENTO_GOL_RIVAL(m.rivalCorto, m.marcador, m.raza); }
     }
     if (!mom && Math.random() < 0.5) {
       const f = MOMENTO_FLAVOR(m);

@@ -127,6 +127,15 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   albóndiga), sentarte encima del balón, esconderte tras el estofado del Chef—.
   Las otras cuatro razas siguen con `PLAY_POOL`, el serio. Toda la prosa del
   pool halfling es de Claude, marcada para revisión con el resto de la rama.
+- **El orco también tiene su PROPIO pool** (`PLAY_POOL_ORCO`, 2026-09-09, por
+  `poolDe(pj)`): mismo motor, pero acciones de "la bandada" —ir de frente al que
+  la lleva, en la pata de atrás (tumbar al último que guarda la línea), soltar a
+  los goblins a morder tobillos, empujar en bloque para abrir pasillo, el muro
+  de la banda, lanzarla larga a un goblin que corre solo—. Nada de fintas,
+  bailes ni cabezazos: vocabulario Blood Bowl limpio (recoger, lanzar, placar,
+  la caja, la línea de anotación), según `docs/acciones-partido.md` §1.bis/§1.ter.
+  Prosa de Claude, marcada para revisión. Humano, enano y elfa siguen con
+  `PLAY_POOL` hasta que les toque su pasada raza a raza.
   **Si vendes a Roblerto (o fichas por Mortaigne), sus 7 jugadas se sustituyen
   por variantes "sin árbol"** (`sinRoblerto(pj)`): a pulso, la muralla de
   halflings, a pelo… más pobres y con −1, para que la ausencia se note en cada
@@ -298,6 +307,15 @@ momento; si no hay gol, ~50 % un momento de color; si no, se pasa directo a la
 siguiente jugada. Vive en `MOMENTO_GOL_RIVAL`/`MOMENTO_FLAVOR`, la fase
 `"momento"` del partido, `jugarJugada` y `seguirMomento`. Afecta a las cinco
 razas (motor de partido compartido). Prosa de Claude, marcada para revisión.
+
+- **Los momentos se ramifican por raza (2026-09-09, tras el pool).** El orco
+  tiene ya sus propios momentos y su propio gol del rival —barro, cuernos,
+  goblins que muerden tobillos, jabalíes, el troll, árbitro sobornado a base de
+  dientes—, no los pasteles/abuela/Bortrand del halfling. Vive en
+  `MOMENTO_FLAVOR_ORCO` y `RIVAL_MARCA_ORCO`, enrutados por `m.raza` (el partido
+  guarda la raza en `iniciarPartido`). El halfling conserva su color de pastel;
+  humano, enano y elfa **siguen viendo el color halfling** hasta que les toque
+  su pasada raza a raza (pendiente). Prosa de Claude, marcada para revisión.
 
 ## Las finales de torneo se deciden de verdad (no empatas y ganas)
 
