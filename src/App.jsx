@@ -2686,10 +2686,10 @@ const rollKey = (pj, m, o) => {
    otras cuatro razas siguen en 2d6 hasta que les toque la migración. */
 // Migración a 1D6 por fases (docs/MIGRACION-1D6.md): el halfling fue el piloto;
 // el orco es la Fase 2 (solo dados, de momento). Las otras dos razas siguen en 2d6.
-const es1d6 = (pj) => pj && (pj.raza === "halfling" || pj.raza === "orco");
+const es1d6 = (pj) => pj && (pj.raza === "halfling" || pj.raza === "orco" || pj.raza === "enano");
 // La 2ª oportunidad de equipo (biblia §2.4) lee el vínculo del vestuario, que
 // cada raza nombra a su manera (el orco no tiene "equipo": tiene "banda").
-const relEquipo = (pj) => pj.raza === "orco" ? (pj.rel.banda || 0) : (pj.rel.equipo || 0);
+const relEquipo = (pj) => pj.raza === "orco" ? (pj.rel.banda || 0) : pj.raza === "enano" ? (pj.rel.club || 0) : (pj.rel.equipo || 0);
 // Razas ya migradas al modelo de muerte definitiva (config B: sin resucitar, y la
 // muerte solo con un 16 natural en la tabla D16; el 15 pasa a lesión permanente).
 // Al migrar cada raza se añade aquí: una sola línea, sin tocar la lógica.

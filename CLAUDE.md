@@ -338,8 +338,23 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
   otra pasada grande. **Dorin** muere/se retira en el cap 5 (`dorinSeVa`, "El
   turno doce"), coincide con el doc cap5 A2; su estado vida/muerte en el epílogo
   lo afina el cliente.
-- **Pendiente:** Grimnir/Thorek (montón 2, opcional) y **Fase 5: migración a 1D6
-  y ajuste fino** (la grande que queda).
+- **Fase 5 HECHA (2026-09-09):** enano migrado a **1D6** como orco/halfling.
+  `es1d6` incluye `"enano"`; `relEquipo` lee `rel.club` (su vínculo de equipo)
+  para la 2ª oportunidad. Ficha S3 desde `base` (MA6 ST3 AG3→4+ AV9+); **sin
+  fichaInicial** (pro desde el cap 1, decisión #2). **Conserva las tres muertes**
+  (NO entra en `muerteDefinitiva`, decisión del cliente) → la portada le sigue
+  diciendo "puedes morir dos veces", correcto. La rama 1D6 de `resolverTirada`/
+  `rollKey1d6` recalcula los objetivos, así que las escenas en escala 2d6
+  (obj 9-11) funcionan sin reescribir. Verificado: build limpio, 5 recorridos
+  enano cap1→7 errores=0, humano y elfa (2d6) sin regresión, y la ficha muestra
+  "Fuerza 1D6 · 4+".
+- **Pendiente:** calibración fina de dificultad del enano en 1D6 (medir % de
+  victoria como se hizo con el orco; de momento usa el umbral de rival 7
+  compartido); Grimnir/Thorek (montón 2, opcional); la **ficha de debut** del
+  doc §2 (el build lo tiene pro desde el cap 1 — decisión del cliente si añadir
+  crío). Cuando el cliente dé el visto bueno a su repaso (Faelas/Brokk/Dorin),
+  el enano pasa a `HISTORIA_LISTA` (portada "terminadas"); hasta entonces sigue
+  en "en revisión".
 
 ## Números de serie limados — decisión de producto, mantenerla
 
