@@ -134,8 +134,15 @@ tiene escrita (sus `opciones`), así no hubo que reescribir los 38 partidos.
   de la banda, lanzarla larga a un goblin que corre solo—. Nada de fintas,
   bailes ni cabezazos: vocabulario Blood Bowl limpio (recoger, lanzar, placar,
   la caja, la línea de anotación), según `docs/acciones-partido.md` §1.bis/§1.ter.
-  Prosa de Claude, marcada para revisión. Humano, enano y elfa siguen con
+  Prosa de Claude, marcada para revisión. Humano y elfa siguen con
   `PLAY_POOL` hasta que les toque su pasada raza a raza.
+- **El enano también tiene su PROPIO pool** (`PLAY_POOL_ENANO`, 2026-09-09, por
+  `poolDe(pj)`): "la caja" —recoger y meterse en la caja, avanzar una casilla
+  empujando, la muralla hombro con hombro, tapar el hueco (lo de Brokk), aguantar
+  con Cabeza Dura— **y siempre una opción de CORRER** (el corredor: romper la
+  caja, abrir la caja un turno para cruzar y cerrarla), que es el eje Correr↔Caja
+  a la vista en cada jugada. Vocabulario Blood Bowl limpio. Prosa de Claude,
+  marcada para revisión. Solo humano y elfa siguen con `PLAY_POOL`.
   **Si vendes a Roblerto (o fichas por Mortaigne), sus 7 jugadas se sustituyen
   por variantes "sin árbol"** (`sinRoblerto(pj)`): a pulso, la muralla de
   halflings, a pelo… más pobres y con −1, para que la ausencia se note en cada
@@ -291,7 +298,13 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
    (mismo patrón que Roblerto/Grimgutz).
 5. **Migración a 1D6**: los capítulos vienen escritos en tiradas de un dado
    ("AG 4+", "FU 5+"), así que codificarlo = migrarlo a 1D6 como orco/halfling.
-   Y su pool/momentos propios (la caja: empujar en bloque) cuando toque.
+
+**Progreso (fases):**
+- **Fase 1 HECHA (2026-09-09):** pool propio `PLAY_POOL_ENANO` ("la caja" + la
+  opción de correr) y momentos `MOMENTO_FLAVOR_ENANO`/`RIVAL_MARCA_ENANO`.
+  Aditivo, no rompe nada; verificado (build + recorrido enano cap1→7, errores=0).
+- **Pendiente:** Fase 2 eje Correr↔Caja + cruce cap 4; Fase 3 Faelas→rival;
+  Fase 4 Brokk/Dorin/Grimnir/Thorek + ramas A/B; Fase 5 migración 1D6 y ajuste.
 
 ## Números de serie limados — decisión de producto, mantenerla
 
@@ -361,6 +374,10 @@ razas (motor de partido compartido). Prosa de Claude, marcada para revisión.
   guarda la raza en `iniciarPartido`). El halfling conserva su color de pastel;
   humano, enano y elfa **siguen viendo el color halfling** hasta que les toque
   su pasada raza a raza (pendiente). Prosa de Claude, marcada para revisión.
+- **El enano también (2026-09-09):** `MOMENTO_FLAVOR_ENANO` y `RIVAL_MARCA_ENANO`
+  (piedra, Cabeza Dura, la grada que se levanta sin ruido, Helgra y su clavo, la
+  caja; el rival marca por velocidad, bailando alrededor del muro o saltándolo),
+  enrutados por `m.raza`. Solo humano y elfa siguen con el color halfling.
 
 ## Las finales de torneo se deciden de verdad (no empatas y ganas)
 

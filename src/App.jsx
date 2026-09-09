@@ -3153,8 +3153,117 @@ const PLAY_POOL_ORCO = {
         ko: { txt: "Los pisa, maldice, y cruza igual con un goblin colgando de cada bota. Touchdown suyo.", golRival: true } },
     ], m) }),
 };
-// Cada raza con su repertorio: halfling comedia, orco la bandada, el resto el serio.
-const poolDe = (pj) => pj.raza === "halfling" ? PLAY_POOL_HALF : pj.raza === "orco" ? PLAY_POOL_ORCO : PLAY_POOL;
+// Pool del enano: "la caja". Lento, blindado, terco. Recoger y proteger, avanzar
+// una casilla, la muralla, tapar el hueco (lo de Brokk), aguantar con Cabeza
+// Dura. Y siempre una opcion de CORRER (el corredor: rapida, arriesgada, la que
+// rompe la caja): es el eje Correr<->Caja del enano, a la vista en cada jugada.
+// Vocabulario Blood Bowl limpio. PROSA DE CLAUDE, marcada para revision.
+const PLAY_POOL_ENANO = {
+  saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en el barro", "Balón suelto", "A recoger"], m, 1),
+    situ: `${varia([`El saque cae corto y la bola rueda muerta en el centro, de nadie.`, `La bola bota entre las dos líneas. La caja empieza a formarse sin que nadie lo diga.`, `Balón suelto. ${m.rivalCorto} viene a por él; vosotros os miráis y esperáis la casilla.`], m, 2)} Se recoge y se entra en la caja. O no.`,
+    ops: pickN([
+      { txt: "Recoger el balón y meterse en la caja", det: "Como se ha hecho siempre.", stat: "ST", obj: 7, hab: "Manos seguras",
+        ok: { txt: "Recoges la bola, la proteges contra el peto, y cuatro linieros se cierran a tu alrededor sin una palabra. Vuestra, y a salvo.", posesion: "propia" },
+        ko: { txt: "La bola resbala en el barro antes de que la caja se cierre. La cazan ellos.", posesion: "rival" } },
+      { txt: "Salir a por ella corriendo, antes que nadie", det: "Rompes la caja, pero llegas primero.", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
+        ok: { txt: "Corres —lo que ningún enano hace— y llegas a la bola antes que nadie. La recoges en carrera y sales de allí. Vuestra. Durak aprieta la mandíbula.", posesion: "propia" },
+        ko: { txt: "Corres, sí, pero sin la caja detrás estás solo, y ${m.rivalCorto} te recibe y te quita la bola en el barro. Para ellos.", posesion: "rival" } },
+      { txt: "Plantarse sobre la bola y aguantar", det: "Territorio antes que balón.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Clavas las botas sobre la bola y aguantas el primer empujón, y el segundo. Cuando la caja te alcanza, sigue ahí. Vuestra.", posesion: "propia" },
+        ko: { txt: "Te apartan de un empujón y recogen la bola de debajo. Para ellos.", posesion: "rival" } },
+      { txt: "Entrar en seco al que va a por ella", det: "Cabeza Dura y hombro.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+        ok: { txt: "Le llegas primero y con todo el peto por delante. Rueda por el barro; la bola queda para los tuyos.", posesion: "propia", baja: true },
+        ko: { txt: "Chocáis y el que rebota eres tú, aunque te levantes enseguida. Para ellos.", posesion: "rival" } },
+    ], m) }),
+  ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: varia(["La caja avanza", "Una casilla más", "Hacia la línea"], m, 1),
+    situ: `${varia([`Tienes la bola en el centro de la caja y la línea de ${m.rivalCorto} a unas casillas. La caja avanza una por turno, imperturbable.`, `La bola protegida, el muro por delante. Se avanza despacio, o se rompe la caja y se corre.`], m, 2)}`,
+    ops: pickN([
+      { txt: "Avanzar la caja una casilla, y otra, hasta cruzar", det: "Paciencia. Se muere de cansancio, no de prisa.", stat: "ST", obj: 8, hab: "Romper defensas",
+        ok: { txt: "Una casilla. Otra. Los de ${m.rivalCorto} se estrellan contra las esquinas y caen, y la caja no se abre. En la última casilla cruzas protegido por cuatro linieros. ¡Touchdown de enano, de los que no fallan!", gol: true },
+        ko: { txt: "Un liniero llega tarde a su casilla y la caja se abre un dedo. No basta para cruzar, y perdéis el balón en el intento.", posesion: "rival" } },
+      { txt: "Romper la caja y correr tú solo a la línea", det: "Tu don. Rápido y sin red.", stat: "MA", obj: 9, riesgo: true, hab: "Esprintar",
+        ok: { txt: "Sales del muro y corres, lo que ningún corredor de la montaña se atreve, y cruzas antes de que ${m.rivalCorto} entienda qué ha pasado. ¡Touchdown! La grada ruge; Durak, no.", gol: true },
+        ko: { txt: "Corres, y sin la caja detrás un rival te alcanza y te tumba lejos de la línea. El hueco que dejaste lo pagan los tuyos.", posesion: "rival" } },
+      { txt: "Abrir la caja un turno para que cruce el corredor, y cerrarla", det: "La caja que se abre: lo tuyo y lo suyo.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "La caja se abre una casilla justo el tiempo que hace falta, sales por el hueco que ella misma te guarda, cruzas, y se cierra detrás de ti. ¡Touchdown! Ni pura caja ni puro correr.", gol: true },
+        ko: { txt: "La caja se abre y no llegas a tiempo a cerrarla: por el hueco se cuela un rival. Para ellos.", posesion: "rival" } },
+      { txt: "Entregar el balón a un liniero y empujar tú", det: "Que cruce otro, seguro.", stat: "ST", obj: 8, hab: "Pasar",
+        ok: { txt: "Le pasas la bola al liniero de la esquina, corto y seguro, y empujas el muro para abrirle el camino. Cruza él, protegido. ¡Touchdown!", gol: true, pase: true },
+        ko: { txt: "El pase corto se pierde en el barro entre botas. La recuperan ellos.", posesion: "rival" } },
+    ], m) }) : ({ etq: "Defensa", h: varia([`${m.rivalCorto} sube`, "Cerrar filas", "A la muralla"], m, 1),
+    situ: `${varia([`${m.rivalCorto} sube con la bola hacia vuestra línea.`, `Perdisteis el balón y ahora hay que pararlos antes de que crucen.`], m, 2)} La caja se cierra.`,
+    ops: pickN([
+      { txt: "Entrar de frente al que la lleva", det: "Cabeza Dura y hombro.", stat: "ST", obj: 8, riesgo: true, hab: "Placar",
+        ok: { txt: "Le entras en seco, peto contra pecho. Suelta la bola y se queda en el barro. Vuestra.", posesion: "propia", baja: true },
+        ko: { txt: "Aguanta el golpe y avanza pese a todo. Suben.", posesion: "rival" } },
+      { txt: "Formar la muralla, hombro con hombro", det: "Nadie pasa por donde hay enano.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Os plantáis en línea, hombro con hombro, y el portador choca y no encuentra por dónde. La jugada muere contra la muralla. No cruzan.", posesion: "rival" },
+        ko: { txt: "Os apartan a dos de la línea y se cuelan por el hueco. Touchdown suyo.", golRival: true } },
+      { txt: "Tapar tú el hueco por donde va a entrar", det: "Lo que hace Brokk toda su vida.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Ves dónde va a abrirse la caja y llegas antes que él, corriendo de esquina a esquina. Tapas el hueco con el cuerpo. No cruzan.", posesion: "rival" },
+        ko: { txt: "Llegas al hueco un paso tarde, y por ese paso cruzan. Touchdown suyo.", golRival: true } },
+    ], m) }),
+  choque: (pj, m) => ({ etq: "Choque", h: varia(["Las líneas se buscan", "Muro contra muro", "Primero, aguantar"], m, 1),
+    situ: `${varia([`Antes de que la bola importe, las dos líneas se empujan. ${m.rivalCorto} pega primero.`, `Dos muros midiéndose. La caja no corre: resiste.`], m, 2)} El que aguante más, manda.`,
+    ops: pickN([
+      { txt: "Empujar el muro una casilla, todos a una", det: "Avanzar sin abrir.", stat: "ST", obj: 8, hab: "Romper defensas",
+        ok: { txt: "Empujáis los seis a una y el muro de ${m.rivalCorto} cede una casilla. Ganáis el barro sin abrir un solo hueco.", posesion: "propia" },
+        ko: { txt: "No ceden, y el que resbala sois vosotros. Mandan ellos.", posesion: "rival" } },
+      { txt: "Plantarse y aguantar con Cabeza Dura", det: "Que se estrellen contra vosotros.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Clavas las botas y su empuje se rompe contra el peto y contra Cabeza Dura. Nadie manda todavía, pero de aquí no os mueven.", posesion: "neutral" },
+        ko: { txt: "Os llevan por delante unos metros de barro. Mandan ellos.", posesion: "rival" } },
+      { txt: "Entrar al más grande y tumbarlo", det: "Si cae el grande, la línea se abre.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Vas al más grande de ${m.rivalCorto} y le entras bajo, con todo el peto. Cae una tonelada, y su línea se abre para los tuyos.", posesion: "propia", baja: true },
+        ko: { txt: "Era más grande de lo que parecía. Rebotas y te pisan. Mandan ellos.", posesion: "rival" } },
+      { txt: "Correr por el flanco mientras chocan las líneas", det: "Que peguen; tú te cuelas.", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
+        ok: { txt: "Mientras las líneas se empujan, tú sales por el flanco corriendo, que nadie lo espera de un enano. Ganas metros libres. Vuestra.", posesion: "propia" },
+        ko: { txt: "Te cuelas, sí, pero un rival del flanco te cierra el paso y te tumba lejos de los tuyos. Mandan ellos.", posesion: "rival" } },
+    ], m) }),
+  regate: (pj, m) => ({ etq: "A la carrera", h: varia(["El corredor corre", "Por fuera", "Un paso más rápido"], m, 1),
+    situ: `${varia([`A veces la caja no llega, y hay un hueco, y tú eres el único enano de la montaña que sabe aprovecharlo corriendo.`, `${m.rivalCorto} espera el muro lento. Hoy toca lo que nadie espera de un enano: velocidad.`], m, 2)}`,
+    ops: pickN([
+      { txt: "Correr por la banda, ese medio paso que nadie tiene", det: "Tu don, sin culpa por un turno.", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
+        ok: { txt: "Tiras por la banda con el medio paso que ningún otro enano tiene. Los dejas atrás, torpes y lentos, y avanzas con la bola. Vuestra.", posesion: "propia" },
+        ko: { txt: "Te cierran contra la cal y sales del campo con la bola. Saque para ellos.", posesion: "rival" } },
+      { txt: "Recoger en carrera sin bajar el ritmo", det: "La cabeza antes que las piernas.", stat: "AG", obj: 8, hab: "Manos seguras",
+        ok: { txt: "Levantas la bola del barro sin frenar y sigues, protegiéndola contra el peto. Vuestra, y en movimiento.", posesion: "propia" },
+        ko: { txt: "Un rebote malo y se te escapa de las manos. La cazan ellos.", posesion: "rival" } },
+      { txt: "Volver a la caja y avanzar seguro", det: "El corredor que elige no correr.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Frenas, vuelves al muro, y avanzáis una casilla protegidos. Menos vistoso, más seguro. Vuestra.", posesion: "propia" },
+        ko: { txt: "La caja tarda en cerrarse a tu alrededor y en ese hueco os quitan la bola. Para ellos.", posesion: "rival" } },
+      { txt: "Entregar corto y seguir corriendo de señuelo", det: "Que te sigan a ti.", stat: "AG", obj: 8, hab: "Pasar",
+        ok: { txt: "Corres llevándote a dos rivales detrás y, sin mirar, entregas corto a un liniero que avanza limpio. Vuestra, y ellos mirando adonde no era.", posesion: "propia", pase: true },
+        ko: { txt: "El pase corto no encuentra a nadie: los tuyos son lentos y no llegaron. Para ellos.", posesion: "rival" } },
+    ], m) }),
+  remate: (pj, m) => ({ etq: "Remate", h: varia(["A las puertas", "La última casilla", "A un palmo"], m, 1),
+    situ: `${varia([`La línea de ${m.rivalCorto} a un paso, y el último muro entre ella y la bola.`, `Todo el partido cabe en la casilla que te separa de la línea.`], m, 2)} Se cruza, o se lo llevan.`,
+    ops: pickN([
+      { txt: "Empujar la caja la última casilla, con bola y todo", det: "Feo, lento, imparable.", stat: "ST", obj: 9, riesgo: true, hab: "Romper defensas",
+        ok: { txt: "Bajáis la cabeza y empujáis el muro entero una casilla más, con la bola protegida en el centro, por encima de la línea. ¡Touchdown! De los que tardan y no se discuten.", gol: true },
+        ko: { txt: "El muro rival aguanta la última casilla y os escupe atrás. La bola, de su lado.", posesion: "rival" } },
+      { txt: "Salir corriendo por el hueco y cruzar tú", det: "Un paso más rápido que su línea.", stat: "MA", obj: 9, riesgo: true, hab: "Esprintar",
+        ok: { txt: "Sales del muro y cruzas corriendo antes de que su línea reaccione, porque ninguna línea espera correr a un enano. ¡Touchdown!", gol: true },
+        ko: { txt: "El último defensa te alcanza a un paso de la línea. Sin caja, caes solo. Para ellos.", posesion: "rival" } },
+      { txt: "Abrir el hueco y que cruce un liniero", det: "Tú el muro, otro la línea.", stat: "ST", obj: 8, hab: "Pasar",
+        ok: { txt: "Te plantas de muro, aguantas a los grandes, y le abres el hueco al liniero que cruza protegido con la bola. ¡Touchdown, y de los tuyos!", gol: true, pase: true },
+        ko: { txt: "El liniero no llega al hueco a tiempo, lento como es, y lo cierran. La bola se queda corta.", posesion: "rival" } },
+    ], m) }),
+  defensa: (pj, m) => ({ etq: "Muralla", h: varia([`${m.rivalCorto} va a por el gol`, "Aguantad la línea", "El último muro"], m, 1),
+    situ: `${varia([`Vais por delante y ${m.rivalCorto} viene a por el empate con todo.`, `${m.rivalCorto} empuja hacia vuestra línea. La muralla es lo único entre ellos y el gol.`], m, 2)} Si no los paráis aquí, cruzan.`,
+    ops: pickN([
+      { txt: "La muralla en la línea, hombro con hombro", det: "Nadie pasa por donde hay enano plantado.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+        ok: { txt: "Os plantáis los seis en la línea, hombro con hombro y Cabeza Dura. El portador choca contra el muro y no encuentra por dónde. No cruzan.", posesion: "rival" },
+        ko: { txt: "Os apartan a dos de un empujón y cruzan por el hueco. Touchdown suyo.", golRival: true } },
+      { txt: "Entrar en seco al que la lleva", det: "Tumbarlo y que la suelte.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
+        ok: { txt: "Le entras de frente y lo mandas al barro. Suelta la bola y la recuperáis. No cruzan.", posesion: "propia", baja: true },
+        ko: { txt: "Te esquiva con el hombro y cruza la línea. Touchdown suyo.", golRival: true } },
+      { txt: "Tapar el hueco por donde va a entrar", det: "Como Brokk, toda la vida.", stat: "AG", obj: 8, hab: "Esquivar",
+        ok: { txt: "Adivinas por dónde va a abrirse la línea y llegas antes, corriendo de esquina a esquina, y tapas el hueco con el cuerpo. No cruzan.", posesion: "rival" },
+        ko: { txt: "Llegas al hueco un paso tarde. Por ese paso cruzan. Touchdown suyo.", golRival: true } },
+    ], m) }),
+};
+// Cada raza con su repertorio: halfling comedia, orco la bandada, enano la caja, el resto el serio.
+const poolDe = (pj) => pj.raza === "halfling" ? PLAY_POOL_HALF : pj.raza === "orco" ? PLAY_POOL_ORCO : pj.raza === "enano" ? PLAY_POOL_ENANO : PLAY_POOL;
 /* ===== TIPOS DE PARTIDO (Fase 2) =====
    Cada partido elige un tipo; el tipo decide el arco (cuántas jugadas clave,
    de qué clase) y cómo empiezas (marcador, quién saca). La jugada decisiva
@@ -3232,7 +3341,18 @@ const RIVAL_MARCA_ORCO = (r) => pick1([
   `${r} os arrolla en bloque, con más mala idea que vosotros por una vez. Cuando el polvo baja, ya han marcado.`,
   `Los vuestros persiguen la pelea y ${r} persigue el balón. Adivina quién cruza la línea. Touchdown suyo.`,
 ]);
-const rivalMarca = (r, raza) => (raza === "orco" ? RIVAL_MARCA_ORCO(r) : RIVAL_MARCA(r));
+// El rival marca contra la caja enana: casi siempre por velocidad, bailando
+// alrededor del muro lento o colándose por un hueco que se abrió. Voz pétrea.
+// PENDIENTE DE REVISIÓN (prosa de Claude, voz del cliente).
+const RIVAL_MARCA_ENANO = (r) => pick1([
+  `${r} no choca: baila alrededor de la caja hasta que encuentra el hueco, y cruza por él. La caja es lenta; ellos, no. Marcan.`,
+  `Un liniero llega tarde a su casilla, la caja se abre un dedo, y ${r} mete por ahí a su corredor. La caja no perdona el error de un turno. Gol suyo.`,
+  `${r} salta por encima del muro donde vosotros solo sabéis empujar. Cae al otro lado, con la bola, y cruza. Marcan ellos.`,
+  `${r} da vueltas alrededor de la caja, paciente, hasta que se os acaban los turnos, y entonces cruza sin prisa. Touchdown suyo.`,
+  `Mientras avanzáis vuestra casilla, ${r} ya ha corrido el campo entero por fuera. Gol suyo, y la grada de piedra calla.`,
+  `${r} tira un pase largo por encima de la caja, de esos que un enano no ve venir, y lo recoge alguien al fondo. Marcan.`,
+]);
+const rivalMarca = (r, raza) => (raza === "orco" ? RIVAL_MARCA_ORCO(r) : raza === "enano" ? RIVAL_MARCA_ENANO(r) : RIVAL_MARCA(r));
 
 /* ===== MOMENTOS DEL PARTIDO (pantallas intermedias entre tus jugadas) =====
    Sacan el gol del rival a su propia pantalla (con el marcador ya movido) y
@@ -3269,8 +3389,40 @@ const MOMENTO_FLAVOR_ORCO = (m) => {
   }
   return pick1(pool);
 };
+// Color de "momento" propio de la caja enana (nada de pasteles ni cuernos):
+// piedra, Cabeza Dura, la grada que se pone de pie sin ruido, Helgra y su clavo,
+// la montaña, la cerveza, sin prisa. PENDIENTE DE REVISIÓN.
+const MOMENTO_FLAVOR_ENANO = (m) => {
+  const r = m.rivalCorto;
+  const sanos = (m.aliados || []).filter((a) => !a.herido);
+  const pool = [
+    // El rival la falla / se atasca contra la caja (sin gol)
+    { texto: `${r} intenta un pase largo por encima de la caja, la bola se pierde en el barro, y la caja sigue avanzando su casilla como si nada. Aquí no se corre; aquí se espera.` },
+    { texto: `Un corredor de ${r} baila alrededor del muro buscando el hueco, no lo encuentra, y se estrella contra una esquina de linieros de ciento cuarenta años. Se levanta más despacio que ellos.` },
+    { texto: `${r} tiene el gol hecho y se le cae la bola delante de la línea. La caja no ha corrido ni un paso, y sin embargo ha ganado el turno. Paciencia.` },
+    { texto: `${r} da otra vuelta alrededor de la caja, y otra. Se les acaban los turnos antes que a vosotros la terquedad.` },
+    // La grada / la piedra
+    { texto: `Los cuatro mil de la grada de piedra se ponen de pie a la vez, sin un grito, que es como los enanos rugen. A ${r} le pesa más ese silencio que cualquier abucheo.` },
+    { texto: `Helgra, en el banquillo, graba una runa nueva con el clavo sin levantar la vista del marcador. Nadie sabe qué dice. Todos juegan un poco mejor.` },
+    { texto: `Empieza a caer una lluvia fina y el campo tallado se pone resbaladizo. A la caja, que va a paso de piedra, le da igual; a ${r}, que corre, no.` },
+    { texto: `Alguien reparte cerveza en la grada y medio estadio de piedra bebe sin quitar ojo del marcador. El partido no se para: los enanos beben y miran a la vez.` },
+    // El árbitro / la tradición
+    { texto: `El árbitro pita algo que en trescientos años de caja nadie ha necesitado saber. Durak le mira. El árbitro se lo repiensa y manda seguir.` },
+    { texto: `Un liniero de ${r} le da una patada a la caja por pura frustración y se hace daño en la bota. La caja no se entera. Sigue avanzando.` },
+    // Los tuyos hacen algo (bueno)
+    { texto: `La caja avanza una casilla más sin que nadie diga una palabra. Once enanos, un movimiento, trescientos años de práctica. A ${r} se le nota el desánimo.` },
+    { texto: `Un placaje de los vuestros, seco y sin aspavientos, manda a un corredor de ${r} al barro. Se levanta mirando dónde se ha metido.` },
+  ];
+  if (sanos.length) {
+    const v = pick1(sanos);
+    pool.push({ texto: `${v.nombre} encaja un golpe que tumbaría a cualquiera; con Cabeza Dura aguanta un turno más, pero al final el boticario se lo lleva. Un hueco en la caja, y se nota.`, bench: v.nombre });
+    pool.push({ texto: `Un golpe sucio de ${r} sienta a ${v.nombre} en el banco de piedra. Helgra le pone una cerveza y le graba algo en el peto para que vuelva entero.`, bench: v.nombre });
+  }
+  return pick1(pool);
+};
 const MOMENTO_FLAVOR = (m) => {
   if (m.raza === "orco") return MOMENTO_FLAVOR_ORCO(m);
+  if (m.raza === "enano") return MOMENTO_FLAVOR_ENANO(m);
   const r = m.rivalCorto;
   const sanos = (m.aliados || []).filter((a) => !a.herido);
   const pool = [
