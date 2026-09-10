@@ -355,6 +355,20 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
   `rel.club` baja, la final cae a V13%, así que cultivar al equipo importa (diseño
   intencionado). Letalidad por fallo de riesgo 0,57% (AV9; entre el tanque orco
   0,35% y el halfling 1,56%), y con tres vidas una muerte no acaba la carrera.
+- **Arreglo del cap 4 (Norburgo), 2026-09-10:** el enano vendido a los Grifos de
+  Norburgo (cap 4) jugaba con la CAJA, con Dorin de aliado y el nombre "Cascos de
+  Hierro" — un enano jugando con humanos que corren, sin sentido (lo pilló el
+  cliente jugando). Ahora `iniciarPartido` marca `m.arco === "norburgo"`
+  (`pj.raza === "enano" && capId === 4`) y con eso: el pool pasa al serio neutro
+  (`poolDe(pj, m)`), los momentos y el gol rival a `MOMENTO_FLAVOR_NORBURGO`/
+  `RIVAL_MARCA_NORBURGO` (ventanas, sudor de humano, Vogt), el equipo del
+  marcador es "Los Grifos de Norburgo" (`m.equipo`), y **Dorin ya no se alinea en
+  cap 4** (`ENANO_ALIADOS`: `cap <= 3`, antes `<= 4`; queda "Linieros humanos").
+  **Bug de paso:** 6 frases de resultado del pool (5 enano, 1 orco) usaban
+  `${m.rivalCorto}` entre comillas normales y salía el texto literal; pasadas a
+  backticks. Y **gancho de protagonista** del enano en el partido: `confCaja`
+  (rel Dorin/Durak) y `confCorrer` (rel aficion) dan ±1 con rótulo a la vista
+  (`o.bonusLabel`, generalizando el "Roblerto" fijo). Verificado en navegador.
 - **Pendiente:** Grimnir/Thorek (montón 2, opcional); la **ficha de debut** del
   doc §2 (el build lo tiene pro desde el cap 1 — decisión del cliente si añadir
   crío). Cuando el cliente dé el visto bueno a su repaso (Faelas/Brokk/Dorin),

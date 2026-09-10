@@ -765,7 +765,7 @@ const ENANO = {
 };
 
 const ENANO_ALIADOS = (pj, cap) => [
-  { nombre: "Dorin Yunquefirme", ST: 4, AG: 1, AV: 10, si: cap <= 4 && !pj.flags.apotecarioParaTi || (cap === 5 && !pj.flags.dorinSeFueAndando && !pj.flags.dorinAnoto && !pj.flags.dorinEnBrazos && !pj.flags.cajaAlrededorDeDorin) },
+  { nombre: "Dorin Yunquefirme", ST: 4, AG: 1, AV: 10, si: cap <= 3 && !pj.flags.apotecarioParaTi || (cap === 5 && !pj.flags.dorinSeFueAndando && !pj.flags.dorinAnoto && !pj.flags.dorinEnBrazos && !pj.flags.cajaAlrededorDeDorin) },
   { nombre: "Grimnir Barbarroja", ST: 3, AG: 2, AV: 9, si: !pj.flags.grimnirMurio && cap !== 4 },
   { nombre: "Faelas", ST: 2, AG: 5, AV: 8, si: cap === 6 && (pj.flags.faelasSeQueda || pj.flags.faelasVotado) && !pj.flags.faelasSeVa },
   { nombre: "Nain", ST: 3, AG: 2, AV: 10, si: cap >= 3 && cap !== 4 },
@@ -3289,7 +3289,8 @@ const PLAY_POOL_ENANO = {
     ], m) }),
 };
 // Cada raza con su repertorio: halfling comedia, orco la bandada, enano la caja, el resto el serio.
-const poolDe = (pj) => pj.raza === "halfling" ? PLAY_POOL_HALF : pj.raza === "orco" ? PLAY_POOL_ORCO : pj.raza === "enano" ? PLAY_POOL_ENANO : PLAY_POOL;
+// En Norburgo (enano vendido a humanos) juega el pool serio neutro, no la caja.
+const poolDe = (pj, m) => (m && m.arco === "norburgo") ? PLAY_POOL : pj.raza === "halfling" ? PLAY_POOL_HALF : pj.raza === "orco" ? PLAY_POOL_ORCO : pj.raza === "enano" ? PLAY_POOL_ENANO : PLAY_POOL;
 /* ===== TIPOS DE PARTIDO (Fase 2) =====
    Cada partido elige un tipo; el tipo decide el arco (cuántas jugadas clave,
    de qué clase) y cómo empiezas (marcador, quién saca). La jugada decisiva
@@ -3378,7 +3379,15 @@ const RIVAL_MARCA_ENANO = (r) => pick1([
   `Mientras avanzáis vuestra casilla, ${r} ya ha corrido el campo entero por fuera. Gol suyo, y la grada de piedra calla.`,
   `${r} tira un pase largo por encima de la caja, de esos que un enano no ve venir, y lo recoge alguien al fondo. Marcan.`,
 ]);
-const rivalMarca = (r, raza) => (raza === "orco" ? RIVAL_MARCA_ORCO(r) : raza === "enano" ? RIVAL_MARCA_ENANO(r) : RIVAL_MARCA(r));
+// El rival marca contra el enano vendido a Norburgo (juega con humanos que
+// corren, sin caja): te castigan por correr sin cobertura. PENDIENTE DE REVISIÓN.
+const RIVAL_MARCA_NORBURGO = (r) => pick1([
+  `${r}, grandes y lentos, te esperan en la banda: corres sin cobertura, uno de ciento treinta kilos te para, y cruzan ellos. Marcan.`,
+  `${r} juega a esperar y partir. En cuanto dejas un hueco corriendo —y sin caja siempre lo dejas—, lo aprovechan. Gol suyo.`,
+  `Sin nadie que te cubra la espalda, ${r} te alcanza en carrera y te arranca la bola. Cruzan. Marcan.`,
+  `En Norburgo se corre, pero ${r} corre en manada y tú solo. Te rodean y cruzan. Gol suyo.`,
+]);
+const rivalMarca = (r, raza) => (raza === "orco" ? RIVAL_MARCA_ORCO(r) : raza === "enano" ? RIVAL_MARCA_ENANO(r) : raza === "norburgo" ? RIVAL_MARCA_NORBURGO(r) : RIVAL_MARCA(r));
 
 /* ===== MOMENTOS DEL PARTIDO (pantallas intermedias entre tus jugadas) =====
    Sacan el gol del rival a su propia pantalla (con el marcador ya movido) y
@@ -3446,7 +3455,30 @@ const MOMENTO_FLAVOR_ENANO = (m) => {
   }
   return pick1(pool);
 };
+// El enano vendido a Norburgo: humanos que corren, sin caja ni piedra. Ni
+// pasteles ni la montaña: ventanas en el vestuario, sudor de humano, Vogt
+// gritando "corre". PENDIENTE DE REVISIÓN (prosa de Claude, voz del cliente).
+const MOMENTO_FLAVOR_NORBURGO = (m) => {
+  const r = m.rivalCorto;
+  const sanos = (m.aliados || []).filter((a) => !a.herido);
+  const pool = [
+    { texto: `${r} corre a espacio abierto y se le escapa la bola en plena carrera: los humanos van rápido, pero no siempre atados.` },
+    { texto: `Dos de ${r} van a por la misma bola a la carrera y chocan de frente, que es lo que pasa cuando nadie protege a nadie.` },
+    { texto: `El vestuario con ventanas —ventanas, en un vestuario— ruge cada vez que alguien acelera. A ${r} le entra la prisa y falla.` },
+    { texto: `La grada de Norburgo, que paga por ver correr, se pone de pie con cada carrera. Aquí nadie aplaude una casilla lenta.` },
+    { texto: `Vogt, tu entrenador humano, grita desde la banda algo sobre correr más, que es lo único que sabe gritar. Lo echas de menos y lo temes a la vez.` },
+    { texto: `El árbitro deja seguir casi todo: en Tercera se juega rápido y se pita poco.` },
+    { texto: `Un liniero humano te hace un bloqueo y sale corriendo sin mirar atrás: aquí nadie tapa el hueco del que corre, aquí se corre y punto.` },
+    { texto: `Huele distinto —a sudor de humano, más rápido, menos a piedra— y por un momento echas de menos una esquina y una voz gritando la casilla.` },
+  ];
+  if (sanos.length) {
+    const v = pick1(sanos);
+    pool.push({ texto: `${v.nombre} se lleva un golpe corriendo sin cobertura y sale cojeando: sin caja detrás, cada uno cae solo.`, bench: v.nombre });
+  }
+  return pick1(pool);
+};
 const MOMENTO_FLAVOR = (m) => {
+  if (m.arco === "norburgo") return MOMENTO_FLAVOR_NORBURGO(m);
   if (m.raza === "orco") return MOMENTO_FLAVOR_ORCO(m);
   if (m.raza === "enano") return MOMENTO_FLAVOR_ENANO(m);
   const r = m.rivalCorto;
@@ -3702,20 +3734,25 @@ export default function App() {
   /* ---------- partido por turnos ---------- */
   const iniciarPartido = () => {
     const p = escena.partido, capId = ORDEN[idx].cap;
+    // El enano vendido a Norburgo (cap 4) juega con un club humano que corre:
+    // ni la caja, ni Dorin, ni los Cascos. Marca el arco para el pool, los
+    // momentos, el gol rival y el nombre del equipo.
+    const enNorburgo = pj.raza === "enano" && capId === 4;
+    const equipoM = enNorburgo ? "Los Grifos de Norburgo" : pj.equipo;
     const aliados = ALIADOS[pj.raza](pj, capId).filter((a) => a.si).map((a) => ({ ...a, herido: false }));
     const estilo = estiloDe(p.rival, p.fuerza);
     const conQuien = aliados.length ? ` con ${aliados.map((a) => a.nombre).join(", ")}` : ", y no hay nadie en el campo a quien conozcas";
     const aperturas = [
-      `Salta al campo ${pj.equipo}${conQuien}. Enfrente, ${p.rival}.`,
-      `${p.rival} espera en el otro lado del barro. Salta ${pj.equipo}${conQuien}.`,
+      `Salta al campo ${equipoM}${conQuien}. Enfrente, ${p.rival}.`,
+      `${p.rival} espera en el otro lado del barro. Salta ${equipoM}${conQuien}.`,
       `Se llena la grada. Hoy toca ${p.rival}, y saltáis vosotros${conQuien}.`,
-      `El barro ya huele a partido. ${pj.equipo}${conQuien}, contra ${p.rival}.`,
+      `El barro ya huele a partido. ${equipoM}${conQuien}, contra ${p.rival}.`,
     ];
     const intro = [pick1(aperturas)];
     const log = [];
     let clima = d6() + d6();
     const CLIMAS = { 2: ["Calor asfixiante", "un compañero se queda en el banquillo por el calor"], 3: ["Muy soleado", "−1 a los pases"], 11: ["Lluvioso", "−1 a recoger y recibir"], 12: ["Ventisca", "−1 a las carreras; solo pases cortos"] };
-    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: (es1d6(pj) ? (relEquipo(pj) >= 3 ? 2 : 1) : 2), apotecarioUsado: false, posesion: "neutral", log, intro, torneo: p.torneo, raza: pj.raza, racha: pj.racha || 0 };
+    const m = { turno: 1, max: 5, marcador: [0, 0], avance: 0, avanceRival: 0, fatiga: 0, ko: false, aliados, estilo, fuerza: p.fuerza, pe: 0, bajas: 0, tds: 0, pases: 0, cubiertos: [], fase: "turnos", rerolls: (es1d6(pj) ? (relEquipo(pj) >= 3 ? 2 : 1) : 2), apotecarioUsado: false, posesion: "neutral", log, intro, torneo: p.torneo, raza: pj.raza, arco: enNorburgo ? "norburgo" : null, equipo: equipoM, racha: pj.racha || 0 };
     const aplicarClima = () => { m.clima = CLIMAS[clima] ? CLIMAS[clima][0] : "Clima perfecto"; if (CLIMAS[clima]) intro.push(`Clima: ${CLIMAS[clima][0]} (${CLIMAS[clima][1]}).`); if (clima === 2 && m.aliados.length) { const v = pick1(m.aliados); v.herido = true; intro.push(`${v.nombre} se queda en el banquillo con la lengua fuera.`); } };
     aplicarClima();
     const ev = d6() + d6();
@@ -3939,7 +3976,7 @@ export default function App() {
       const marcaRival = es1d6(pj)
         ? (d6() + (m.fuerza || 2) >= 7)
         : (d6() + d6() + (m.fuerza || 2) >= 10 + (Math.floor((pj.ST + pj.AG) / 2) - 3 + (m.posesion === "propia" ? 2 : 0)));
-      if (marcaRival) { m.marcador[1]++; m.posesion = "propia"; mom = MOMENTO_GOL_RIVAL(m.rivalCorto, m.marcador, m.raza); }
+      if (marcaRival) { m.marcador[1]++; m.posesion = "propia"; mom = MOMENTO_GOL_RIVAL(m.rivalCorto, m.marcador, m.arco || m.raza); }
     }
     if (!mom && Math.random() < 0.5) {
       const f = MOMENTO_FLAVOR(m);
@@ -4382,7 +4419,7 @@ export default function App() {
     const rival = escena.partido.rival;
     const enJugadas = mt.modo === "jugadas";
     const ops = enJugadas ? {} : opcionesTurno(mt);
-    const jplay = enJugadas && mt.fase === "turnos" ? poolDe(pj)[mt.plays[mt.jIdx]](pj, mt) : null;
+    const jplay = enJugadas && mt.fase === "turnos" ? poolDe(pj, mt)[mt.plays[mt.jIdx]](pj, mt) : null;
     // Crónica: la cabecera y la situación se cuentan con el estado real del
     // partido (parte, marcador, lesionados, a quién le toca). Las acciones de
     // abajo las sigue poniendo el pool (serio o halfling).
@@ -4391,7 +4428,7 @@ export default function App() {
     const miAccionVista = miPuesto ? { Blitzer: "presionar", Receptor: "correr", Lanzador: "bola", Liniero: "aguantar" }[miPuesto.clave] : null;
     const arranque = mt.log.length === 0;
     const pos = mt.posesion;
-    const propio = pj.equipo.replace(/^Los |^Las /, "");
+    const propio = (mt.equipo || pj.equipo).replace(/^Los |^Las /, "");
     const rivalCorto = rival.replace(/^Los |^Las /, "");
     const posLabel = pos === "propia" ? propio : pos === "rival" ? rivalCorto : "suelto";
     const T = ({ id, o }) => o && (
