@@ -369,11 +369,20 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
   backticks. Y **gancho de protagonista** del enano en el partido: `confCaja`
   (rel Dorin/Durak) y `confCorrer` (rel aficion) dan ±1 con rótulo a la vista
   (`o.bonusLabel`, generalizando el "Roblerto" fijo). Verificado en navegador.
-- **Pendiente:** Grimnir/Thorek (montón 2, opcional); la **ficha de debut** del
-  doc §2 (el build lo tiene pro desde el cap 1 — decisión del cliente si añadir
-  crío). Cuando el cliente dé el visto bueno a su repaso (Faelas/Brokk/Dorin),
-  el enano pasa a `HISTORIA_LISTA` (portada "terminadas"); hasta entonces sigue
-  en "en revisión".
+- **Decisiones del cliente aplicadas (2026-09-10):** (1) **Brokk = rival** (se
+  queda como está). (2) **Dorin = muerto**: la decisión era su mención en el
+  epílogo (la frase "bajó la escalera para su entierro" era ambigua); ahora el
+  epílogo dice claramente que Dorin murió (tres tonos por `rel.dorin`), sin tocar
+  su hilo del cap 5-7 (se retira en cap 5, presente hasta cap 7, muere de viejo
+  por el epílogo). (3) **Faelas = OK** (no se toca su prosa). (4) **Ficha de crío
+  añadida**: `ENANO.fichaInicial` (MA5 ST2 AG2 AV8, solo Cabeza dura) + `firmaCap: 3`
+  + hook `fichaPro` en `TIEMPO.enano[3]`; sube a `base` (MA6 ST3 AG3 AV9 +
+  Esprintar + Manos seguras) al madurar. La portada muestra "(de crío)". La
+  calibración medida usaba la ficha pro (final cap6 sin cambios); caps 1-2 ahora
+  más duros a propósito. Verificado: build, lógica y 3 recorridos errores=0.
+- **Enano ya en `HISTORIA_LISTA`** (portada "terminadas") desde 2026-09-10.
+- **Pendiente (opcional):** Grimnir/Thorek (montón 2). Repaso de prosa del enano
+  (Faelas/Brokk/Dorin/momentos) sigue marcado, a criterio del cliente.
 
 ## Números de serie limados — decisión de producto, mantenerla
 

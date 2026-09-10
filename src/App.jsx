@@ -395,6 +395,12 @@ const ENANO = {
   puesto: "Corredor Enano", reglas: ["Brutos Brutales", "Sobornos y Corrupción"],
   base: { MA: 6, ST: 3, AG: 3, AV: 9, hab: ["Cabeza dura", "Esprintar", "Manos seguras"] },
   equipoInicial: "Los Cascos de Hierro de Baraz-Ankor",
+  // Ficha de crío (biblia §5.1, doc de raza §2): joven, primer año en Segunda,
+  // más flojo y sin las habilidades del corredor. Sube a la del reglamento
+  // (base) al madurar (firmaCap 3). Cabeza dura es innata (racial) desde el
+  // principio; Esprintar y Manos seguras llegan con la ficha profesional.
+  fichaInicial: { MA: 5, ST: 2, AG: 2, AV: 8, hab: ["Cabeza dura"] },
+  firmaCap: 3,
   rel: { durak: "Durak Ojoferro", dorin: "Dorin Yunquefirme", helgra: "Helgra del banquillo", grimnir: "Grimnir Barbarroja", faelas: "Faelas, el elfo", brokk: "Brokk, tu hermano", aficion: "La grada de Baraz-Ankor", club: "Los Cascos de Hierro" },
   relInicial: { durak: 0, dorin: 0, helgra: 0, grimnir: 0, faelas: 0, brokk: 1, aficion: 0, club: 0 },
   portada: "Eres el corredor más rápido que ha nacido en la montaña, y fichas por los Cascos de Hierro de Baraz-Ankor el año en que el club más grande del mundo baja a Segunda por primera vez en trescientos años. Los enanos no corren: recogen el balón, entran en la caja y avanzan una casilla por turno hasta que el rival se queda sin gente. Tú corres. Ese es el problema, y la historia.",
@@ -736,7 +742,7 @@ const ENANO = {
       eje === "correr" ? "Corrió toda su vida, ganó y perdió corriendo, y fue el enano que se atrevió a ser un elfo. Libre y solo, siempre las dos cosas." :
       eje === "caja" ? "El corredor más rápido de la montaña acabó renunciando a correr para ser de los suyos del todo, y ganó la pertenencia, que es lo más difícil de ganar." :
       "Corrió y entró en la caja a partes iguales, y se retiró sin resolver del todo cuál de los dos era. A lo mejor era los dos.";
-    return `${pj.nombre} fue ${rasgo}, y el único enano que corrió. ${pj.flags.campeon ? "Ganó el Cáliz de Barro con los Cascos de Hierro, trescientos años después del último." : "Nunca ganó el Cáliz de Barro con los Cascos, y estuvo a una casilla."} ${ejeFrase} ${pj.rel.dorin >= 4 ? "Dorin Yunquefirme, con ciento ochenta años, bajó la escalera para su entierro. Fue lo último que bajó." : pj.rel.dorin <= -2 ? "Dorin Yunquefirme no fue a su entierro. Mandó el brazalete." : ""} ${pj.rel.helgra >= 4 ? "Helgra sirvió la última tanda y cerró el banquillo." : ""} ${pj.flags.faelasSeQueda ? "Faelas jugó una final con casco de hierro, contra su propia corte, y fue lo más cerca de casa que estuvo un elfo en la montaña." : pj.flags.faelasSeVa ? "Faelas volvió al bosque, y en cada sorteo os buscabais, dos corredores que se entendían desde bandos distintos." : pj.rel.faelas >= 3 ? "Faelas, el corredor de Cythel, siguió cruzándose contigo temporada tras temporada, el único del otro bando que sabía lo que te costaba correr." : ""} ${!pj.flags.finMina ? (pj.rel.brokk >= 3 ? "Brokk, su hermano, corredor de los Yunques, le tapó el hueco desde el otro banquillo toda la vida, y en el entierro fue el único que no lloró: ya lo había hecho todo por él en vida." : pj.rel.brokk <= -1 ? "Brokk, su hermano, dejó de escribirle, y cada uno tapó su propio hueco a solas, en montañas distintas." : "") : ""} ${pj.muertes > 0 ? `Murió ${pj.muertes + 1} veces; solo la última contó.` : ""} ${fin}`;
+    return `${pj.nombre} fue ${rasgo}, y el único enano que corrió. ${pj.flags.campeon ? "Ganó el Cáliz de Barro con los Cascos de Hierro, trescientos años después del último." : "Nunca ganó el Cáliz de Barro con los Cascos, y estuvo a una casilla."} ${ejeFrase} ${pj.rel.dorin >= 4 ? "Dorin Yunquefirme murió unos años después, viejísimo, en el banquillo de piedra donde acabó sus días. Lo enterraron en la montaña con su casco y su brazalete. No corrió un solo paso en ciento ochenta años, y fue el más grande." : pj.rel.dorin <= -2 ? "Dorin Yunquefirme murió sin que fueras a despedirle. Te mandó el brazalete de todas formas." : "Dorin Yunquefirme murió viejo, en la caja, como vivió."} ${pj.rel.helgra >= 4 ? "Helgra sirvió la última tanda y cerró el banquillo." : ""} ${pj.flags.faelasSeQueda ? "Faelas jugó una final con casco de hierro, contra su propia corte, y fue lo más cerca de casa que estuvo un elfo en la montaña." : pj.flags.faelasSeVa ? "Faelas volvió al bosque, y en cada sorteo os buscabais, dos corredores que se entendían desde bandos distintos." : pj.rel.faelas >= 3 ? "Faelas, el corredor de Cythel, siguió cruzándose contigo temporada tras temporada, el único del otro bando que sabía lo que te costaba correr." : ""} ${!pj.flags.finMina ? (pj.rel.brokk >= 3 ? "Brokk, su hermano, corredor de los Yunques, le tapó el hueco desde el otro banquillo toda la vida, y en el entierro fue el único que no lloró: ya lo había hecho todo por él en vida." : pj.rel.brokk <= -1 ? "Brokk, su hermano, dejó de escribirle, y cada uno tapó su propio hueco a solas, en montañas distintas." : "") : ""} ${pj.muertes > 0 ? `Murió ${pj.muertes + 1} veces; solo la última contó.` : ""} ${fin}`;
   },
   recuerdos: {
     cajaAprendida: "Sabes dónde va cada bota antes que ellos.", insolencia: "Le dijiste a Dorin que la caja te sobraba.", helgraMaestra: "Helgra te enseñó con jarras. Juraste no echarla.",
@@ -2419,7 +2425,7 @@ const TIEMPO = {
     6: (pj) => (!pj.flags.apotecarioMadre && !pj.flags.madreMuerta) ? { flags: ["madreMuerta"] } : null,
     7: (pj) => !pj.flags.madreMuerta ? { flags: ["madreMuerta"] } : null,
   },
-  enano: ENANO_TIEMPO,
+  enano: { ...ENANO_TIEMPO, 3: (pj) => !pj.pro ? { fichaPro: true } : null }, // maduras: de la ficha de crío a la del corredor profesional
   orco: { ...ORCO_TIEMPO, 2: (pj) => !pj.pro ? { fichaPro: true } : null }, // Da Banda tiene campo: ficha de profesional
   elfo: ELFO_TIEMPO,
   halfling: HALFLING_TIEMPO,
