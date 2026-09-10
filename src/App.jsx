@@ -3125,7 +3125,7 @@ const PLAY_POOL_ORCO = {
         ok: { txt: "Clavas los pies y su empuje se rompe contra tu armadura. Nadie manda todavía, pero tampoco ceden.", posesion: "neutral" },
         ko: { txt: "Te llevan por delante. Ganan metros de barro.", posesion: "rival" } },
       { txt: "Soltar a los goblins a morder rodillas", det: "Muchos dientes pequeños.", stat: "AG", obj: 8, hab: "Esquivar",
-        ok: { txt: "Los goblins se meten entre las piernas del muro rival y muerden lo que pillan. La línea de ${m.rivalCorto} se descompone a saltos y maldiciones. El barro es vuestro.", posesion: "propia" },
+        ok: { txt: `Los goblins se meten entre las piernas del muro rival y muerden lo que pillan. La línea de ${m.rivalCorto} se descompone a saltos y maldiciones. El barro es vuestro.`, posesion: "propia" },
         ko: { txt: "Los grandotes pisan a los goblins como quien pisa charcos y siguen. Mandan ellos.", posesion: "rival" } },
     ], m) }),
   regate: (pj, m) => ({ etq: "A la carrera", h: varia(["Buscar el hueco", "Correr, no chocar", "Por el lado"], m, 1),
@@ -3179,16 +3179,21 @@ const PLAY_POOL_ORCO = {
 // Dura. Y siempre una opcion de CORRER (el corredor: rapida, arriesgada, la que
 // rompe la caja): es el eje Correr<->Caja del enano, a la vista en cada jugada.
 // Vocabulario Blood Bowl limpio. PROSA DE CLAUDE, marcada para revision.
+// Gancho de protagonista del enano (como confRob del halfling): la CAJA responde
+// según te respeten sus maestros (Dorin/Durak); tu CARRERA, según te siga la
+// grada. Devuelve el modificador al dado y una frase de sabor. Sale a la vista.
+const confCaja = (pj) => { const c = Math.max((pj.rel && pj.rel.durak) || 0, (pj.rel && pj.rel.dorin) || 0); return c >= 3 ? { b: 1, sabor: "Dorin te grita la casilla desde dentro y la caja obedece a la primera." } : c <= -2 ? { b: -1, sabor: "La caja te sigue a medias: no acaba de fiarse del que corre." } : { b: 0, sabor: "" }; };
+const confCorrer = (pj) => { const c = (pj.rel && pj.rel.aficion) || 0; return c >= 3 ? { b: 1, sabor: "Cuatro mil de pie coreando tu nombre: corres más ligero." } : c <= -2 ? { b: -1, sabor: "La grada calla cuando rompes la caja, y hasta tú pesas más." } : { b: 0, sabor: "" }; };
 const PLAY_POOL_ENANO = {
   saque: (pj, m) => ({ etq: "Saque", h: varia(["La bola en el barro", "Balón suelto", "A recoger"], m, 1),
     situ: `${varia([`El saque cae corto y la bola rueda muerta en el centro, de nadie.`, `La bola bota entre las dos líneas. La caja empieza a formarse sin que nadie lo diga.`, `Balón suelto. ${m.rivalCorto} viene a por él; vosotros os miráis y esperáis la casilla.`], m, 2)} Se recoge y se entra en la caja. O no.`,
     ops: pickN([
-      { txt: "Recoger el balón y meterse en la caja", det: "Como se ha hecho siempre.", stat: "ST", obj: 7, hab: "Manos seguras",
+      { txt: "Recoger el balón y meterse en la caja", det: confCaja(pj).sabor || "Como se ha hecho siempre.", bonus: confCaja(pj).b, bonusLabel: "La caja", stat: "ST", obj: 7, hab: "Manos seguras",
         ok: { txt: "Recoges la bola, la proteges contra el peto, y cuatro linieros se cierran a tu alrededor sin una palabra. Vuestra, y a salvo.", posesion: "propia" },
         ko: { txt: "La bola resbala en el barro antes de que la caja se cierre. La cazan ellos.", posesion: "rival" } },
-      { txt: "Salir a por ella corriendo, antes que nadie", det: "Rompes la caja, pero llegas primero.", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
+      { txt: "Salir a por ella corriendo, antes que nadie", det: confCorrer(pj).sabor || "Rompes la caja, pero llegas primero.", bonus: confCorrer(pj).b, bonusLabel: "Grada", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
         ok: { txt: "Corres —lo que ningún enano hace— y llegas a la bola antes que nadie. La recoges en carrera y sales de allí. Vuestra. Durak aprieta la mandíbula.", posesion: "propia" },
-        ko: { txt: "Corres, sí, pero sin la caja detrás estás solo, y ${m.rivalCorto} te recibe y te quita la bola en el barro. Para ellos.", posesion: "rival" } },
+        ko: { txt: `Corres, sí, pero sin la caja detrás estás solo, y ${m.rivalCorto} te recibe y te quita la bola en el barro. Para ellos.`, posesion: "rival" } },
       { txt: "Plantarse sobre la bola y aguantar", det: "Territorio antes que balón.", stat: "ST", obj: 7, hab: "Mantenerse firme",
         ok: { txt: "Clavas las botas sobre la bola y aguantas el primer empujón, y el segundo. Cuando la caja te alcanza, sigue ahí. Vuestra.", posesion: "propia" },
         ko: { txt: "Te apartan de un empujón y recogen la bola de debajo. Para ellos.", posesion: "rival" } },
@@ -3199,11 +3204,11 @@ const PLAY_POOL_ENANO = {
   ataque: (pj, m) => m.posesion === "propia" ? ({ etq: "Ataque", h: varia(["La caja avanza", "Una casilla más", "Hacia la línea"], m, 1),
     situ: `${varia([`Tienes la bola en el centro de la caja y la línea de ${m.rivalCorto} a unas casillas. La caja avanza una por turno, imperturbable.`, `La bola protegida, el muro por delante. Se avanza despacio, o se rompe la caja y se corre.`], m, 2)}`,
     ops: pickN([
-      { txt: "Avanzar la caja una casilla, y otra, hasta cruzar", det: "Paciencia. Se muere de cansancio, no de prisa.", stat: "ST", obj: 8, hab: "Romper defensas",
-        ok: { txt: "Una casilla. Otra. Los de ${m.rivalCorto} se estrellan contra las esquinas y caen, y la caja no se abre. En la última casilla cruzas protegido por cuatro linieros. ¡Touchdown de enano, de los que no fallan!", gol: true },
+      { txt: "Avanzar la caja una casilla, y otra, hasta cruzar", det: confCaja(pj).sabor || "Paciencia. Se muere de cansancio, no de prisa.", bonus: confCaja(pj).b, bonusLabel: "La caja", stat: "ST", obj: 8, hab: "Romper defensas",
+        ok: { txt: `Una casilla. Otra. Los de ${m.rivalCorto} se estrellan contra las esquinas y caen, y la caja no se abre. En la última casilla cruzas protegido por cuatro linieros. ¡Touchdown de enano, de los que no fallan!`, gol: true },
         ko: { txt: "Un liniero llega tarde a su casilla y la caja se abre un dedo. No basta para cruzar, y perdéis el balón en el intento.", posesion: "rival" } },
-      { txt: "Romper la caja y correr tú solo a la línea", det: "Tu don. Rápido y sin red.", stat: "MA", obj: 9, riesgo: true, hab: "Esprintar",
-        ok: { txt: "Sales del muro y corres, lo que ningún corredor de la montaña se atreve, y cruzas antes de que ${m.rivalCorto} entienda qué ha pasado. ¡Touchdown! La grada ruge; Durak, no.", gol: true },
+      { txt: "Romper la caja y correr tú solo a la línea", det: confCorrer(pj).sabor || "Tu don. Rápido y sin red.", bonus: confCorrer(pj).b, bonusLabel: "Grada", stat: "MA", obj: 9, riesgo: true, hab: "Esprintar",
+        ok: { txt: `Sales del muro y corres, lo que ningún corredor de la montaña se atreve, y cruzas antes de que ${m.rivalCorto} entienda qué ha pasado. ¡Touchdown! La grada ruge; Durak, no.`, gol: true },
         ko: { txt: "Corres, y sin la caja detrás un rival te alcanza y te tumba lejos de la línea. El hueco que dejaste lo pagan los tuyos.", posesion: "rival" } },
       { txt: "Abrir la caja un turno para que cruce el corredor, y cerrarla", det: "La caja que se abre: lo tuyo y lo suyo.", stat: "AG", obj: 8, hab: "Esquivar",
         ok: { txt: "La caja se abre una casilla justo el tiempo que hace falta, sales por el hueco que ella misma te guarda, cruzas, y se cierra detrás de ti. ¡Touchdown! Ni pura caja ni puro correr.", gol: true },
@@ -3228,13 +3233,13 @@ const PLAY_POOL_ENANO = {
     situ: `${varia([`Antes de que la bola importe, las dos líneas se empujan. ${m.rivalCorto} pega primero.`, `Dos muros midiéndose. La caja no corre: resiste.`], m, 2)} El que aguante más, manda.`,
     ops: pickN([
       { txt: "Empujar el muro una casilla, todos a una", det: "Avanzar sin abrir.", stat: "ST", obj: 8, hab: "Romper defensas",
-        ok: { txt: "Empujáis los seis a una y el muro de ${m.rivalCorto} cede una casilla. Ganáis el barro sin abrir un solo hueco.", posesion: "propia" },
+        ok: { txt: `Empujáis los seis a una y el muro de ${m.rivalCorto} cede una casilla. Ganáis el barro sin abrir un solo hueco.`, posesion: "propia" },
         ko: { txt: "No ceden, y el que resbala sois vosotros. Mandan ellos.", posesion: "rival" } },
       { txt: "Plantarse y aguantar con Cabeza Dura", det: "Que se estrellen contra vosotros.", stat: "ST", obj: 7, hab: "Mantenerse firme",
         ok: { txt: "Clavas las botas y su empuje se rompe contra el peto y contra Cabeza Dura. Nadie manda todavía, pero de aquí no os mueven.", posesion: "neutral" },
         ko: { txt: "Os llevan por delante unos metros de barro. Mandan ellos.", posesion: "rival" } },
       { txt: "Entrar al más grande y tumbarlo", det: "Si cae el grande, la línea se abre.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
-        ok: { txt: "Vas al más grande de ${m.rivalCorto} y le entras bajo, con todo el peto. Cae una tonelada, y su línea se abre para los tuyos.", posesion: "propia", baja: true },
+        ok: { txt: `Vas al más grande de ${m.rivalCorto} y le entras bajo, con todo el peto. Cae una tonelada, y su línea se abre para los tuyos.`, posesion: "propia", baja: true },
         ko: { txt: "Era más grande de lo que parecía. Rebotas y te pisan. Mandan ellos.", posesion: "rival" } },
       { txt: "Correr por el flanco mientras chocan las líneas", det: "Que peguen; tú te cuelas.", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
         ok: { txt: "Mientras las líneas se empujan, tú sales por el flanco corriendo, que nadie lo espera de un enano. Ganas metros libres. Vuestra.", posesion: "propia" },
@@ -3243,7 +3248,7 @@ const PLAY_POOL_ENANO = {
   regate: (pj, m) => ({ etq: "A la carrera", h: varia(["El corredor corre", "Por fuera", "Un paso más rápido"], m, 1),
     situ: `${varia([`A veces la caja no llega, y hay un hueco, y tú eres el único enano de la montaña que sabe aprovecharlo corriendo.`, `${m.rivalCorto} espera el muro lento. Hoy toca lo que nadie espera de un enano: velocidad.`], m, 2)}`,
     ops: pickN([
-      { txt: "Correr por la banda, ese medio paso que nadie tiene", det: "Tu don, sin culpa por un turno.", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
+      { txt: "Correr por la banda, ese medio paso que nadie tiene", det: confCorrer(pj).sabor || "Tu don, sin culpa por un turno.", bonus: confCorrer(pj).b, bonusLabel: "Grada", stat: "MA", obj: 8, riesgo: true, hab: "Esprintar",
         ok: { txt: "Tiras por la banda con el medio paso que ningún otro enano tiene. Los dejas atrás, torpes y lentos, y avanzas con la bola. Vuestra.", posesion: "propia" },
         ko: { txt: "Te cierran contra la cal y sales del campo con la bola. Saque para ellos.", posesion: "rival" } },
       { txt: "Recoger en carrera sin bajar el ritmo", det: "La cabeza antes que las piernas.", stat: "AG", obj: 8, hab: "Manos seguras",
@@ -3272,7 +3277,7 @@ const PLAY_POOL_ENANO = {
   defensa: (pj, m) => ({ etq: "Muralla", h: varia([`${m.rivalCorto} va a por el gol`, "Aguantad la línea", "El último muro"], m, 1),
     situ: `${varia([`Vais por delante y ${m.rivalCorto} viene a por el empate con todo.`, `${m.rivalCorto} empuja hacia vuestra línea. La muralla es lo único entre ellos y el gol.`], m, 2)} Si no los paráis aquí, cruzan.`,
     ops: pickN([
-      { txt: "La muralla en la línea, hombro con hombro", det: "Nadie pasa por donde hay enano plantado.", stat: "ST", obj: 7, hab: "Mantenerse firme",
+      { txt: "La muralla en la línea, hombro con hombro", det: confCaja(pj).sabor || "Nadie pasa por donde hay enano plantado.", bonus: confCaja(pj).b, bonusLabel: "La caja", stat: "ST", obj: 7, hab: "Mantenerse firme",
         ok: { txt: "Os plantáis los seis en la línea, hombro con hombro y Cabeza Dura. El portador choca contra el muro y no encuentra por dónde. No cruzan.", posesion: "rival" },
         ko: { txt: "Os apartan a dos de un empujón y cruzan por el hueco. Touchdown suyo.", golRival: true } },
       { txt: "Entrar en seco al que la lleva", det: "Tumbarlo y que la suelte.", stat: "ST", obj: 9, riesgo: true, hab: "Placar",
@@ -4399,8 +4404,8 @@ export default function App() {
       <div className="opcion"><button onClick={() => jugarJugada(o)}>
         <b>{o.txt}</b><span className="mini">{o.det}</span>
         <span className="mini kj-attr">{es1d6(pj)
-          ? `${ATRIB_PARTIDO[o.stat]} 1D6 · ${o.stat === "ST" ? "4+ (según fuerza rival)" : (7 - pj.AG) + "+"}${o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}${o.bonus ? ` · Roblerto ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}`
-          : `${ATRIB_PARTIDO[o.stat]} · tú ${modDe(pj, o.stat) + (o.bonus || 0) >= 0 ? "+" : ""}${modDe(pj, o.stat) + (o.bonus || 0)}${o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}${o.bonus ? ` · Roblerto ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}`}</span>
+          ? `${ATRIB_PARTIDO[o.stat]} 1D6 · ${o.stat === "ST" ? "4+ (según fuerza rival)" : (7 - pj.AG) + "+"}${o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}${o.bonus ? ` · ${o.bonusLabel || "Roblerto"} ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}`
+          : `${ATRIB_PARTIDO[o.stat]} · tú ${modDe(pj, o.stat) + (o.bonus || 0) >= 0 ? "+" : ""}${modDe(pj, o.stat) + (o.bonus || 0)}${o.hab && pj.hab.includes(o.hab) ? ` · ${o.hab}` : ""}${o.bonus ? ` · ${o.bonusLabel || "Roblerto"} ${o.bonus > 0 ? "+" + o.bonus : o.bonus}` : ""}`}</span>
       </button></div>
     );
     // barra de dominio: -1 (rival) .. +1 (nosotros)
