@@ -2220,7 +2220,7 @@ const HISTORIAS = { humano: HUMANO, enano: ENANO, orco: ORCO, elfo: ELFO, halfli
 // jugar frente a las que aún están en revisión (motor viejo 2d6, sin migrar).
 // Decisión del cliente (2026-09-09): Orco y Halfling, terminadas; el resto, en
 // revisión. Al terminar una rama, se pone a true aquí (una sola línea).
-const HISTORIA_LISTA = { orco: true, halfling: true };
+const HISTORIA_LISTA = { orco: true, halfling: true, enano: true };
 
 // Tentación central de cada protagonista (hilo que el epílogo juzga)
 const TENTACION = {
