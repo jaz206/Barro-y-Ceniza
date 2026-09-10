@@ -348,9 +348,14 @@ en el cap 4 y en el 7; no empezar hasta tener el 7).
   (obj 9-11) funcionan sin reescribir. Verificado: build limpio, 5 recorridos
   enano cap1→7 errores=0, humano y elfa (2d6) sin regresión, y la ficha muestra
   "Fuerza 1D6 · 4+".
-- **Pendiente:** calibración fina de dificultad del enano en 1D6 (medir % de
-  victoria como se hizo con el orco; de momento usa el umbral de rival 7
-  compartido); Grimnir/Thorek (montón 2, opcional); la **ficha de debut** del
+- **Calibración medida (2026-09-10, simulación fiel del 1D6):** curva sana, casi
+  idéntica a la del orco, sin tocar dificultad. V73% vs FU2 (Segunda), V52% vs
+  FU3, V60% en el ascenso (3 jugadas), **V29% en la final dura (FU4, las Hojas)**
+  — E33/D38, una final que se puede perder. La 2ª oportunidad de equipo pesa: con
+  `rel.club` baja, la final cae a V13%, así que cultivar al equipo importa (diseño
+  intencionado). Letalidad por fallo de riesgo 0,57% (AV9; entre el tanque orco
+  0,35% y el halfling 1,56%), y con tres vidas una muerte no acaba la carrera.
+- **Pendiente:** Grimnir/Thorek (montón 2, opcional); la **ficha de debut** del
   doc §2 (el build lo tiene pro desde el cap 1 — decisión del cliente si añadir
   crío). Cuando el cliente dé el visto bueno a su repaso (Faelas/Brokk/Dorin),
   el enano pasa a `HISTORIA_LISTA` (portada "terminadas"); hasta entonces sigue
